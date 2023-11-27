@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static%}
+    <link rel="stylesheet" href="{% static 'css/produtos.css'%}">
+    <title>Gerenciamento de Estoque</title>
+</head>
+<body>
+    {% block body %}
+    <main id="container">
+        <form id="lista_cadastro" action="{% url 'salvar' produto.id %}" method="POST">{% csrf_token %}
+            <div id="header">
+                <h1>Editar Produto:</h1>
+            </div>
+
+            <div class="caixa">
+                <label for="nome">
+                    Nome do Produto:
+                    <div class="caixa_input">
+                        <input type="text" name="nome" maxlength="40" value="{{produto.nome}}">
+                    </div>
+                </label>
+            </div>
+
+            <div class="caixa">
+                <label for="estoque">
+                    Estoque
+                    <div class="caixa_input">
+                        <input type="number" name="estoque" value="{{produto.estoque}}">
+                    </div>
+                </label>
+            </div>
+
+            <div class="caixa">
+                <label for="descricao">
+                    Descrição do produto
+                    <div class="caixa_input">
+                        <textarea id="descricao1" cols="21" rows="6" name="descricao">{{produto.descricao}}</textarea>
+                    </div>
+                </label>
+            </div>
+
+            <div class="caixa">
+                <label for="preco">
+                    Valor:
+                    <div class="caixa_input">
+                        <input type="text" name="preco" pattern="[0-9]+([\.,][0-9]+)?" title="Por favor, insira um número válido." value="{{produto.preco}}">
+                    </div>
+                </label>
+            </div>
+
+            <button type="submit" id="salvar">
+                Salvar alterações
+            </button>
+        </form>
+    </main>
+    {% endblock %}
+</body>
+</html>

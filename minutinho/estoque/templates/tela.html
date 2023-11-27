@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>mercado minutinho</title>
+    {% load static%}
+    <link rel="stylesheet" href="{% static 'css/styletela.css'%}">
+    <div class="container">
+  </head>
+  <body>
+    <nav id="menu"> 
+        <ul> 
+          <h1>Mercado Minutinho</h1>
+        </ul> 
+      </nav>
+    <div class="middle">
+      <a href="{% url 'catalogo' %}" class="btn btn1">vendas</a>
+      <a href="{% url 'lista' %}" class="btn btn2">estoque</a>
+      <a href="{% url 'meuspedidos'%}" class="btn btn1">pedidos</a>
+
+    </div>
+  </body>
+</html>

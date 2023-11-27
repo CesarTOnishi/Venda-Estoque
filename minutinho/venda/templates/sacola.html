@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/stylesacola.css' %}">
+    <title>Carrinho de compra</title>
+</head>
+<body>
+    <form method="POST" action="{% url 'realizarPedido' request.user.id %}">
+        <a href="{% url 'catalogo'%}">Retornar</a>
+        {% csrf_token %}
+        <div class="container">
+            <p>{{mensagem}}</p>
+            <table class="table_nome">
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Total</th>
+                    <th>Remover Item</th>
+                </tr>
+                {% for car in viewCarrinho %}
+                <tr>
+                    <td>{{car.nome}}</td>
+                    <td>{{car.quantidade}}</td>
+                    <td>{{car.valor_unitario}}</td>
+                    <td>{{car.valor_total}}</td>
+                    <td><a href="{% url 'dellcarrinho' car.id %}"> <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt=""></a></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <h1>Valor Total R$:{{valor_geral|floatformat:2 }}</h1>
+        </div>
+        <button type="submit" name="button" class="realizar">Enviar Pedido</button>
+    </form>
+</body>
+</html> 

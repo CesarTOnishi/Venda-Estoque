@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static%}
+    <link rel="stylesheet" href="{% static 'assets/css/stylelogin.css'%}">
+    <title>Login Mercearia</title>
+</head>
+<body>
+    <main id="container">
+        <form id="logar" action="{% url 'login' %}" method="POST">{% csrf_token %}
+            <div id="header">
+                <h1>Minutinho</h1>
+            </div>
+
+            <div class="caixa_logar">
+                <label for="login">
+                    Login
+                    <div class="caixa_input">
+                        <input type="text" id="usuario" name="username">
+                    </div>
+                </label>
+            </div>
+
+            <div class="caixa_logar">
+                <label for="logar">
+                    Senha
+                        <div class="caixa_input">
+                            <input type="password" id="senha" name="senha">
+                        </div>
+                    </label>
+                    <div id="cadastro">
+                        <a href="{%url 'cadastro' %}">
+                            Cadastre-se
+                        </a>
+                    </div>
+                </div>
+            <button type="submit" id="botao_logar">
+                Logar
+            </button>
+        </form>
+    </main>
+    
+</body>
+</html>

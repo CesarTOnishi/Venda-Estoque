@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/stylec.css'%}">
+    <title>Lista Produtos</title>
+</head>
+<body>
+    {% block body %}
+    <div class="form_carrinho">
+        <form action="." method="POST">
+            {% csrf_token %}
+                {% if forloop.counter == car.qt_itens %}
+                    <a href="{% url 'sacola'%}">
+                        <img src="{% static 'img/Carrinho.png'%}" width="90px" height="90px">
+                    </a>
+                    <div id="texto_carrinho"> {{ car.qt_itens}}</div>
+                {% endif %}
+        </form>
+    </div>
+    {% endblock%}
+    <h1>Lista de Produtos</h1>
+    <a class="return" href="{%url 'tela'%}">Retornar</a>
+    <p>{{mensagem}}</p>
+    <div class="container">
+        {% for produto in produtos %}
+            <div class="menu">
+                <div class="produto-info">
+                    <h2 class="nome-produto">{{ produto.nome }}</h2>
+                    <p class="descricao">{{ produto.descricao }}</p>
+                </div>
+                <div class="preco">
+                    <p>R$ {{ produto.preco }}</p>
+                </div>
+                <a href="{% url 'addCarrinho' produto.id %}" class="btn-adicionar">Adicionar ao Carrinho</a>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

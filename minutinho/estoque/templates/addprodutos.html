@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static%}
+    <link rel="stylesheet" href="{% static 'css/produtos.css'%}">
+    <title>Adicionar ao Estoque</title>
+</head>
+<body>
+    <main id="container">
+        <form id="lista_cadastro" action="{% url 'estoque' %}" method="POST">{% csrf_token %}
+            <div id="header">
+                <h1>Estoque</h1>
+            </div>
+
+            <div class="caixa">
+                <label for="nome">
+                    Nome do Produto:
+                    <div class="caixa_input">
+                        <input type="text" id="usuario" name="nome">
+                    </div>
+                </label>
+            </div>
+
+            <div class="caixa">
+                <label for="estoque">
+                    Estoque
+                    <div class="caixa_input">
+                        
+                        <input type="number" id="usuario" name="estoque">
+                    </div>
+                </label>
+            </div>
+
+            <div class="caixa">
+                <label for="descricao">
+                    Descrição do produto
+                    <div class="caixa_input">
+                        <textarea id="descricao1" cols="21" rows="6" name="descricao">{{produto.descricao}}</textarea>
+                    </div>
+                </label>
+            </div>
+
+            <div class="caixa">
+                <label for="preco">
+                    Valor:
+                    <div class="caixa_input">
+                        <input type="number" id="usuario" name="preco">
+                    </div>
+                </label>
+            </div>
+
+            <button type="submit" id="salvar">
+                Inserir Produto
+            </button>
+        </form>
+    </main>
+</body>
+</html>
