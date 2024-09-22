@@ -1,44 +1,43 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "tela.html" %}
+{% load static %}
+
+{% block 'head' %}
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/listastyle.css' %}">
     <title>Tela de venda</title>
-</head>
+{% endblock %}
 <body>
-{%block body%}
-<div class="pesquisa">
-        <a href="{%url 'tela'%}">Retornar</a>
-    <form method="POST" action="{% url 'filtro'%}">
-        {% csrf_token %}
-        <input type="text" size="20" name="palavra" id="palavra"> <button type="submit">Filtrar:</button>
-    </form>
-    <button>
-        <a href="{% url 'estoque' %}">Adicionar Produto</a>
-    </button>
-</div>
+    {% block 'dashboard' %}
+    <form action="." method="POST">
+        <div class="pesquisa">
+                {% csrf_token %}
+                <div class="search-container">
+                    <input type="text" id="search" placeholder="Buscar produto...">
+                </div>
+                <a href="{% url 'estoque' %}" class="botao">Adicionar Produto</a>
+        </div>
 
-<div class="principal">
-    <table class="tabela_produto">
-        <thead>
-            <tr> <th>Produto</th> <th>Estoque</th> <th>Descrição</th> <th>Preço</th> <th>Editar</th> <th>Deletar</th></tr>
-        </thead>
-        <tbody id="corpo_tabela">
-            {% for produto in produtos %}
-            <tr>
-                <td class="nome_produto">{{ produto.nome }}</td>
-                <td>{{ produto.estoque }}</td>
-                <td>{{ produto.descricao }}</td>
-                <td>{{ produto.preco }}</td>
-                <td><a href="{% url 'editar' produto.id %}"> <img width="30" height="30" src="{% static 'img/Editar.png' %}"></a></td>
-                <td><a href="{% url 'remover' produto.id %}"> <img width="30" height="30" src="{% static 'img/Deletar.png' %}"></a></td>
-            </tr>
-        </tbody>
-        {%endfor%}
-    </table>
-{%endblock%}
-</div>
+        <div class="principal">
+            <table class="tabela_produto">
+                <thead>
+                    <tr> <th>Produto</th> <th>Estoque</th> <th>Descrição</th> <th>Preço</th> <th>Editar</th> <th>Deletar</th></tr>
+                </thead>
+                <tbody class="corpo_tabela">
+                    {% for produto in produtos %}
+                    <tr>
+                        <td>{{ produto.nome }}</td>
+                        <td>{{ produto.estoque }}</td>
+                        <td>{{ produto.descricao }}</td>
+                        <td>{{ produto.preco }}</td>
+                        <td><a href="{% url 'editar' produto.id %}"> <img width="30" height="30" src="{% static 'img/Editar.png' %}"></a></td>
+                        <td><a href="{% url 'remover' produto.id %}"> <img width="30" height="30" src="{% static 'img/Deletar.png' %}"></a></td>
+                    </tr>
+                </tbody>
+                {%endfor%}
+            </table>
+        </div>
+        <script src="{% static 'js/listajs.js' %}"></script>
+    </form>
+    {%endblock%}
 </body>
 </html>

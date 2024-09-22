@@ -1,0 +1,52 @@
+{% extends "tela.html" %}
+{% load static %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/inicial.css' %}">
+    <title>Página Inicial</title>
+{% endblock %}
+
+{% block 'dashboard' %}
+    <div class="dashboard-container">
+        <h1>Bem-vindo!</h1>
+
+        <div class="stats-section">
+            <div class="stat-box">
+                <h2>Vendas Totais:</h2>
+                <p>R$ {{ total_vendas|floatformat:2 }}</p>
+            </div>
+            <div class="stat-box">
+                <h2>Pedidos Realizados:</h2>
+                <p>{{ quantidade_pedidos }}</p>
+            </div>
+            <div class="stat-box">
+                <h2>Total Clientes:</h2>
+                <p>{{ quantidade_clientes }}</p>
+            </div>
+        </div>
+
+        <div class="recent-orders">
+            <h2>Últimos 5 Pedidos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nr. Pedido</th>
+                        <th>Cliente</th>
+                        <th>Produtos</th>
+                        <th>Valor Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in pedidos %}
+                    <tr>
+                        <td>{{ pedido.nr_pedido }}</td>
+                        <td>{{ pedido.cliente_nome }}</td>
+                        <td>{{ pedido.quantidade_total }}</td>
+                        <td>{{ pedido.valor_total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

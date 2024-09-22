@@ -1,0 +1,171 @@
+:root {
+    --main-color: #ac4147;
+    --dark-color: #411f2d;
+    --background-color: #333;
+    --text-color: #f5f5f5;
+    --hover-color: #ff676d;
+    --border-color: #444;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+main#container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: var(--dark-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+    text-align: center;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+#pedidoForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.caixa {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+label {
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+button {
+    display: inline-block;
+    text-decoration: none;
+    padding: 12px 16px;
+    background-color: var(--main-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background-color: var(--hover-color);
+}
+
+#tabela-produtos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#tabela-produtos th, 
+#tabela-produtos td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#tabela-produtos th {
+    background-color: var(--main-color);
+    color: var(--text-color);
+}
+
+#tabela-produtos td button {
+    padding: 6px 12px;
+    background-color: var(--main-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#tabela-produtos td button:hover {
+    background-color: var(--hover-color);
+}
+
+.select2-container .select2-selection--single {
+    height: 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+    line-height: 38px;
+}
+
+.select2-container .select2-selection--single .select2-selection__arrow {
+    height: 38px;
+}
+
+.select2-dropdown {
+    background-color: var(--background-color);
+    color: #333;
+}
+
+.error-messages {
+    color: #ff4d4d;
+}
+
+@media (max-width: 768px) {
+    #pedidoForm {
+        flex-direction: column;
+    }
+
+    .caixa {
+        width: 100%;
+    }
+}
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336; /* Cor de fundo */
+    color: white; /* Cor do texto */
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    display: none; /* Oculta por padrão */
+}
+
+.notification.visible {
+    display: block; /* Mostra quando visível */
+}
+
+.notification.hidden {
+    display: none; /* Garante que esteja oculto */
+}
+
+.notification .close {
+    cursor: pointer;
+    float: right;
+    font-size: 20px;
+}
+.hidden {
+    display: none;
+}

@@ -1,0 +1,216 @@
+{% load static %}
+{% load compra_filters %}
+
+<head>
+    <link rel="stylesheet" href="{% static 'css/editarcompra.css' %}">
+    <title>Editar Pedido de Compra</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <main id="container">
+        <h1>Editar Pedido de Compra</h1>
+        <div id="notification" class="notification hidden">
+            <span id="notification-message"></span>
+            <span class="close" onclick="closeNotification()">&times;</span>
+        </div>
+
+        <form id="pedidoForm" action="{% url 'editar_pedido' pedido.id %}" method="POST">
+            {% csrf_token %}
+            
+            <div class="caixa">
+                <label for="fornecedor-select">Fornecedor:</label>
+                <select id="fornecedor-select" name="fornecedor" class="select2">
+                    <option value="{{ pedido.fornecedor.id }}" selected>{{ pedido.fornecedor.nome }}</option>
+                </select>
+            </div>
+
+            <div class="caixa">
+                <label for="data_pedido">Data do Pedido:</label>
+                <input type="date" id="data_pedido" name="data_pedido" value="{{ pedido.data_pedido|date:'Y-m-d' }}">
+            </div>
+
+            <h3>Produtos no Pedido</h3>
+
+            <div class="caixa">
+                <label for="produto-select">Adicionar Produto:</label>
+                <select id="produto-select" class="select2">
+                    <option value="">Selecione um produto</option>
+                </select>
+            </div>
+
+            <div class="caixa">
+                <label for="quantidade">Quantidade:</label>
+                <input type="number" id="quantidade" name="quantidade" min="1" value="1">
+            </div>
+
+            <div class="caixa">
+                <label for="preco_unitario">Preço Unitário:</label>
+                <input type="number" id="preco_unitario" name="preco_unitario" step="0.01" value="0.00">
+            </div>
+
+            <button type="button" id="add-produto">Adicionar Produto</button>
+
+            <table id="tabela-produtos">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unitário</th>
+                        <th>Total</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in pedido.pedidoproduto_set.all %}
+                    <tr data-id="{{ item.produto.id }}">
+                        <td>{{ item.produto.nome }}</td>
+                        <td>{{ item.quantidade }}</td>
+                        <td>R$: {{ item.preco_unitario }}</td>
+                        <td>R$: {{ item.quantidade|multiply:item.preco_unitario }}</td>
+                        <td><button type="button" class="remove-produto">Remover</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <input type="hidden" id="produtos" name="produtos">
+            <input type="hidden" id="quantidades" name="quantidades">
+            <input type="hidden" id="precos_unitarios" name="precos_unitarios">
+
+            <button type="submit" id="salvar">Salvar Alterações</button>
+        </form>
+    </main>
+    <script>
+        $(document).ready(function() {
+            // Inicializa o Select2 para o fornecedor e produto
+            $('#fornecedor-select').select2({
+                width: '100%',
+                placeholder: 'Selecione um Fornecedor',
+                ajax: {
+                    url: "{% url 'fornecedor_autocomplete' %}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            term: params.term
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.results
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $('#produto-select').select2({
+                width: '100%',
+                placeholder: 'Selecione um Produto',
+                ajax: {
+                    url: "{% url 'produto_autocomplete' %}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            term: params.term
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.results
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            function atualizarCamposOcultos() {
+                var produtos = [];
+                var quantidades = [];
+                var precosUnitarios = [];
+
+                $('#tabela-produtos tbody tr').each(function() {
+                    var produtoId = $(this).data('id');
+                    var quantidade = $(this).find('td:eq(1)').text().replace(',', '.');
+                    var precoUnitario = $(this).find('td:eq(2)').text().replace('R$: ', '').replace(',', '.');
+
+                    produtos.push(produtoId);
+                    quantidades.push(quantidade);
+                    precosUnitarios.push(precoUnitario);
+                });
+
+                $('#produtos').val(produtos.join(','));
+                $('#quantidades').val(quantidades.join(','));
+                $('#precos_unitarios').val(precosUnitarios.join(','));
+            }
+
+            // Adicionar produto à tabela
+            $('#add-produto').click(function() {
+                var produtoId = $('#produto-select').val();
+                var produtoNome = $('#produto-select option:selected').text();
+                var quantidade = parseFloat($('#quantidade').val());
+                var precoUnitario = parseFloat($('#preco_unitario').val());
+
+                // Limpar mensagens de erro anteriores
+                $('#notification').removeClass('visible').addClass('hidden');
+                $('#notification-message').empty();
+
+                var erros = [];
+
+                if (!produtoId) {
+                    erros.push("Selecione um produto.");
+                }
+                if (quantidade <= 0) {
+                    erros.push("A quantidade deve ser maior que zero.");
+                }
+                if (precoUnitario < 0) {
+                    erros.push("O preço unitário não pode ser negativo.");
+                }
+
+                if (erros.length > 0) {
+                    erros.forEach(function(error) {
+                        $('#notification-message').append(error + '<br>');
+                    });
+                    $('#notification').removeClass('hidden').addClass('visible');
+
+                    // Ocultar a notificação após 5 segundos
+                    setTimeout(function() {
+                        $('#notification').removeClass('visible').addClass('hidden');
+                    }, 5000);
+
+                    return; // Para aqui se houver erros
+                }
+
+                var total = (quantidade * precoUnitario).toFixed(2);
+                var quantidadeFormatada = quantidade % 1 === 0 ? quantidade.toFixed(0) : quantidade.toFixed(2);
+                var precoUnitarioFormatado = precoUnitario.toFixed(2);
+
+                var linha = `
+                    <tr data-id="${produtoId}">
+                        <td>${produtoNome}</td>
+                        <td>${quantidadeFormatada}</td>
+                        <td>R$: ${precoUnitarioFormatado}</td>
+                        <td>R$: ${total}</td>
+                        <td><button type="button" class="remove-produto">Remover</button></td>
+                    </tr>
+                `;
+                $('#tabela-produtos tbody').append(linha);
+                atualizarCamposOcultos();
+
+                $('#produto-select').val('').trigger('change');
+                $('#quantidade').val('1');
+                $('#preco_unitario').val('0.00');
+            });
+
+            // Remover produto da tabela
+            $('#tabela-produtos').on('click', '.remove-produto', function() {
+                $(this).closest('tr').remove();
+                atualizarCamposOcultos();
+            });
+        });
+    </script>
+</body>

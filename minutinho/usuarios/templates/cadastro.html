@@ -4,16 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static%}
-    <link rel="stylesheet" href="{% static 'assets/css/stylelogin.css'%}">
+    <link rel="stylesheet" href="{% static 'assets/css/stylecadastro.css'%}">
     <title>Login Mercearia</title>
 </head>
 <body>
     <main id="container">
         <form id="logar" action="{% url 'cadastro' %}" method="POST">{% csrf_token %}
             <div id="header">
-                <h1>Minutinho</h1>
+                <h1>Cadastro NewLife</h1>
             </div>
-
+            {% if messages %}
+            <div class="alert alert-danger">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
             <div class="caixa_logar">
                 <label for="username">
                     Login de Usuario
@@ -27,7 +33,7 @@
                 <label for="email">
                     E-mail
                     <div class="caixa_input">
-                        <input type="text" id="usuario" name="email">
+                        <input type="email" id="usuario" name="email">
                     </div>
                 </label>
             </div>
@@ -45,6 +51,6 @@
             </button>
         </form>
     </main>
-    
+    <script src="{% static 'js/jscadastro.js' %}"></script>
 </body>
 </html>

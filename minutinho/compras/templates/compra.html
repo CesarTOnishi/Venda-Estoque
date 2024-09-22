@@ -1,0 +1,57 @@
+{% extends "tela.html" %}
+{% load static %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/csscompra.css' %}">
+    <title>Compra</title>
+{% endblock %}
+
+{% block 'dashboard' %}
+<body> 
+    <form method="POST" action=".">
+        {% csrf_token %}
+        <div>
+            <a href="{% url 'criar_pedido' %}" class="botao">Realizar Compra</a>
+        </div>
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Buscar compras...">
+        </div>
+        <div class="principal">
+            <table class="tabela_compra">
+                <thead>
+                    <tr> 
+                        <th>Gerar Nota</th>
+                        <th>Data</th> 
+                        <th>Fornecedor</th> 
+                        <th>Valor</th> 
+                        <th>Editar</th>
+                        <th>Deletar</th>
+                    </tr>
+                </thead>
+                <tbody class="corpo_tabela">
+                    {% for item in itens %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'notacompra' item.id %}" class="pdf-button">Gerar Nota</a>
+                        </td>
+                        <td>{{ item.data_pedido }}</td>
+                        <td>{{ item.fornecedor}}</td>
+                        <td>R$: {{ item.total }}</td>
+                        <td>
+                            <a href="{% url 'editar' item.id %}"> 
+                                <img width="30" height="30" src="{% static 'img/Editar.png' %}">
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'removercompra' item.id %}">
+                                <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Remover Compra">
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</body>
+{% endblock %}

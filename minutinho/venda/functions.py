@@ -2,20 +2,8 @@ from django.db import models, connection
 from estoque.models import Produto
 from venda.models import Carrinho, View_Carrinho, View_Pedido
 
-def getQuantidadeProduto(self, prod_id):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT count(1) cont FROM venda_carrinho where produto_id= %s", [prod_id])
-        row = dictfetchall(cursor)
-        if row[0]['cont'] == 0:
-            quantidade = 1
-        else:
-            cursor.execute("SELECT (quantidade + 1) quantidade FROM venda_carrinho where produto_id = %s", [prod_id])
-            row = dictfetchall(cursor)
-            quantidade = row[0]['quantidade']
-        class Meta:
-            model = Produto
-            fields = ['quantidade']
-    return quantidade
+def getQuantidadeProduto(prod_id):
+    return 1
 
 def dictfetchall(cursor):
     columns = [col[0] for col in cursor.description]
@@ -47,9 +35,15 @@ def limparItensCarrinho(self, user_id):
 
 def getViewPedidos(user_id, self):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM View_Pedido WHERE user_id = %s ORDER BY id", [user_id])
+        cursor.execute("SELECT * FROM View_Pedido WHERE user_id = %s ORDER BY nr_pedido", [user_id])
         row = dictfetchall(cursor)
         class Meta:
             model = View_Pedido
             fields = ['id', 'user_id' 'nr_pedido', 'produto_id', 'nome', 'quantidade', 'valor_unitario', 'valor_total']
         return row
+    
+def getQuantidadeTotalCarrinho(user_id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT SUM(quantidade) FROM venda_carrinho WHERE user_id = %s", [user_id])
+        row = cursor.fetchone()
+    return row[0] or 0

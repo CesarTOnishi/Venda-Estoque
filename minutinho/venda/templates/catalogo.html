@@ -1,29 +1,22 @@
+{% extends "tela.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/stylec.css'%}">
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/stylec.css' %}">
     <title>Lista Produtos</title>
-</head>
+{% endblock %}
 <body>
-    {% block body %}
+    {% block 'dashboard' %}
     <div class="form_carrinho">
-        <form action="." method="POST">
-            {% csrf_token %}
-                {% if forloop.counter == car.qt_itens %}
-                    <a href="{% url 'sacola'%}">
-                        <img src="{% static 'img/Carrinho.png'%}" width="90px" height="90px">
-                    </a>
-                    <div id="texto_carrinho"> {{ car.qt_itens}}</div>
-                {% endif %}
-        </form>
+        <a href="{% url 'sacola' %}">
+            <img src="{% static 'img/Carrinho.png' %}" alt="Carrinho">
+        </a>
+        <div id="texto_carrinho">
+            {{ quantidade_total }} <!-- Exibe a quantidade total de itens -->
+        </div>
     </div>
-    {% endblock%}
     <h1>Lista de Produtos</h1>
-    <a class="return" href="{%url 'tela'%}">Retornar</a>
-    <p>{{mensagem}}</p>
+    <p>{{ mensagem }}</p>
     <div class="container">
         {% for produto in produtos %}
             <div class="menu">
@@ -32,11 +25,20 @@
                     <p class="descricao">{{ produto.descricao }}</p>
                 </div>
                 <div class="preco">
-                    <p>R$ {{ produto.preco }}</p>
+                    <p class="preco">R$ {{ produto.preco }}</p>
+                </div>
+                <div>
+                    {% if produto.estoque > 0 %}
+                        <p class="estoque estoque-positivo">Estoque: {{ produto.estoque }} unidades</p>
+                    {% else %}
+                        <p class="estoque estoque-zero">Sem estoque</p>
+                    {% endif %}   
                 </div>
                 <a href="{% url 'addCarrinho' produto.id %}" class="btn-adicionar">Adicionar ao Carrinho</a>
             </div>
         {% endfor %}
     </div>
+    <script src="{% static 'js/catalogojs.js' %}"></script>
+    {% endblock %}
 </body>
 </html>

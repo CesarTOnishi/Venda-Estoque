@@ -5,35 +5,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/stylesacola.css' %}">
-    <title>Carrinho de compra</title>
+    <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <title>Carrinho de Compra</title>
 </head>
 <body>
-    <form method="POST" action="{% url 'realizarPedido' request.user.id %}">
-        <a href="{% url 'catalogo'%}">Retornar</a>
-        {% csrf_token %}
-        <div class="container">
-            <p>{{mensagem}}</p>
-            <table class="table_nome">
-                <tr>
-                    <th>Produto</th>
-                    <th>Quantidade</th>
-                    <th>Valor Unitário</th>
-                    <th>Total</th>
-                    <th>Remover Item</th>
-                </tr>
-                {% for car in viewCarrinho %}
-                <tr>
-                    <td>{{car.nome}}</td>
-                    <td>{{car.quantidade}}</td>
-                    <td>{{car.valor_unitario}}</td>
-                    <td>{{car.valor_total}}</td>
-                    <td><a href="{% url 'dellcarrinho' car.id %}"> <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt=""></a></td>
-                </tr>
-                {% endfor %}
+    <div class="container">
+        <form method="POST" class="retornar" action="{% url 'realizarPedido' %}">
+            <a href="{% url 'catalogo' %}" class="back-link">
+                <i class='bx bx-arrow-back'></i>
+                <span class="links_name">Retornar</span>
+            </a>
+            {% csrf_token %}
+
+            <div class="client-selection">
+                <label for="cliente_nome">Selecione o Cliente:</label>
+                <input type="text" name="cliente_nome" id="cliente_nome" class="inputcliente" placeholder="Cliente..." list="clientes">
+                <input type="hidden" name="cliente_id" id="cliente_id">
+
+                <datalist id="clientes">
+                    {% for cliente in clientes %}
+                        <option value="{{ cliente.nome }}" data-id="{{ cliente.id }}"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+                <span id="notification-message">
+                    {% if errors %}
+                        {% for error in errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    {% endif %}    
+                </span>
+                <span class="close" onclick="closeNotification()">&times;</span>
+            </div>
+
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Em Estoque</th>
+                        <th>Valor Unitário</th>
+                        <th>Total</th>
+                        <th>Remover Item</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for car in viewCarrinho %}
+                    <tr>
+                        <td>{{ car.nome }}</td>
+                        <td>{{ car.quantidade }}</td>
+                        <td>{{ car.estoque }}</td>
+                        <td>{{ car.valor_unitario }}</td>
+                        <td>{{ car.valor_total }}</td>
+                        <td>
+                            <a href="{% url 'dellcarrinho' car.id %}" class="delete-item">
+                                <img width="24" height="24" src="{% static 'img/Deletar.png' %}" alt="Remover Item">
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
-            <h1>Valor Total R$:{{valor_geral|floatformat:2 }}</h1>
-        </div>
-        <button type="submit" name="button" class="realizar">Enviar Pedido</button>
-    </form>
+
+            <div class="total-section">
+                <h1>Valor Total: R$ {{ valor_geral|floatformat:2 }}</h1>
+            </div>
+
+            <button type="submit" name="button" class="realizar">Enviar Pedido</button>
+        </form>
+    </div>
+
+    <script>
+        function closeNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('fade-out'); 
+            setTimeout(() => {
+                notification.classList.remove('visible', 'fade-out');
+                notification.classList.add('hidden'); 
+            }, 500); 
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const messageSpan = document.getElementById('notification-message');
+
+            messageSpan.innerHTML = message;
+            notification.classList.add('visible');
+            notification.classList.remove('hidden');
+
+            setTimeout(() => {
+                closeNotification();
+            }, 5000);
+        }
+
+        document.getElementById('cliente_nome').addEventListener('input', function() {
+            var input = this;
+            var datalist = document.getElementById('clientes');
+            var selectedOption = Array.from(datalist.options).find(option => option.value === input.value);
+
+            if (selectedOption) {
+                document.getElementById('cliente_id').value = selectedOption.getAttribute('data-id');
+            } else {
+                document.getElementById('cliente_id').value = '';  
+            }
+        });
+    </script>
 </body>
-</html> 
+</html>

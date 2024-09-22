@@ -15,6 +15,16 @@
                 <h1>Editar Produto:</h1>
             </div>
 
+            {% if messages %}
+                <div id="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             <div class="caixa">
                 <label for="nome">
                     Nome do Produto:

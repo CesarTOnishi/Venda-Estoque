@@ -1,0 +1,233 @@
+{% load static %}
+<head>
+    <link rel="stylesheet" href="{% static 'css/editarcompra.css' %}">
+    <title>Criar Pedido de Compra</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <main id="container">
+        <h1>Criar Pedido de Compra</h1>
+
+        <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+            <span id="notification-message">
+                {% if errors %}
+                    {% for error in errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                {% endif %}
+            </span>
+            <span class="close" onclick="closeNotification()">&times;</span>
+        </div>
+
+        <form method="POST" id="pedidoForm" action="{% url 'criar_pedido' %}">
+            {% csrf_token %}
+
+            <div class="caixa">
+                <label for="fornecedor-select">Fornecedor:</label>
+                <select id="fornecedor-select" name="fornecedor" class="select2">
+                    <option value="">Selecione um fornecedor</option>
+                </select>
+            </div>
+
+            <div class="caixa">
+                <label for="data_pedido">Data do Pedido:</label>
+                <input type="date" id="data_pedido" name="data_pedido">
+            </div>
+
+            <h3>Adicionar Produtos</h3>
+
+            <div class="caixa">
+                <label for="produto-select">Produto:</label>
+                <select id="produto-select" class="select2">
+                    <option value="">Selecione um produto</option>
+                </select>
+            </div>
+
+            <div class="caixa">
+                <label for="quantidade">Quantidade:</label>
+                <input type="number" id="quantidade" name="quantidade" min="1" value="1">
+            </div>
+
+            <div class="caixa">
+                <label for="preco_unitario">Preço Unitário:</label>
+                <input type="number" id="preco_unitario" name="preco_unitario" step="0.01" value="0.00">
+            </div>
+
+            <button type="button" id="add-produto">Adicionar Produto</button>
+
+            <table id="tabela-produtos">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unitário</th>
+                        <th>Total</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+            <input type="hidden" id="produtos" name="produtos">
+            <input type="hidden" id="quantidades" name="quantidades">
+            <input type="hidden" id="precos_unitarios" name="precos_unitarios">
+
+            <button type="submit">Salvar Pedido</button>
+        </form>
+    </main>
+<script>
+    function closeNotification() {
+        const notification = document.getElementById('notification');
+        notification.classList.remove('visible');
+        notification.classList.add('hidden');
+    }
+
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        const messageSpan = document.getElementById('notification-message');
+
+        messageSpan.innerHTML = message; // Permite múltiplas linhas
+        notification.classList.remove('hidden');
+        notification.classList.add('visible');
+
+        setTimeout(() => {
+            closeNotification();
+        }, 5000); // Fechar após 5 segundos
+    }
+
+    $(document).ready(function() {
+        var today = new Date();
+        var day = String(today.getDate()).padStart(2, '0');
+        var month = String(today.getMonth() + 1).padStart(2, '0');
+        var year = today.getFullYear();
+
+        var currentDate = year + '-' + month + '-' + day;
+        $('#data_pedido').val(currentDate);
+
+        if ($('.notification').hasClass('visible')) {
+            setTimeout(() => {
+                closeNotification();
+            }, 5000);
+        }
+
+        $('#fornecedor-select').select2({
+            width: '100%',
+            placeholder: 'Selecione um Fornecedor',
+            ajax: {
+                url: "{% url 'fornecedor_autocomplete' %}",
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        term: params.term
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+
+        $('#produto-select').select2({
+            width: '100%',
+            placeholder: 'Selecione um Produto',
+            ajax: {
+                url: "{% url 'produto_autocomplete' %}",
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        term: params.term
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+
+        function atualizarCamposOcultos() {
+            var produtos = [];
+            var quantidades = [];
+            var precosUnitarios = [];
+
+            $('#tabela-produtos tbody tr').each(function() {
+                var produtoId = $(this).data('id');
+                var quantidade = $(this).find('td:eq(1)').text().replace(',', '.');  
+                var precoUnitario = $(this).find('td:eq(2)').text().replace(',', '.'); 
+                
+                produtos.push(produtoId);
+                quantidades.push(quantidade);
+                precosUnitarios.push(precoUnitario);
+            });
+
+            $('#produtos').val(JSON.stringify(produtos));
+            $('#quantidades').val(JSON.stringify(quantidades));
+            $('#precos_unitarios').val(JSON.stringify(precosUnitarios));
+        }
+
+        $('#add-produto').click(function() {
+            var fornecedorId = $('#fornecedor-select').val();
+            var produtoId = $('#produto-select').val();
+            var produtoNome = $('#produto-select option:selected').text();
+            var quantidade = parseFloat($('#quantidade').val().replace(',', '.')); 
+            var precoUnitario = parseFloat($('#preco_unitario').val().replace(',', '.')); 
+
+            var erros = [];
+
+            if (!fornecedorId) {
+                erros.push("Selecione um fornecedor.");
+            }
+            if (!produtoId) {
+                erros.push("Selecione um produto.");
+            }
+            if (isNaN(quantidade) || quantidade <= 0) {
+                erros.push("A quantidade deve ser um número maior que zero.");
+            }
+            if (isNaN(precoUnitario) || precoUnitario < 0) {
+                erros.push("O preço unitário deve ser um número válido e não pode ser negativo.");
+            }
+
+            if (erros.length > 0) {
+                showNotification(erros.join("<br>"));
+                return;
+            }
+
+            var total = (quantidade * precoUnitario).toFixed(2);
+
+            var linha = `
+                <tr data-id="${produtoId}">
+                    <td>${produtoNome}</td>
+                    <td>${quantidade.toFixed(2)}</td>
+                    <td>${precoUnitario.toFixed(2)}</td>
+                    <td>${total}</td>
+                    <td><button type="button" class="remove-produto">Remover</button></td>
+                </tr>
+            `;
+            $('#tabela-produtos tbody').append(linha);
+
+            atualizarCamposOcultos();
+
+            $('#produto-select').val('').trigger('change');
+            $('#quantidade').val('1');
+            $('#preco_unitario').val('0.00'); 
+        });
+
+        $('#tabela-produtos').on('click', '.remove-produto', function() {
+            $(this).closest('tr').remove();
+            atualizarCamposOcultos();  
+        });
+    });
+</script>
+</body>
+</html>

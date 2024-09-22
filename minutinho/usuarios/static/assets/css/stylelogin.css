@@ -1,34 +1,105 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=SUSE:wght@100..800&display=swap');
 
-* {
-    font-family: 'Roboto Condensed', sans-serif;
+body {
+    background-color: #333; 
+    color: #f0f0f0; 
+    font-family: "SUSE", sans-serif;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-}
-#container {
-    height: 100vh;
-    width: 100%;
     display: flex;
-    background-color:silver;
-    align-items:center;
     justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
-#logar{
-    background-color: aliceblue;
+
+#container {
+    background-color: #444;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); 
+    max-width: 400px;
+    width: 100%;
+}
+
+#header h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    color: #f0f0f0;
+}
+
+.caixa_logar {
+    margin-bottom: 20px;
+}
+
+.caixa_logar label {
+    font-size: 1rem;
+    color: #f0f0f0; 
+    display: block;
+    margin-bottom: 5px;
+}
+
+.caixa_input {
+    background-color: #555; 
+    border-radius: 5px;
     display: flex;
-    flex-direction: column;
-    padding: 25px 35px;
-    box-shadow: 7px 5px 10px #000000;
-    border-radius: 13px;
-    height: fit-content;
-    gap: 15px;
+    align-items: center;
+    padding: 10px;
 }
-#cadastro a{
-    text-decoration:none;
-    font-size:12px;
-    color: #000000;
+
+.caixa_input input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #f0f0f0; 
+    width: 100%;
+    font-size: 1rem;
+    padding-left: 5px;
 }
-#cadastro a:hover{
-    color: blueviolet;
+
+.caixa_input input::placeholder {
+    color: #ccc;
+}
+
+#cadastro {
+    text-align: right;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+#cadastro a {
+    color: #ac4147; 
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+#cadastro a:hover {
+    color: #993d3b; 
+}
+
+.botao_logar {
+    width: 100%;
+    padding: 12px;
+    background-color: #ac4147; 
+    border: none;
+    border-radius: 5px;
+    color: #fff; 
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.botao_logar:hover {
+    background-color: #993d3b; 
+    transform: scale(1.05);
+}
+
+.botao_logar:active {
+    background-color: #842e2a; 
+}
+
+.caixa_input input:focus {
+    border-bottom: 2px solid #ac4147;
+    transition: border-bottom 0.3s ease;
 }

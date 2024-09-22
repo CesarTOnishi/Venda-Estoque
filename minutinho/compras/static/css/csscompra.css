@@ -1,0 +1,144 @@
+:root {
+    --primary-color: #ac4147;
+    --secondary-color: #411f2d;
+    --background-color: #333;
+    --text-color: #eaeaea;
+    --accent-color: #e87b7e;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+form {
+    width: 90%;
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 40px;
+    background-color: var(--secondary-color);
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+button {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.search-container {
+    margin-bottom: 30px;
+}
+
+#search {
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    width: 100%;
+    font-size: 18px;
+    background-color: #444;
+    color: var(--text-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.tabela_compra {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background-color: #444;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5);
+}
+
+.tabela_compra th, .tabela_compra td {
+    padding: 18px;
+    text-align: left;
+    font-size: 16px;
+}
+
+.tabela_compra th {
+    background-color: var(--primary-color);
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tabela_compra td {
+    color: var(--text-color);
+    border-bottom: 1px solid #555;
+}
+
+.tabela_compra tr:nth-child(even) {
+    background-color: #3b3b3b;
+}
+
+.tabela_compra tr:nth-child(odd) {
+    background-color: #2e2e2e;
+}
+
+.tabela_compra a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.pdf-button {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    display: inline-block;
+}
+
+.caixa {
+    margin-bottom: 30px;
+}
+
+input[type="text"], input[type="date"], input[type="number"] {
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    background-color: #444;
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+input::placeholder {
+    color: #bbb;
+}
+
+input[type="hidden"] {
+    display: none;
+}
+
+.botao {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #ac4147;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.botao:hover {
+    background-color: #ff676d;
+}

@@ -6,7 +6,7 @@ class Produto(models.Model):
     descricao = models.CharField(max_length=255, null=True, blank=True)
     preco = models.DecimalField(max_digits=20, decimal_places=2)
 
-class Meta:
-    ordering=['nome']
-    verbose_name= 'produto'
-    verbose_name_plural= 'produto'
+    class Meta:
+        ordering=['nome']
+        verbose_name= 'produto'
+        verbose_name_plural= 'produto'

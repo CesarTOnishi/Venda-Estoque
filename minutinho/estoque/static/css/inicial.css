@@ -1,0 +1,99 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #333;
+    color: #fff;
+}
+
+.dashboard-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #444;
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+    color: var(--main-color);
+    margin-bottom: 30px;
+}
+
+.stats-section {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 40px;
+}
+
+.stat-box {
+    background-color: var(--main-color);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 30%;
+}
+
+.stat-box h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.stat-box p {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.recent-orders {
+    background-color: #555;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.recent-orders h2 {
+    color: var(--main-color);
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+table th, table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #666;
+}
+
+table th {
+    background-color: var(--dark-color);
+    color: white;
+    font-weight: bold;
+}
+
+table td {
+    color: #ddd;
+}
+
+table tr:last-child td {
+    border-bottom: none;
+}
+
+button {
+    background-color: var(--main-color);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #993d3e;
+}

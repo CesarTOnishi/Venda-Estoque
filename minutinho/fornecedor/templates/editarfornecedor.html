@@ -1,0 +1,132 @@
+{% extends "tela.html" %}
+{% load static %}
+{% load fornecedor_filters %}
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/cadastrofor.css' %}">
+    <title>Gerenciamento de Estoque</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+{% endblock %}
+
+{% block 'dashboard' %}
+<main id="container">
+    <form id="lista_cadastro" action="{% url 'editarforn' fornecedor.id %}" method="POST">
+        {% csrf_token %}
+        <div id="header">
+            <h1>Editar Fornecedor</h1>
+            <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+                <span id="notification-message">
+                    {% if errors %}
+                        {% for error in errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    {% endif %}
+                </span>
+                <span class="close" onclick="closeNotification()">&times;</span>
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label>Tipo de Pessoa:</label>
+            <div class="caixa_input">
+                <p>{{ fornecedor.tipo_pessoa }}</p> 
+                <input type="hidden" name="tipo_pessoa" value="{{ fornecedor.tipo_pessoa }}">
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label for="nome">Nome do Fornecedor:</label>
+            <div class="caixa_input">
+                {{ fornecedor.nome }}
+            </div>
+        </div>
+
+        {% if fornecedor.tipo_pessoa == 'Pessoa Física' %}
+        <div class="caixa">
+            <label for="cpf">CPF:</label>
+            <div class="caixa_input">
+                <input type="text" id="cpf" name="cpf" placeholder="___.___.___-__" maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" value="{{ fornecedor.cpf|formatar_cpf }}">
+            </div>
+        </div>
+        {% endif %}
+
+        {% if fornecedor.tipo_pessoa == 'Pessoa Jurídica' %}
+        <div class="caixa">
+            <label for="cnpj">CNPJ:</label>
+            <div class="caixa_input">
+                <input type="text" id="cnpj" name="cnpj" placeholder="__.___.___/____-__" maxlength="18" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" value="{{ fornecedor.cnpj|formatar_cnpj }}">
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="caixa">
+            <label for="endereco">Endereço:</label>
+            <div class="caixa_input">
+                <input type="text" id="endereco" name="endereco" value="{{ fornecedor.endereco }}">
+            </div>
+        </div>
+ 
+        <div class="caixa">
+            <label for="cidade">Cidade:</label>
+            <div class="caixa_input">
+                <input type="text" id="cidade" name="cidade" value="{{ fornecedor.cidade }}">
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label for="estado">Estado:</label>
+            <div class="caixa_input">
+                <input type="text" id="estado" name="estado" value="{{ fornecedor.estado }}">
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label for="numero">Numero:</label>
+            <div class="caixa_input">
+                <input type="text" id="numero" name="numero" value="{{ fornecedor.numero }}">
+            </div>
+        </div>
+
+        <button type="submit" id="salvar">Salvar Fornecedor</button>
+    </form>
+</main>  
+
+<script>
+    function closeNotification() {
+    const notification = document.getElementById('notification');
+    notification.classList.add('fade-out'); // Adiciona a classe para o efeito de fade
+    setTimeout(() => {
+        notification.classList.remove('visible', 'fade-out');
+        notification.classList.add('hidden'); // Mantenha a classe hidden
+    }, 500); // Aguarde o tempo da transição
+}
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    const messageSpan = document.getElementById('notification-message');
+
+    messageSpan.innerHTML = message;
+    notification.classList.add('visible');
+    notification.classList.remove('hidden'); // Remova a classe hidden
+
+    setTimeout(() => {
+        closeNotification();
+    }, 5000);
+}
+if ($('.notification').hasClass('visible')) {
+            setTimeout(() => {
+                closeNotification();
+            }, 5000);
+        }
+    $(document).ready(function() {
+        var tipoPessoa = "{{ fornecedor.tipo_pessoa }}";
+        
+        if (tipoPessoa === 'Pessoa Física') {
+            $('#cpf').mask('000.000.000-00');
+        } else if (tipoPessoa === 'Pessoa Jurídica') {
+            $('#cnpj').mask('00.000.000/0000-00');
+        }
+    });
+</script>
+
+{% endblock %}

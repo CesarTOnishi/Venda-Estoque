@@ -11,14 +11,19 @@
     <main id="container">
         <form id="logar" action="{% url 'login' %}" method="POST">{% csrf_token %}
             <div id="header">
-                <h1>Minutinho</h1>
+                <h1>Mercado NewLife</h1>
             </div>
+            {% if mensagem %}
+                <div class="alert alert-danger">
+                    <p>{{ mensagem }}</p>
+                </div>
+            {% endif %}
 
             <div class="caixa_logar">
                 <label for="login">
                     Login
                     <div class="caixa_input">
-                        <input type="text" id="usuario" name="username">
+                        <input type="text" class="usuario" name="username">
                     </div>
                 </label>
             </div>
@@ -27,7 +32,7 @@
                 <label for="logar">
                     Senha
                         <div class="caixa_input">
-                            <input type="password" id="senha" name="senha">
+                            <input type="password" class="usuario" name="senha">
                         </div>
                     </label>
                     <div id="cadastro">
@@ -35,12 +40,12 @@
                             Cadastre-se
                         </a>
                     </div>
+                    <button type="submit" class="botao_logar">
+                        Logar
+                    </button>
                 </div>
-            <button type="submit" id="botao_logar">
-                Logar
-            </button>
         </form>
     </main>
-    
+    <script src="{% static 'js/jslogin.js' %}"></script>
 </body>
 </html>

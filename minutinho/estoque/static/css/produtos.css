@@ -1,30 +1,99 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@1,300&display=swap');
-
-* {
-    font-family: 'Roboto Condensed', sans-serif;
+body {
+    font-family: Arial, sans-serif;
+    background-color: #333; 
+    color: #f4f4f4; 
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
+
 #container {
-    height: 100vh;
+    width: 80%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #411f2d; 
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+#header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#header h1 {
+    color: #ac4147; 
+}
+
+.caixa {
+    margin-bottom: 20px;
+}
+
+.caixa label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #f4f4f4; 
+}
+
+.caixa_input input,
+.caixa_input textarea {
     width: 100%;
-    display: flex;
-    background-color:silver;
-    align-items:center;
-    justify-content: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: #222; 
+    color: #f4f4f4;
 }
-#lista_cadastro{
-    background-color: aliceblue;
-    display: flex;
-    flex-direction: column;
-    padding: 25px 35px;
-    box-shadow: 7px 5px 10px #000000;
-    border-radius: 13px;
-    height: fit-content;
-    gap: 15px;
+
+.caixa_input input:focus,
+.caixa_input textarea:focus {
+    border-color: #ac4147; 
 }
-textarea {
-    resize: none;
-    height: 100px;
+
+#salvar {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #ac4147;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#salvar:hover {
+    background-color: #822f34; 
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    display: none; 
+    opacity: 1; 
+    transition: opacity 0.5s ease; 
+}
+
+.notification.visible {
+    display: block; 
+}
+
+.notification.hidden {
+    display: none; 
+}
+
+.notification.fade-out {
+    opacity: 0;
+}
+.hidden {
+    display: none;
 }

@@ -1,0 +1,17 @@
+{% extends "tela.html" %}
+{% load static %}
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/confirm.css' %}">
+    <title>Clientes</title>
+{% endblock %}
+{% block 'dashboard' %}
+    <div class="confirm-container">
+        <h1>Confirmar Exclusão</h1>
+        <p>Você tem certeza de que deseja excluir o cliente: {{ cliente.nome }} e todos os pedidos associados?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="confirm-button">Confirmar Exclusão</button>
+            <a href="{% url 'cliente' %}" class="cancel-button">Cancelar</a>
+        </form>
+    </div>
+{% endblock %}

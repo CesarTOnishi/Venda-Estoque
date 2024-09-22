@@ -14,11 +14,21 @@
                 <h1>Estoque</h1>
             </div>
 
+            <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+                <span id="notification-message">
+                    {% if errors %}
+                        {% for error in errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    {% endif %}
+                </span>
+                <span class="close" onclick="closeNotification()">&times;</span>
+            </div>
             <div class="caixa">
                 <label for="nome">
                     Nome do Produto:
                     <div class="caixa_input">
-                        <input type="text" id="usuario" name="nome">
+                        <input type="text" id="usuario" name="nome" value="{{nome}}">
                     </div>
                 </label>
             </div>
@@ -28,7 +38,7 @@
                     Estoque
                     <div class="caixa_input">
                         
-                        <input type="number" id="usuario" name="estoque">
+                        <input type="number" id="usuario" name="estoque" value="{{estoque}}">
                     </div>
                 </label>
             </div>
@@ -46,7 +56,7 @@
                 <label for="preco">
                     Valor:
                     <div class="caixa_input">
-                        <input type="number" id="usuario" name="preco">
+                        <input type="text" pattern="^\d+(\,\d{1,2})?$|^\d+\.\d{1,2}$" id="usuario" name="preco" value="{{value}}">
                     </div>
                 </label>
             </div>
@@ -56,5 +66,34 @@
             </button>
         </form>
     </main>
+    <script>
+            function closeNotification() {
+    const notification = document.getElementById('notification');
+    notification.classList.add('fade-out'); 
+    setTimeout(() => {
+        notification.classList.remove('visible', 'fade-out');
+        notification.classList.add('hidden'); 
+    }, 500); 
+}
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    const messageSpan = document.getElementById('notification-message');
+
+    messageSpan.innerHTML = message;
+    notification.classList.add('visible');
+    notification.classList.remove('hidden');
+
+    setTimeout(() => {
+        closeNotification();
+    }, 5000);
+}
+if ($('.notification').hasClass('visible')) {
+            setTimeout(() => {
+                closeNotification();
+            }, 5000);
+        }
+</script>
+    </script>
 </body>
 </html>

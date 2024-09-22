@@ -1,0 +1,64 @@
+{% extends "tela.html" %}
+{% load static %}
+{% load cliente_filters %}
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/cliente.css' %}">
+    <title>Clientes</title>
+{% endblock %}
+
+{% block 'dashboard' %}
+<body> 
+    <form method="POST" action=".">
+        {% csrf_token %}
+        <div>
+            <a href="{% url 'cadastrocliente' %}" class="botao">Adicionar Cliente</a>
+        </div>
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Buscar clientes...">
+        </div>
+        <div class="principal">
+            <table class="tabela_cliente">
+                <thead>
+                    <tr> 
+                        <th>Cliente</th> 
+                        <th>CPF</th> 
+                        <th>Email</th> 
+                        <th>Cidade</th> 
+                        <th>Estado</th> 
+                        <th>Telefone</th> 
+                        <th>Data de Nascimento</th> 
+                        <th>Idade</th>
+                        <th>Editar</th>
+                        <th>Deletar</th>
+                    </tr>
+                </thead>
+                <tbody class="corpo_tabela">
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td>{{ cliente.nome }}</td>
+                        <td>{{ cliente.cpf|formatar_cpf }}</td>
+                        <td>{{ cliente.email }}</td>
+                        <td>{{ cliente.cidade }}</td>
+                        <td>{{ cliente.estado }}</td>
+                        <td>{{ cliente.telefone|formatar_telefone }}</td>
+                        <td>{{ cliente.data_nascimento }}</td>
+                        <td>{{ cliente.idade }}</td>
+                        <td>
+                            <a href="{% url 'editarcliente' cliente.id %}"> 
+                                <img width="30" height="30" src="{% static 'img/Editar.png' %}">
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'confirmardelete' cliente.id %}">
+                                <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Remover Cliente">
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+    <script src="{% static 'js/cliente.js' %}"></script>
+</body>
+{% endblock %}

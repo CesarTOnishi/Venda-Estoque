@@ -1,86 +1,117 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@1,300&display=swap'); 
-
-/* Estilos para a página de venda */
-
-/* Estilos gerais */
-body {
-    font-family: 'Roboto Condensed', sans-serif;
+body, html {
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color); 
+    color: var(--text-color); 
 }
 
-/* Estilos do cabeçalho */
-.header {
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    padding: 20px;
-}
-
-.header h1 {
-    margin: 0;
-}
-
-/* Estilos para a seção de pesquisa e botões */
 .pesquisa {
-    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
     padding: 20px;
-    margin: 20px auto;
-    text-align: center;
+    background-color: var(--dark-color); 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); 
+    border-radius: 8px;
+    margin: 20px;
 }
 
-#palavra {
+.pesquisa input[type="text"] {
     padding: 10px;
-    width: 200px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-right: 10px;
-}
-
-button {
-    background-color: #333;
-    color: #fff;
+    font-size: 16px;
+    border-radius: 8px;
     border: none;
+    width: 300px;
+}
+
+.pesquisa button {
     padding: 10px 20px;
-    border-radius: 5px;
+    font-size: 16px;
+    color: var(--text-color);
+    background-color: var(--main-color);
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-a.button {
+.pesquisa button:hover {
+    background-color: #555; 
+}
+
+.pesquisa a {
     text-decoration: none;
-    color: #fff;
+    color: var(--text-color);
 }
 
-/* Estilos para a tabela de produtos */
+.principal {
+    margin: 20px;
+    padding: 20px;
+    background-color: var(--dark-color); 
+    border-radius: 12px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5); 
+}
+
 .tabela_produto {
     width: 100%;
     border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0px 0px 5px 0px #aaa;
+    margin-bottom: 30px;
 }
 
 .tabela_produto th, .tabela_produto td {
-    padding: 10px;
+    padding: 12px 15px;
     text-align: left;
+    border-bottom: 1px solid #555; 
 }
 
 .tabela_produto th {
-    background-color: #333;
+    background-color: var(--main-color); 
+}
+
+.tabela_produto tr:hover {
+    background-color: #555; 
+}
+
+.tabela_produto td a img {
+    cursor: pointer;
+    transition: transform 0.3s ease; 
+}
+
+.tabela_produto td a img:hover {
+    transform: scale(1.1);
+}
+
+.pesquisa {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+}
+
+#search {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.botao {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #ac4147;
     color: #fff;
-}
-
-.tabela_produto tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-/* Estilos para os botões de editar e deletar */
-a.editar, a.deletar {
+    border-radius: 6px;
     text-decoration: none;
-    margin-right: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    text-align: center;
 }
 
-a.editar img, a.deletar img {
-    width: 20px;
-    height: 20px;
+.botao:hover {
+    background-color: #ff676d;
 }

@@ -1,44 +1,51 @@
+{% extends "tela.html" %}
 {% load static %}
 {% load custom_filters %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/stylesacola.css' %}">
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/stylepedido.css' %}">
     <title>Pedidos Cliente</title>
-</head>
+{% endblock %}
+
+{% block 'dashboard' %}
 <body>
     <form method="POST" action=".">
-        <a href="{% url 'tela'%}">Retornar</a>
         {% csrf_token %}
         <div class="container">
-            {% for nr_pedido, pedidos in pedidos_dict.items %}
-            <table class="table_nome">
-                <tr>
-                    <td><h1>Pedido #{{ nr_pedido }}</h1></td>
-                </tr>
-                <tr>
-                    <th>Produto</th>
-                    <th>Quantidade</th>
-                    <th>Valor Unitário</th>
-                    <th>Total</th>
-                </tr>
-                {% for pedido in pedidos %}
-                <tr>
-                    <td>{{ pedido.nome }}</td>
-                    <td>{{ pedido.quantidade }}</td>
-                    <td>{{ pedido.valor_unitario }}</td>
-                    <td>{{ pedido.valor_total }}</td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td>Valor Total R$: {{pedidos|valor_geral|floatformat:2}}</td>
-                    <br>
-                </tr>
-            </table>
+            {% for nr_pedido, pedido_info in pedidos_dict.items %}
+            <div class="pedido-section">
+                <div class="pedido-header">
+                    <h1>Pedido #{{ nr_pedido }}</h1>
+                    <p>Data do Pedido: {{ pedido_info.data_pedido }}</p>
+                    <p class="cliente-nome">Cliente: {{ pedido_info.cliente_nome }}</p>
+                </div>
+                <a href="{% url 'gerarpdf' pedido_info.id %}" class="pdf-button">Gerar Nota</a>
+                <table class="table_nome">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Valor Unitário</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pedido in pedido_info.itens %}
+                        <tr>
+                            <td>{{ pedido.nome }}</td>  	
+                            <td>{{ pedido.quantidade }}</td>
+                            <td>{{ pedido.valor_unitario }}</td>
+                            <td>{{ pedido.valor_total }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="total-row">
+                            <td colspan="4">Valor Total R$: {{ pedido_info.itens|valor_geral|floatformat:2}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             {% endfor %}
         </div>
     </form>
 </body>
-</html>
+{% endblock %}

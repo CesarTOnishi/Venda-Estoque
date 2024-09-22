@@ -2,10 +2,12 @@ from django.shortcuts import redirect, render
 from django.http.response import HttpResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.contrib.auth import login as login_django
+from django.contrib import messages
 
 def cadastro(request):
     if request.method =="GET":
-        return render(request, 'cadastro.html')
+        return render(request, 'cadastro.html') 
     else:
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -14,11 +16,15 @@ def cadastro(request):
         user = User.objects.filter(username=username).first()
 
         if user:
-            return HttpResponse('Já Existe um usuario com esse username')
+            mensagem = 'Já existe um usuario com esse username'
+            context={
+                'mensagem':mensagem
+            }
+            return render(request, 'cadastro.html', contex )
         
         user = User.objects.create_user(username=username, email=email, password=senha)
         user.save()
-        return HttpResponse('Usuario cadastrado com Sucesso')
+        return render(request, 'login.html')
 
 def login(request):
     if request.method =="GET":
@@ -30,7 +36,12 @@ def login(request):
         user = authenticate(username=username, password=senha)
 
         if user:
-            return redirect('tela')
+            login_django(request, user)
+            return redirect('inicial')
         else:
-            return HttpResponse('Email ou senha inválidos')
+            mensagem =('Login ou senha inválidos')
+            context={
+                'mensagem':mensagem
+            }
+            return render(request, 'login.html', context)
 # Create your views here.

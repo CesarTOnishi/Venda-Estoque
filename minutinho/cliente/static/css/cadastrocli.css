@@ -1,0 +1,115 @@
+body {
+    background-color: #333; 
+    color: #f0f0f0; 
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #444; 
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    color: #ac4147;
+    margin: 0;
+    font-size: 2rem;
+}
+
+.error-messages {
+    background-color: #ac4147; 
+    color: #fff; 
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.error-messages p {
+    margin: 0;
+}
+
+.caixa {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.caixa_input input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #666;
+    border-radius: 8px;
+    background-color: #555; 
+    color: #fff; 
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.caixa_input input:focus {
+    border-color: #ac4147;
+    box-shadow: 0 0 8px rgba(172, 65, 71, 0.5);
+    outline: none;
+}
+
+button#salvar {
+    background-color: #ac4147; 
+    color: #fff; 
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button#salvar:hover {
+    background-color: #993d3b; 
+    transform: scale(1.05);
+}
+
+button#salvar:active {
+    background-color: #842e2a;
+}
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    display: none; 
+    opacity: 1; 
+    transition: opacity 0.5s ease; 
+}
+
+.notification.visible {
+    display: block; 
+}
+
+.notification.hidden {
+    display: none; 
+}
+
+.notification.fade-out {
+    opacity: 0;
+}
+.hidden {
+    display: none;
+}

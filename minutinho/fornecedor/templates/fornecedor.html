@@ -1,0 +1,151 @@
+{% extends "tela.html" %}
+{% load static %}
+{% load fornecedor_filters %}
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/fornecedor.css' %}">
+    <title>Fornecedor</title>
+{% endblock %}
+
+{% block 'dashboard' %}
+<body> 
+    <form method="POST" action=".">
+        {% csrf_token %}
+        <div>
+            <a href="{% url 'cadastrofornecedor' %}" class="botao">Adicionar Fornecedor</a>
+        </div>
+        <div class="caixa">
+            <label>Tipo de Pessoa:</label>
+            <div class="caixa_input">
+                <input type="radio" id="tipo_fisica" name="tipo_pessoa" value="Pessoa Física" {% if tipo_pessoa == 'Pessoa Física' %}checked{% endif %} onclick="mostrarFormulario('fisica')">
+                <label for="tipo_fisica">Pessoa Física</label>
+
+                <input type="radio" id="tipo_juridica" name="tipo_pessoa" value="Pessoa Jurídica" {% if tipo_pessoa == 'Pessoa Jurídica' %}checked{% endif %} onclick="mostrarFormulario('juridica')">
+                <label for="tipo_juridica">Pessoa Jurídica</label>
+            </div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Buscar Fornecedor..." onkeyup="searchTable()">
+        </div>
+        <div class="principal">
+            <table class="tabela_fornecedor">
+                <thead>
+                    <tr> 
+                        <th>Fornecedor</th> 
+                        <th id="cnpj-header" class="hidden">CNPJ</th> 
+                        <th id="cpf-header" class="hidden">CPF</th>
+                        <th>Endereço</th> 
+                        <th>Cidade</th> 
+                        <th>Estado</th> 
+                        <th>Numero</th> 
+                        <th>Editar</th>
+                        <th>Deletar</th>
+                    </tr>
+                </thead>
+                <tbody class="corpo_tabela">
+                    {% for fornecedor in fornecedores %}
+                    <tr data-tipo-pessoa="{{ fornecedor.tipo_pessoa }}">
+                        <td>{{ fornecedor.nome }}</td>
+                        <td class="{% if fornecedor.tipo_pessoa == 'Pessoa Física' %}hidden{% endif %}" data-field="cnpj">{{ fornecedor.cnpj|formatar_cnpj }}</td>
+                        <td class="{% if fornecedor.tipo_pessoa == 'Pessoa Jurídica' %}hidden{% endif %}" data-field="cpf">{{ fornecedor.cpf|formatar_cpf }}</td>
+                        <td>{{ fornecedor.endereco }}</td>
+                        <td>{{ fornecedor.cidade }}</td>
+                        <td>{{ fornecedor.estado }}</td>
+                        <td>{{ fornecedor.numero }}</td>
+                        <td>
+                            <a href="{% url 'editarfornecedor' fornecedor.id %}"> 
+                                <img width="30" height="30" src="{% static 'img/Editar.png' %}">
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'confirmardell' fornecedor.id %}">
+                                <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Remover Fornecedor">
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    <script src="{% static 'js/fornecedor.js' %}"></script>
+    <script>
+        // Função para exibir o CPF ou CNPJ baseado no tipo de pessoa
+        function mostrarFormulario(tipo) {
+            const cpfHeader = document.getElementById("cpf-header");
+            const cnpjHeader = document.getElementById("cnpj-header");
+            
+            if (tipo === 'fisica') {
+                cpfHeader.classList.remove("hidden");
+                cnpjHeader.classList.add("hidden");
+            } else if (tipo === 'juridica') {
+                cpfHeader.classList.add("hidden");
+                cnpjHeader.classList.remove("hidden");
+            }
+
+            // Atualiza a visibilidade das linhas da tabela
+            searchTable();
+        }
+
+        // Inicializa o formulário com base na opção selecionada
+        document.addEventListener("DOMContentLoaded", function() {
+            let tipoSelecionado = document.querySelector('input[name="tipo_pessoa"]:checked');
+
+            // Se nenhuma opção estiver marcada, seleciona "Pessoa Física" por padrão
+            if (!tipoSelecionado) {
+                document.getElementById('tipo_fisica').checked = true;
+                tipoSelecionado = 'fisica';
+            } else {
+                tipoSelecionado = tipoSelecionado.value === 'Pessoa Física' ? 'fisica' : 'juridica';
+            }
+
+            // Chama a função para mostrar o formulário correto
+            mostrarFormulario(tipoSelecionado);
+        });
+
+        // Função de busca na tabela
+        function searchTable() {
+            const input = document.getElementById("search");
+            const filter = input.value.toLowerCase();
+            const tipoSelecionado = document.querySelector('input[name="tipo_pessoa"]:checked')?.value || 'Pessoa Física';
+            const rows = document.querySelectorAll('.tabela_fornecedor tbody tr');
+
+            rows.forEach(row => {
+                const tipoPessoa = row.getAttribute('data-tipo-pessoa');
+                const cells = row.querySelectorAll('td');
+                let match = false;
+
+                // Verifica se a linha corresponde ao tipo selecionado
+                const tipoMatch = tipoSelecionado === tipoPessoa;
+
+                if (tipoMatch) {
+                    // Filtro somente nas células visíveis
+                    cells.forEach(cell => {
+                        if (!cell.classList.contains('hidden') && cell.textContent.toLowerCase().includes(filter)) {
+                            match = true;
+                        }
+                    });
+                }
+
+                // Exibe ou oculta a linha com base na pesquisa e no tipo de pessoa
+                row.style.display = (tipoMatch && match) ? '' : 'none';
+            });
+        }
+
+        // Adiciona animações às linhas da tabela
+        function addTableAnimations() {
+            const rows = document.querySelectorAll('.tabela_fornecedor tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseover', () => {
+                    row.style.backgroundColor = '#666';
+                });
+                row.addEventListener('mouseout', () => {
+                    row.style.backgroundColor = row.rowIndex % 2 === 0 ? '#555' : '#444'; 
+                });
+            });
+        }
+
+        addTableAnimations();
+    </script>
+</body>
+{% endblock %}

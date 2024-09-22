@@ -1,0 +1,140 @@
+{% load static %}
+{% load compra_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Compra PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .header .logo {
+            max-width: 100px; 
+        }
+        .header .logo img {
+            max-width: 150px;
+            height: 100px;
+        }
+        .header .empresa-info {
+            text-align: right;
+            font-size: 10px;
+            max-width: 50%;
+        }
+        .pedido-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 5px;
+            font-size: 12px; 
+        }
+        th {
+            background-color: #f2f2f2;
+            border: 1px solid #ddd;
+            padding: 2px;
+            font-size: 12px; 
+        }
+        .produto-id {
+            width: 80px;
+        }
+        .fornecedor-info h3,
+        .empresa-info h2 {
+            margin-bottom: 10px;
+        }
+        .fornecedor-info p,
+        .empresa-info p {
+            margin: 1px 0;
+        }
+        .total {
+            font-size: 15px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table width="100%">
+            <tr>
+                <td class="logo" width="30%">
+                    <img src="https://newlifenet.com.br/wp-content/uploads/2023/01/LOGO.png" alt="Logo da Empresa">
+                </td>
+                <td class="empresa-info" witdth="70%">
+                    <h2>Mercado NewLife</h2>
+                    <p><strong>Endereço:</strong>Rua Reinaldo Nassi, 546</p>
+                    <p><strong>Cidade:</strong>Diamante do Norte</p>
+                    <p><strong>CEP:</strong>87990-000</p>
+                    <p><strong>Email:</strong>exemplo@empresa.com.br</p>
+                    <p><strong>Telefone:</strong> (44) 99999-9999</p>
+                    <p><strong>CNPJ:</strong> 99.999.999/0001-99</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="pedido-header">
+        <h1>Pedido de Compra</h1>
+        <p>Data do Pedido: {{ pedido.data_pedido|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="cliente-info">
+        <h3>Informações do Fornecedor:</h3>
+        <p><strong>Tipo Pessoa:</strong> {{fornecedor_tipo_pessoa}}</p>
+        <p><strong>Fornecedor:</strong> {{ fornecedor_nome }}</p>
+        {% if fornecedor_tipo_pessoa == 'Pessoa Física' %}
+            <p><strong>CPF:</strong> {{ documento|formatar_cpf }}</p>
+        {% elif fornecedor_tipo_pessoa == 'Pessoa Jurídica' %}
+            <p><strong>CNPJ:</strong> {{ documento|formatar_cnpj }}</p>
+        {% else %}
+            <p><strong>Documento:</strong> Documento não informado</p>
+        {% endif %}
+        <p><strong>Cidade:</strong> {{ fornecedor_cidade }}</p>
+        <p><strong>Estado:</strong> {{ fornecedor_estado }}</p>
+        <p><strong>Endereço:</strong> {{ fornecedor_endereco }}</p>
+        <p><strong>Numero:</strong> {{ fornecedor_numero }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="produto-id">Código</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Valor Unitário</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in itens %}
+            <tr>
+                <td class="produto-id">{{ item.produto_id }}</td>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>R$ {{ item.valor_unitario }}</td>
+                <td>R$ {{ item.valor_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="total">
+        <p><strong>Quantidade Total de Itens:</strong> {{ quantidade_total }}</p>
+        <p><strong>Total Geral:</strong> R$ {{ total_geral|floatformat:2 }}</p>
+    </div>
+</body>
+</html>

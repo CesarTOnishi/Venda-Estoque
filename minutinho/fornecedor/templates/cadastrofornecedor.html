@@ -1,0 +1,141 @@
+{% extends 'tela.html' %}
+{% load static %}
+
+{% block 'head' %}
+<link rel="stylesheet" href="{% static 'css/cadastrofor.css' %}">
+    <title>Cadastro Cliente</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+{% endblock %}
+
+{% block 'dashboard' %}
+<main id="container">
+    <form id="lista_fornecedor" action="{% url 'cadfor' %}" method="POST">
+        {% csrf_token %}
+        <div id="header">
+            <h1>Cadastro Fornecedor</h1>
+            <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+                <span id="notification-message">
+                    {% if errors %}
+                        {% for error in errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    {% endif %}
+                </span>
+                <span class="close" onclick="closeNotification()">&times;</span>
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label>Tipo de Pessoa:</label>
+            <div class="caixa_input">
+                <input type="radio" id="tipo_fisica" name="tipo_pessoa" value="Pessoa Física" {% if tipo_pessoa == 'Pessoa Física' %}checked{% endif %}>
+                <label for="tipo_fisica">Pessoa Física</label>
+
+                <input type="radio" id="tipo_juridica" name="tipo_pessoa" value="Pessoa Jurídica" {% if tipo_pessoa == 'Pessoa Jurídica' %}checked{% endif %}>
+                <label for="tipo_juridica">Pessoa Jurídica</label>
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label for="nome">Nome do Fornecedor:</label>
+            <div class="caixa_input">
+                <input type="text" id="nome" name="nome" value="{{ nome }}">
+            </div>
+        </div>
+
+        <div class="caixa" id="cpf_field">
+            <label for="cpf">CPF:</label>
+                <div class="caixa_input">
+                    <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" value="{{ cpf }}">
+                </div>
+        </div>
+
+        <div class="caixa" id="cnpj_field" style="display:none;">
+            <label for="cnpj">CNPJ:</label>
+            <div class="caixa_input">
+                <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" value="{{ cnpj }}">
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label for="endereco">Endereço:</label>
+            <div class="caixa_input">
+                <input type="text" id="endereco" name="endereco" value="{{ endereco }}">
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label for="cidade">Cidade:</label>
+            <div class="caixa_input">
+                <input type="text" id="cidade" name="cidade" value="{{ cidade }}">
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label for="estado">Estado:</label>
+            <div class="caixa_input">
+                <input type="text" id="estado" name="estado" value="{{ estado }}">
+            </div>
+        </div>
+
+        <div class="caixa">
+            <label for="numero">Número:</label>
+            <div class="caixa_input">
+                <input type="number" id="numero" name="numero" value="{{ numero }}">
+            </div>
+        </div>
+
+        <button type="submit" id="salvar">Salvar Fornecedor</button>
+    </form>
+</main>  
+
+<script>
+    $('#cpf').mask('000.000.000-00');
+    $('#cnpj').mask('00.000.000/0000-00');
+    function closeNotification() {
+    const notification = document.getElementById('notification');
+    notification.classList.add('fade-out'); // Adiciona a classe para o efeito de fade
+    setTimeout(() => {
+        notification.classList.remove('visible', 'fade-out');
+        notification.classList.add('hidden'); // Mantenha a classe hidden
+    }, 500); // Aguarde o tempo da transição
+}
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    const messageSpan = document.getElementById('notification-message');
+
+    messageSpan.innerHTML = message;
+    notification.classList.add('visible');
+    notification.classList.remove('hidden'); // Remova a classe hidden
+
+    setTimeout(() => {
+        closeNotification();
+    }, 5000);
+}
+if ($('.notification').hasClass('visible')) {
+            setTimeout(() => {
+                closeNotification();
+            }, 5000);
+        }
+
+    function toggleFields() {
+        if ($('input[name="tipo_pessoa"]:checked').val() === 'Pessoa Física') {
+            $('#cpf_field').show();
+            $('#cnpj_field').hide();
+        } else if ($('input[name="tipo_pessoa"]:checked').val() === 'Pessoa Jurídica') {
+            $('#cpf_field').hide();
+            $('#cnpj_field').show();
+        }
+    }
+
+    $('input[name="tipo_pessoa"]').on('change', function() {
+        toggleFields();
+    });
+
+    $(document).ready(function() {
+        toggleFields();
+    });
+</script>
+{% endblock %}
