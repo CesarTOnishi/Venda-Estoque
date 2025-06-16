@@ -16,77 +16,125 @@
   <body>
     
     <div class="sidebar">
-        <div class="logo-details">
-            <div class="logo_name">NEWLIFE</div>
-            <i class='bx bx-menu' id="btn" ></i>
-        </div>
-        <ul class="nav-list">
-          <li>
-            <a href="{% url 'inicial' %}">
-              <i class='bx bx-grid-alt'></i>
-              <span class="links_name">Página inicial</span>
-            </a>
-            <span class="tooltip">Página inicial</span>
-          </li>
-          <li>
-          <a href="{% url 'cliente' %}">
-            <i class='bx bx-user' ></i>
-            <span class="links_name">Clientes</span>
-          </a>
-          <span class="tooltip">Clientes</span>
-        </li>
-        <li>
-          <li>
-            <a href="{% url 'fornecedor' %}">
-              <i class='bx bx-building' ></i>
-              <span class="links_name">Fornecedor</span>
-            </a>
-            <span class="tooltip">Fornecedor</span>
-          </li>
-          <li>
-            <a href="{% url 'lista' %}">
-              <i class='bx bx-book' ></i>
-              <span class="links_name">Estoque</span>
-            </a>
-            <span class="tooltip">Estoque</span>
-          </li>
-          <li>
-          <a href="{% url 'catalogo' %}">
-            <i class='bx bx-money-withdraw'></i>
-            <span class="links_name">Vendas</span>
-          </a>
-          <span class="tooltip">Vendas</span>
-        </li>
-        <li>
-          <a href="{% url 'compra' %}">
-            <i class='bx bx-cart' ></i>
-            <span class="links_name">Compras</span>
-          </a>
-          <span class="tooltip">Compras</span>
-        </li>
-        <li>
-          <a href="{% url 'meuspedidos'%}">
-            <i class='bx bx-badge-check ' ></i>
-            <span class="links_name">Pedidos</span n>
-          </a>
-          <span class="tooltip">Pedidos</span>
-        </li>
-        <li>
-          <a href="#">
-            <i class='bx bxs-report'></i>
-            <span class="links_name">Relatórios</span n>
-          </a>
-          <span class="tooltip">Relatórios</span>
-        </li>
-        <li class="profile">
-          <a href="{% url 'logout' %}">
-            <i class='bx bx-log-out' id="log_out"></i>
-            <span class="links_name">Logout</span>
-          </a>
-          <span class="tooltip">Logout</span>
-        </li>
-        </ul>
+      <div class="logo-details">
+          <div class="logo_name">NEWLIFE</div>
+          <i class="bx bx-menu" id="btn"></i>
       </div>
+      <ul class="nav-list">
+          <li>
+              <a href="{% url 'inicial' %}">
+                  <i class="bx bx-grid-alt"></i>
+                  <span class="links_name">Página inicial</span>
+              </a>
+          </li>
+          
+          <!-- Dropdown Cadastros -->
+          <li class="dropdown">
+              <a href="#" class="dropdown-toggle">
+                  <i class="bx bx-folder"></i>
+                  <span class="links_name">Cadastros</span>
+                  <i class="bx bx-chevron-down dropdown-icon"></i>
+              </a>
+              <ul class="submenu">
+                  <li>
+                      <a href="{% url 'cliente' %}">
+                          <i class="bx bx-user"></i>
+                          <span class="links_name">Clientes</span>
+                      </a>
+                  </li>
+                  <li>
+                      <a href="{% url 'fornecedor' %}">
+                          <i class="bx bx-building"></i>
+                          <span class="links_name">Fornecedores</span>
+                      </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'tabelaFuncionarios' %}">
+                        <i class='bx bx-user-pin'></i>
+                        <span class="links_name">Funcionários</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'condicaoPagamento' %}">
+                        <i class='bx bxs-credit-card'></i>
+                        <span class="links_name">Pagamento</span>
+                    </a>
+                  </li>
+                  <li>
+                      <a href="{% url 'lista' %}">
+                          <i class="bx bx-book"></i>
+                          <span class="links_name">Estoque</span>
+                      </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'categoria' %}">
+                        <i class='bx bx-align-left'></i>
+                        <span class="links_name">Categoria</span>
+                    </a>
+                </li>
+              </ul>
+          </li>
+          
+          <!-- Dropdown Movimentos -->
+          <li class="dropdown">
+              <a href="#" class="dropdown-toggle">
+                  <i class="bx bx-transfer"></i>
+                  <span class="links_name">Movimentos</span>
+                  <i class="bx bx-chevron-down dropdown-icon"></i>
+              </a>
+              <ul class="submenu">
+                  <li>
+                      <a href="{% url 'catalogo' %}">
+                          <i class="bx bx-money-withdraw"></i>
+                          <span class="links_name">Vendas</span>
+                      </a>
+                  </li>
+                  <li>
+                      <a href="{% url 'compra' %}">
+                          <i class="bx bx-cart"></i>
+                          <span class="links_name">Compras</span>
+                      </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'financeiro' %}">
+                      <i class="bx bx-bar-chart-alt"></i>
+                      <span class="links_name">Financeiro</span>
+                    </a>
+                  </li>
+              </ul>
+          </li>
+          
+          <!-- Dropdown Relatórios -->
+          <li class="dropdown">
+              <a href="#" class="dropdown-toggle">
+                  <i class="bx bx-pie-chart-alt"></i>
+                  <span class="links_name">Relatórios</span>
+                  <i class="bx bx-chevron-down dropdown-icon"></i>
+              </a>
+              <ul class="submenu">
+                  <li>
+                    <a href="{% url 'meuspedidos' %}">
+                      <i class="bx bx-badge-check"></i>
+                      <span class="links_name">Pedidos</span>
+                    </a>
+                  </li>
+                  <li>
+                      <a href="{% url 'relatorio' %}">
+                          <i class="bx bxs-report"></i>
+                          <span class="links_name">Relatórios</span>
+                      </a>
+                  </li>
+              </ul>
+          </li>
+          
+          <li class="profile">
+              <a href="{% url 'logout' %}">
+                  <i class="bx bx-log-out"></i>
+                  <span class="links_name">Sair</span>
+              </a>
+          </li>
+      </ul>
+    </div>
       
       <section class="home-section">
           {% block 'dashboard'%}

@@ -1,16 +1,16 @@
-:root {
-    --main-color: #ac4147;
-    --dark-color: #411f2d;
-    --background-color: #333;
-    --text-color: #f5f5f5;
-    --hover-color: #ff676d;
-    --border-color: #444;
+:root{ 
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
 }
 
 body {
     font-family: Arial, sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: var(--differential-color);
+    color: var(--dark-color);
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -20,14 +20,14 @@ main#container {
     max-width: 1000px;
     margin: 40px auto;
     padding: 20px;
-    background-color: var(--dark-color);
+    background-color: var(--main-color);
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 h1 {
     text-align: center;
-    color: var(--text-color);
+    color: var(--dark-color);
     margin-bottom: 20px;
 }
 
@@ -40,6 +40,7 @@ h1 {
 .caixa {
     width: 100%;
     margin-bottom: 15px;
+    color: var(--dark-color);
 }
 
 label {
@@ -54,18 +55,18 @@ input[type="number"],
 select {
     width: 100%;
     padding: 10px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--dark-color);
     border-radius: 4px;
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: white;
+    color: var(--dark-color);
 }
 
 button {
     display: inline-block;
     text-decoration: none;
     padding: 12px 16px;
-    background-color: var(--main-color);
-    color: var(--text-color);
+    background-color: var(--dark-color);
+    color: var(--main-color);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -73,7 +74,7 @@ button {
 }
 
 button:hover {
-    background-color: var(--hover-color);
+    background-color: var(--differential-color);
 }
 
 #tabela-produtos {
@@ -90,21 +91,28 @@ button:hover {
 }
 
 #tabela-produtos th {
-    background-color: var(--main-color);
-    color: var(--text-color);
+    background-color: var(--dark-color);
+    color: var(--main-color);
+    position: relative;
+    border: none;
+}
+
+#tabela-produtos td{
+    background-color: var(--background-color);
+    color: var(--dark-color);
 }
 
 #tabela-produtos td button {
     padding: 6px 12px;
-    background-color: var(--main-color);
-    color: var(--text-color);
+    background-color: #ff4d4d;
+    color: var(--background-color);
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
 #tabela-produtos td button:hover {
-    background-color: var(--hover-color);
+    background-color: #f44336;
 }
 
 .select2-container .select2-selection--single {
@@ -168,4 +176,71 @@ button:hover {
 }
 .hidden {
     display: none;
+}
+.botao {
+    background-color: var(--dark-color);
+    color: white; 
+    padding: 10px 20px; 
+    border: none;
+    border-radius: 5px; 
+    text-decoration: none; 
+    font-size: 16px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+
+.botao:hover {
+    background-color: var(--differential-color); 
+}
+
+.pagamento, #parcelamento {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    color: #333;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+.inputpagamento, .inputparcelamento {
+    max-width: 300px;
+}
+
+#parcelamento {
+    margin-top: 10px;
+}
+
+#parcelamento label {
+    font-size: 14px;
+    font-weight: normal;
+}
+
+#parcelamento select {
+    margin-top: 5px;
+}
+
+@media (max-width: 600px) {
+    .inputpagamento, .inputparcelamento {
+        max-width: 100%;
+    }
 }

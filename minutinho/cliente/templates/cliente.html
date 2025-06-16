@@ -1,6 +1,7 @@
 {% extends "tela.html" %}
 {% load static %}
 {% load cliente_filters %}
+
 {% block 'head' %}
     <link rel="stylesheet" href="{% static 'css/cliente.css' %}">
     <title>Clientes</title>
@@ -10,10 +11,9 @@
 <body> 
     <form method="POST" action=".">
         {% csrf_token %}
-        <div>
-            <a href="{% url 'cadastrocliente' %}" class="botao">Adicionar Cliente</a>
-        </div>
         <div class="search-container">
+            <a href="{% url 'cadastrocliente' %}" class="botao">Adicionar Cliente</a>
+
             <input type="text" id="search" placeholder="Buscar clientes...">
         </div>
         <div class="principal">

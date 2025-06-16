@@ -23,3 +23,17 @@ def formatar_telefone(telefone):
 @register.filter
 def quantidade_total(itens):
     return sum(item.quantidade for item in itens)
+
+METODOS_PAGAMENTO = {
+    "cartao_credito": "Cartão de Crédito",
+    "credito": "Cartão de Crédito",
+    "pix":  "PIX",
+    "debito": "Cartão de Débito",
+    "cartao_debito": "Cartão de Débito",
+    "boleto": "Boleto",
+    "transferencia": "Transferência Bancária",
+}
+
+@register.filter
+def formatarPagamento(metodo):
+    return METODOS_PAGAMENTO.get(metodo, "Método Desconhecido")

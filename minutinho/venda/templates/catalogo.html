@@ -16,6 +16,44 @@
         </div>
     </div>
     <h1>Lista de Produtos</h1>
+    <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+        <span id="notification-message">
+            {% if errors %}
+                {% for error in errors %}
+                    {{ error }}<br>
+                {% endfor %}
+            {% endif %}
+        </span>
+        <span class="close" onclick="closeNotification()">&times;</span>
+    </div>
+
+    <form method="GET" action="{% url 'catalogo' %}">
+        <label for="categoria">Filtrar por Categoria:</label>
+        <select id="categoria" name="categoria" onchange="this.form.submit()">
+            <option value="">Todas as Categorias</option>
+            {% for categoria in categorias %}
+                <option value="{{ categoria.nome }}" {% if categoria.nome == categoria_filtro %}selected{% endif %}>
+                    {{ categoria.nome }}
+                </option>
+            {% endfor %}
+        </select>
+    
+        <label for="preco_filtro">Ordenar por Preço:</label>
+        <select id="preco_filtro" name="preco_filtro" onchange="this.form.submit()">
+            <option value="">Sem Filtro</option>
+            <option value="menor" {% if preco_filtro == 'menor' %}selected{% endif %}>Menor para Maior</option>
+            <option value="maior" {% if preco_filtro == 'maior' %}selected{% endif %}>Maior para Menor</option>
+        </select>
+
+        <label for="alfabeto_filtro">Ordenar Alfabeticamente:</label>
+        <select id="alfabeto_filtro" name="alfabeto_filtro" onchange="this.form.submit()">
+            <option value="">Sem Filtro</option>
+            <option value="asc" {% if alfabeto_filtro == 'asc' %}selected{% endif %}>A a Z</option>
+            <option value="desc" {% if alfabeto_filtro == 'desc' %}selected{% endif %}>Z a A</option>
+        </select>
+    </form>
+
+
     <p>{{ mensagem }}</p>
     <div class="container">
         {% for produto in produtos %}
@@ -28,17 +66,76 @@
                     <p class="preco">R$ {{ produto.preco }}</p>
                 </div>
                 <div>
-                    {% if produto.estoque > 0 %}
-                        <p class="estoque estoque-positivo">Estoque: {{ produto.estoque }} unidades</p>
-                    {% else %}
-                        <p class="estoque estoque-zero">Sem estoque</p>
-                    {% endif %}   
+                    <p class="estoque" id="estoque-{{ produto.id }}">
+                        {% if produto.estoque > 0 %}
+                            Estoque: {{ produto.estoque }} unidades
+                        {% else %}
+                            ESGOTADO
+                        {% endif %}
+                    </p>
                 </div>
-                <a href="{% url 'addCarrinho' produto.id %}" class="btn-adicionar">Adicionar ao Carrinho</a>
+                <a href="{% url 'addCarrinho' produto.id %}" 
+                   class="btn-adicionar" 
+                   data-produto-id="{{ produto.id }}"
+                   {% if produto.estoque <= 0 %}disabled style="background: #ccc;"{% endif %}>
+                    {% if produto.estoque > 0 %}Adicionar ao Carrinho{% else %}ESGOTADO{% endif %}
+                </a>
             </div>
         {% endfor %}
     </div>
     <script src="{% static 'js/catalogojs.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+    $(".btn-adicionar").click(function(e) {
+        e.preventDefault();
+        const produtoId = $(this).data("produto-id");
+        const btn = $(this);
+        
+        btn.prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i>');
+
+        $.ajax({
+            url: `/addCarrinho/${produtoId}/`,
+            type: "GET",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            success: function(response) {
+                if (response.success) {
+
+                    const estoqueElement = $(`#estoque-${produtoId}`);
+                    estoqueElement.text(`Estoque: ${response.estoque_disponivel} unidades`);
+                    updateCartCount();
+                    
+                    showNotification(response.mensagem, false);
+                } else {
+                    showNotification(response.errors[0], true);
+                }
+            },
+            complete: function() {
+                btn.prop("disabled", false).html('Adicionar ao Carrinho');
+            }
+        });
+    });
+    function updateCartCount() {
+        $.get("/get_cart_count/", function(response) {
+            $("#texto_carrinho").text(response.quantidade_total || 0);
+        });
+    }
+});
+
+    function showNotification(message, isError = false) {
+        const notification = document.getElementById('notification');
+        const messageSpan = document.getElementById('notification-message');
+        
+        notification.style.backgroundColor = isError ? "#f44336" : "#4CAF50";
+        messageSpan.textContent = message;
+        notification.classList.add('visible');
+        
+        setTimeout(() => {
+            notification.classList.remove('visible');
+        }, 5000);
+    }
+</script>
+
     {% endblock %}
 </body>
 </html>

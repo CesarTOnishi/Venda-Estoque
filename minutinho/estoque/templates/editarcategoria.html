@@ -1,0 +1,28 @@
+{% extends 'tela.html' %}
+{% load static %}
+
+{% block 'head' %}
+<link rel="stylesheet" href="{% static 'css/cadastroCategoria.css' %}">
+<title>Edição de Categoria</title>
+{% endblock %}
+
+{% block 'dashboard' %}
+<body>
+    <form method="POST" action="{% url 'editarCategoria' categoria.id %}">
+        {% csrf_token %}
+        <div class="formulario_categoria">
+            <h2>Edição de Categoria</h2>
+            {% if errors %}
+                <ul class="errors">
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <label for="categoria">Nome da Categoria</label>
+            <input type="text" name="categoria" id="categoria" placeholder="Nome da Categoria" value="{{ categoria.nome }}" required>  <!-- Preencher com o nome da categoria -->
+            <button type="submit" class="botao">Salvar</button>  <!-- Altera de 'Cadastrar' para 'Salvar' -->
+        </div>
+    </form>
+</body>
+{% endblock %}

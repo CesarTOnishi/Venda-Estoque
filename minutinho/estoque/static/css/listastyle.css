@@ -1,17 +1,26 @@
+:root{
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
+}
+
 body, html {
     margin: 0;
     padding: 0;
     font-family: 'Poppins', sans-serif;
-    background-color: var(--background-color); 
-    color: var(--text-color); 
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 .pesquisa {
     display: flex;
     justify-content: space-between;
     padding: 20px;
-    background-color: var(--dark-color); 
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); 
+    background-color: var(--main-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     border-radius: 8px;
     margin: 20px;
 }
@@ -20,98 +29,103 @@ body, html {
     padding: 10px;
     font-size: 16px;
     border-radius: 8px;
-    border: none;
+    border: 2px solid var(--differential-color);
     width: 300px;
+    background-color: var(--dark-color);
+    color: var(--main-color);
 }
 
-.pesquisa button {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: var(--text-color);
-    background-color: var(--main-color);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+.pesquisa input[type="text"]::placeholder {
+    color: #bbb;
 }
 
 .pesquisa button:hover {
-    background-color: #555; 
+    background-color: #ff676d;
 }
 
 .pesquisa a {
+    display: inline-block;
     text-decoration: none;
     color: var(--text-color);
+    padding: 10px 15px;
+    background-color: var(--dark-color);
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.pesquisa a:hover {
+    background-color: var(--differential-color);
 }
 
 .principal {
     margin: 20px;
     padding: 20px;
-    background-color: var(--dark-color); 
+    background-color: var(--main-color);
     border-radius: 12px;
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5); 
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .tabela_produto {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 30px;
+    background-color: var(--main-color);
+    color: var(--dark-color);
 }
 
 .tabela_produto th, .tabela_produto td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid #555; 
+    border-bottom: 1px solid var(--dark-color);
 }
 
 .tabela_produto th {
-    background-color: var(--main-color); 
+    background-color: var(--dark-color);
+    color: var(--main-color);
+    position: relative;
+}
+
+.tabela_produto th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.tabela_produto th:last-child {
+    border-top-right-radius: 10px;
 }
 
 .tabela_produto tr:hover {
-    background-color: #555; 
+    background-color: var(--dark-color);
+    color: var(--main-color);
 }
 
 .tabela_produto td a img {
     cursor: pointer;
-    transition: transform 0.3s ease; 
+    transition: transform 0.3s ease;
 }
 
 .tabela_produto td a img:hover {
     transform: scale(1.1);
 }
 
-.pesquisa {
-    margin: 20px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.search-container {
+.filtro_categoria {
     display: flex;
     align-items: center;
 }
 
-#search {
-    padding: 8px;
-    font-size: 16px;
-    border: 1px solid #ccc;
+.filtro_categoria label {
+    color: var(--dark-color);
+    margin-right: 10px;
+}
+
+.filtro_categoria select {
+    padding: 10px;
+    border: 2px solid var(--differential-color);
     border-radius: 4px;
-}
-.botao {
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: #ac4147;
-    color: #fff;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-    text-align: center;
+    background-color: var(--dark-color);
+    color: var(--text-color);
+    margin-left: 10px;
 }
 
-.botao:hover {
-    background-color: #ff676d;
+.filtro_categoria select:hover {
+    border-color: var(--differential-color);
 }

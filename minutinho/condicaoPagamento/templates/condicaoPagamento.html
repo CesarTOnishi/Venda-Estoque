@@ -1,0 +1,251 @@
+{% extends "tela.html" %}
+{% load static %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/condicaoPagamento.css' %}">
+    <title>Condição de Pagamento</title>
+{% endblock %}
+
+{% block 'dashboard' %}
+<div class="container">
+    <!-- Notificação -->
+    <div id="notification" class="notification {% if errors %}visible{% endif %}">
+        <span id="notification-message">
+            {% if errors %}
+                {% for error in errors %}
+                    {{ error }}<br>
+                {% endfor %}
+            {% endif %}
+        </span>
+        <span class="close" onclick="closeNotification()">&times;</span>
+    </div>
+
+    <div class="search-container">
+        <button type="button" class="modal-button" id="open_modal_button">
+            Adicionar Condição de Pagamento
+        </button>
+        <input type="text" id="search" placeholder="Buscar condição">
+
+        <label id="tp" for="filtro_tipo_pagamento">Tipo de Pagamento:</label>
+        <select id="filtro_tipo_pagamento" name="tipo_pagamento">
+            <option value="">Todos</option>
+            {% for key, value in tipos_pagamento.items %}
+                <option value="{{ key }}">{{ value }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-container" id="modal_container">
+        <div class="modal-content">
+            <button type="button" class="modal-button" id="close_modal_button">Fechar</button>
+            <h1 id="modal-title">Adicionar Condição de Pagamento</h1>
+            <form method="POST" action="{% url 'condicaoPagamento' %}">
+                {% csrf_token %}
+                <input type="hidden" id="pagamento_id" name="pagamento_id">
+
+                <label for="tipo_pagamento">Tipo de Pagamento:</label>
+                <select id="tipo_pagamento" name="tipo_pagamento" required>
+                    <option value="" disabled selected>Selecione um tipo</option>
+                    {% for key, value in tipos_pagamento.items %}
+                        <option value="{{ key }}" {% if form_data.tipo_pagamento == key %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                    {% endfor %}
+                </select>
+    
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" value="{{ form_data.nome|default:'' }}" required>
+    
+                <label for="parcelas">Parcelas:</label>
+                <input type="number" id="parcelas" name="parcelas" min="1" 
+                       value="{{ form_data.parcelas|default:'1' }}" required>
+    
+                <label for="juros">Juros (%):</label>
+                <input type="number" step="0.01" id="juros" name="juros" min="0"
+                       value="{{ form_data.juros|default:'0' }}" required>
+    
+                <label for="intervalo_parcelas">Intervalo em dias:</label>
+                <input type="number" id="intervalo_parcelas" name="intervalo_parcelas" min="1" max="365"
+                       value="{{ form_data.intervalo_parcelas|default:'30' }}" required>
+    
+                <label for="desconto">Desconto (%):</label>
+                <input type="number" step="0.01" id="desconto" name="desconto" min="0"
+                       value="{{ form_data.desconto|default:'0' }}" required>
+    
+                <button type="submit" class="modal-button">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <table class="tabela_pagamento">
+        <thead>
+            <tr> 
+                <th>Tipo</th> 
+                <th>Nome</th> 
+                <th>Parcelas</th> 
+                <th>Juros</th> 
+                <th>Intervalo</th> 
+                <th>Desconto</th> 
+                <th>Criação</th> 
+                <th>Atualização</th>
+                <th>Editar</th>
+                <th>Deletar</th>
+            </tr>
+        </thead>
+        <tbody class="corpo_tabela">
+            {% for pag in pagamentos %}
+            <tr>
+                <td>{{ pag.get_tipo_pagamento_display }}</td>
+                <td>{{ pag.nome }}</td>
+                <td>{{ pag.parcelas }}</td>
+                <td>{{ pag.juros }}%</td>
+                <td>{{ pag.intervalo_parcelas }} dias</td>
+                <td>{{ pag.desconto }}%</td>
+                <td>{{ pag.data_criacao|date:"d/m/Y" }}</td>
+                <td>{{ pag.data_atualizacao|date:"d/m/Y" }}</td>
+                <td>
+                    <button type="button" class="edit-button"
+                        data-id="{{ pag.id }}"
+                        data-tipo="{{ pag.tipo_pagamento }}"
+                        data-nome="{{ pag.nome }}"
+                        data-parcelas="{{ pag.parcelas }}"
+                        data-juros="{{ pag.juros|default:0|floatformat:2 }}"
+                        data-intervalo="{{ pag.intervalo_parcelas }}"
+                        data-desconto="{{ pag.desconto|default:0|floatformat:2 }}">
+                        <img width="30" height="30" src="{% static 'img/Editar.png' %}" alt="Editar">
+                    </button>
+                </td>
+                <td>
+                    <a href="#">
+                        <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Deletar">
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+    </form>
+    <script src="{% static 'js/condicaoPagamento.js' %}"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const modal = document.getElementById("modal_container");
+    const openModalBtn = document.getElementById("open_modal_button");
+    const closeModalBtn = document.getElementById("close_modal_button");
+    const filtroSelect = document.getElementById("filtro_tipo_pagamento");
+    const tabelaBody = document.querySelector(".corpo_tabela");
+
+    if (openModalBtn && closeModalBtn) {
+        openModalBtn.addEventListener("click", () => {
+            document.getElementById("modal-title").textContent = "Adicionar Condição";
+            document.getElementById("pagamento_id").value = "";
+            modal.classList.add("show");
+        });
+
+        closeModalBtn.addEventListener("click", () => {
+            modal.classList.remove("show");
+        });
+    }
+
+    tabelaBody.addEventListener("click", function(e) {
+        const editBtn = e.target.closest(".edit-button");
+        if (editBtn) {
+            document.getElementById("modal-title").textContent = "Editar Condição";
+            document.getElementById("pagamento_id").value = editBtn.dataset.id;
+            document.getElementById("tipo_pagamento").value = editBtn.dataset.tipo;
+            document.getElementById("nome").value = editBtn.dataset.nome;
+            document.getElementById("parcelas").value = editBtn.dataset.parcelas;
+            document.getElementById("juros").value = parseFloat((editBtn.dataset.juros || "0").replace(",", ".")).toFixed(2);
+            document.getElementById("intervalo_parcelas").value = editBtn.dataset.intervalo;
+            document.getElementById("desconto").value = parseFloat((editBtn.dataset.desconto || "0").replace(",", ".")).toFixed(2);
+            modal.classList.add("show");
+        }
+    });
+
+    if (filtroSelect) {
+        filtroSelect.addEventListener("change", function() {
+            const tipo = this.value;
+            
+            fetch(`/condicaoPagamento/filtroPagamento/?tipo_pagamento=${tipo}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Erro na requisição");
+                    return response.json();
+                })
+                .then(data => {
+                    tabelaBody.innerHTML = data.pagamentos?.length ? 
+                        data.pagamentos.map(pag => `
+                            <tr>
+                                <td>${pag.tipo_pagamento_display}</td>
+                                <td>${pag.nome}</td>
+                                <td>${pag.parcelas}</td>
+                                <td>${parseFloat(pag.juros).toFixed(2)}%</td>
+                                <td>${pag.intervalo_parcelas} dias</td>
+                                <td>${parseFloat(pag.desconto).toFixed(2)}%</td>
+                                <td>${pag.data_criacao}</td>
+                                <td>${pag.data_atualizacao}</td>
+                                <td>
+                                    <button class="edit-button" 
+                                        data-id="${pag.id}"
+                                        data-tipo="${pag.tipo_pagamento}"
+                                        data-nome="${pag.nome}"
+                                        data-parcelas="${pag.parcelas}"
+                                        data-juros="${pag.juros}"
+                                        data-intervalo="${pag.intervalo_parcelas}"
+                                        data-desconto="${pag.desconto}">
+                                        <img src="/static/img/Editar.png" width="30" height="30">
+                                    </button>
+                                </td>
+                                <td>
+                                    <a href="#">
+                                        <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Deletar">
+                                    </a>
+                                </td>
+                            </tr>
+                        `).join('') : '<tr><td colspan="10">Nenhum resultado encontrado</td></tr>';
+                })
+                .catch(error => {
+                    console.error("Erro:", error);
+                    tabelaBody.innerHTML = '<tr><td colspan="10">Erro ao carregar dados</td></tr>';
+                });
+        });
+    }
+});
+// Notificação
+function closeNotification() {
+    const notification = document.getElementById('notification');
+    if (!notification) return;
+
+    notification.classList.add('fade-out');
+    setTimeout(() => {
+        notification.classList.remove('visible', 'fade-out');
+        notification.classList.add('hidden');
+    }, 500);
+}
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    const messageSpan = document.getElementById('notification-message');
+
+    if (!notification || !messageSpan) return;
+
+    messageSpan.innerHTML = message;
+    notification.classList.add('visible');
+    notification.classList.remove('hidden');
+
+    setTimeout(closeNotification, 5000);
+}
+
+// Auto-fechar notificação se estiver visível
+document.addEventListener("DOMContentLoaded", function () {
+    const notification = document.querySelector('.notification');
+    if (notification && notification.classList.contains('visible')) {
+        setTimeout(closeNotification, 5000);
+    }
+});
+
+    </script>
+</body>
+{% endblock %}

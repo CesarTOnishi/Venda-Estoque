@@ -10,7 +10,7 @@ body {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-    background-color: #444;
+    background-color: var(--differential-color);
     border-radius: 8px;
 }
 
@@ -28,7 +28,7 @@ h1 {
 
 .stat-box {
     background-color: var(--main-color);
-    color: white;
+    color: var(--dark-color);
     padding: 20px;
     border-radius: 8px;
     text-align: center;
@@ -47,14 +47,14 @@ h1 {
 }
 
 .recent-orders {
-    background-color: #555;
+    background-color: var(--main-color);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .recent-orders h2 {
-    color: var(--main-color);
+    color: var(--dark-color);
     margin-bottom: 20px;
 }
 
@@ -62,23 +62,25 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
-    color: #fff;
+    color: var(--dark-color);
+    border: 2px solid var(--dark-color);
 }
 
 table th, table td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid #666;
+    border-bottom: 1px solid var(--dark-color);
+
 }
 
 table th {
     background-color: var(--dark-color);
-    color: white;
+    color: var(--main-color);
     font-weight: bold;
 }
 
 table td {
-    color: #ddd;
+    color: var(--dark-color);
 }
 
 table tr:last-child td {
@@ -87,7 +89,7 @@ table tr:last-child td {
 
 button {
     background-color: var(--main-color);
-    color: white;
+    color: var(--dark-color);
     padding: 10px 20px;
     border: none;
     border-radius: 5px;

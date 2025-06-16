@@ -1,0 +1,269 @@
+:root{
+     
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
+}
+@import url("https://fonts.googleapis.com/css?family=Poppins&display=swap");
+
+
+body {
+    background-color: var(--background-color);
+    color: var(--main-color);
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+    padding: 20px;
+}
+
+.menu {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.nav-button {
+    background-color: var(--dark-color);
+    color: var(--main-color);
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.nav-button:hover {
+    background-color: var(--main-color);
+    color: var(--dark-color);
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--main-color);
+    color: var(--dark-color);
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid var(--dark-color);
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+.entrada {
+    color: lightgreen;
+}
+
+.saida {
+    color: red;
+}
+.saldo {
+    background-color: var(--dark-color);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+.saldo h3 {
+    margin: 0;
+}
+
+.saldo p {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.saldo-positivo {
+    color: var(--positive-color);
+}
+
+.saldo-negativo {
+    color: var(--negative-color);
+}
+
+.acao {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--main-color);
+    background: var(--contrast-color);
+    color: black;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.acao:hover {
+    background: var(--dark-color);
+    color: white;
+}
+
+.valor-positivo {
+    color: green;
+    font-weight: bold;
+}
+
+.valor-negativo {
+    color: red;
+    font-weight: bold;
+}
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    display: none; 
+    opacity: 1; 
+    transition: opacity 0.5s ease; 
+}
+
+.notification.visible {
+    display: block; 
+}
+
+.notification.hidden {
+    display: none; 
+}
+
+.notification.fade-out {
+    opacity: 0;
+}
+.hidden {
+    display: none;
+}
+
+
+.modal-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-container.show {
+    display: flex;
+}
+
+.modal-content {
+    background-color: var(--main-color);
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px; /* Mantém o tamanho maior do modal */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    max-height: 80vh; /* Limita a altura para não ocupar toda a tela */
+    overflow-y: auto; /* Adiciona rolagem interna */
+}
+
+.modal-content h1 {
+    color: var(--dark-color);
+    margin-top: 0;
+    text-align: center;
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content label {
+    color: var(--dark-color);
+    font-weight: bold;
+}
+
+.modal-content input,
+.modal-content select {
+    padding: 10px;
+    border: 1px solid var(--dark-color);
+    border-radius: 5px;
+    background-color: var(--light-color);
+    width: 100%;
+}
+
+.modal-content button[type="submit"] {
+    background-color: var(--dark-color);
+    color: white;
+    margin-top: 15px;
+}
+
+
+
+
+
+
+.filter-form {
+    background-color: var(--dark-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    color: white;
+}
+.filter-form label {
+   font-weight: bold;
+}
+.filter-form select,
+.filter-form input[type="number"],
+.filter-form button,
+.filter-form .button-link { 
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 0.9em;
+    background-color: var(--main-color);
+}
+.filter-form button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+}
+.filter-form button:hover {
+    background-color: #45a049;
+}
+.filter-form .button-link {
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    display: inline-block;
+    line-height: normal; 
+}
+.filter-form .button-link:hover {
+    background-color: #e0e0e0;
+}

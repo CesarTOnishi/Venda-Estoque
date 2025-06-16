@@ -1,35 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "tela.html" %}
+{% load static %}
+
+{% block 'head' %}
     {% load static%}
     <link rel="stylesheet" href="{% static 'css/produtos.css'%}">
     <title>Gerenciamento de Estoque</title>
-</head>
+{% endblock %}
+
 <body>
-    {% block body %}
+    {% block 'dashboard' %}
     <main id="container">
         <form id="lista_cadastro" action="{% url 'salvar' produto.id %}" method="POST">{% csrf_token %}
             <div id="header">
                 <h1>Editar Produto:</h1>
             </div>
 
-            {% if messages %}
-                <div id="messages">
-                    {% for message in messages %}
-                        <div class="message {{ message.tags }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+                <span id="notification-message">
+                    {% if errors %}
+                        {% for error in errors %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    {% endif %}
+                </span>
+                <span class="close" onclick="closeNotification()">&times;</span>
+            </div>
 
             <div class="caixa">
                 <label for="nome">
                     Nome do Produto:
                     <div class="caixa_input">
                         <input type="text" name="nome" maxlength="40" value="{{produto.nome}}">
+                    </div>
+                </label>
+            </div>
+
+            <div class="caixa">
+                <label for="categoria">
+                    Categoria:
+                    <div class="caixa_input">
+                        <select name="categoria">
+                        {% for cat in categorias %}
+                            <option value="{{ cat.id }}" {% if produto.categoria.id == cat.id %}selected{% endif %}>{{cat.nome}}</option>
+                        {% endfor %}
+                        </select>
                     </div>
                 </label>
             </div>
@@ -47,7 +61,8 @@
                 <label for="descricao">
                     Descrição do produto
                     <div class="caixa_input">
-                        <textarea id="descricao1" cols="21" rows="6" name="descricao">{{produto.descricao}}</textarea>
+                        <textarea id="descricao1" cols="21" rows="6" name="descricao" maxlength="100">{{produto.descricao}}</textarea>
+                        <div id="charCount">0/100</div>
                     </div>
                 </label>
             </div>
@@ -66,6 +81,48 @@
             </button>
         </form>
     </main>
+    <script>
+        const textarea = document.getElementById('descricao1');
+const charCount = document.getElementById('charCount');
+
+textarea.addEventListener('input', function() {
+    const currentLength = textarea.value.length;
+    charCount.textContent = `${currentLength}/100`; // Atualiza o contador
+});
+
+// Inicializa o contador ao carregar a página
+window.onload = function() {
+    const currentLength = textarea.value.length;
+    charCount.textContent = `${currentLength}/100`; // Define o contador inicial
+}
+        function closeNotification() {
+const notification = document.getElementById('notification');
+notification.classList.add('fade-out'); 
+setTimeout(() => {
+    notification.classList.remove('visible', 'fade-out');
+    notification.classList.add('hidden'); 
+}, 500); 
+}
+
+function showNotification(message) {
+const notification = document.getElementById('notification');
+const messageSpan = document.getElementById('notification-message');
+
+messageSpan.innerHTML = message;
+notification.classList.add('visible');
+notification.classList.remove('hidden');
+
+setTimeout(() => {
+    closeNotification();
+}, 5000);
+}
+if ($('.notification').hasClass('visible')) {
+        setTimeout(() => {
+            closeNotification();
+        }, 5000);
+    }
+</script>
+</script>
     {% endblock %}
 </body>
 </html>

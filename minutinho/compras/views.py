@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from fornecedor.models import Fornecedor
 from estoque.models import Produto
+from financeiro.models import ContaPagar
 from .forms import PedidoCompraForm, PedidoProdutoForm
 from django.http import JsonResponse
-from .models import PedidoCompra, PedidoProduto
-from decimal import Decimal, InvalidOperation
+from .models import PedidoCompra, PedidoProduto, ParcelaPedido
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from .functions import deletarCompra
 import json
 from django.http import HttpResponseBadRequest
@@ -12,6 +13,9 @@ from xhtml2pdf import pisa
 from io import BytesIO
 from django.http import HttpResponse
 from django.template.loader import get_template
+from django.utils import timezone
+from datetime import timedelta, datetime
+from django.db import transaction
 
 
 # ESTUDAR JSON, SELECT2 E JAVASCRIPT USADO NESSA PARTE DE COMPRA!!
@@ -45,80 +49,76 @@ def produto_autocomplete(request):
 def criar_pedido(request):
     if request.method == 'POST':
         pedido_form = PedidoCompraForm(request.POST)
-        errors = []  # armazena os erros
+        errors = []
 
-        # Verificação de campos obrigatórios
         fornecedor_id = request.POST.get('fornecedor')
         if not fornecedor_id:
-            errors.append("O campo 'Fornecedor' é obrigatório.") # cadocaso não tenha fornecedor
+            errors.append("O campo 'Fornecedor' é obrigatório.")
 
-        # Validação de produtos, quantidades e preços
         try:
             produtos = json.loads(request.POST.get('produtos', '[]'))
-            quantidades = json.loads(request.POST.get('quantidades', '[]')) # Obtem os dados com json
-            precos_unitarios = json.loads(request.POST.get('precos_unitarios', '[]'))# erro ao tentar no metodo normal de request.post,get
+            quantidades = json.loads(request.POST.get('quantidades', '[]'))
+            precos_unitarios = json.loads(request.POST.get('precos_unitarios', '[]'))
+            metodo_pagamento = request.POST.get('metodo_pagamento')
+            parcelamento = int(request.POST.get('parcelamento', '1')) if metodo_pagamento == 'cartao_credito' else 1
 
             if len(produtos) == 0:
                 errors.append("Pelo menos um produto deve ser adicionado.")
 
             for quantidade in quantidades:
                 if Decimal(quantidade) < 0:
-                    errors.append("A quantidade não pode ser negativa.")   # validação
+                    errors.append("A quantidade não pode ser negativa.")
 
             for preco_unitario in precos_unitarios:
                 if Decimal(preco_unitario) < 0:
                     errors.append("O preço unitário não pode ser negativo.")
 
         except json.JSONDecodeError as e:
-            errors.append("Erro ao decodificar JSON dos produtos.") # caso de errado no json
-        
+            errors.append("Erro ao decodificar JSON dos produtos.")
+        except ValueError as e:
+            errors.append("Valores inválidos para quantidade ou preço unitário.")
+
         if errors:
             context = {
-                'pedido_form': pedido_form,  # caso ocorra algum erro aparecer
+                'pedido_form': pedido_form,
                 'errors': errors
             }
             return render(request, 'criar_pedido.html', context)
 
         if pedido_form.is_valid():
-            pedido = pedido_form.save() # caso o formulario esteja certo ele vai salvar
-            
+            pedido = pedido_form.save(commit=False)  # o commit false faz com que o formulario não seja salvo ainda
+            total_pedido = Decimal(0)
+
+            pedido.save()
+
             try:
-                if len(produtos) == len(quantidades) == len(precos_unitarios): # verifica se os dados estão iguais
+                if len(produtos) == len(quantidades) == len(precos_unitarios):
                     for produto_id, quantidade, preco_unitario in zip(produtos, quantidades, precos_unitarios):
                         if produto_id and quantidade and preco_unitario:
                             try:
-                                # Substituir vírgulas por pontos
-                                quantidade = quantidade.replace(',', '.')
-                                preco_unitario = preco_unitario.replace(',', '.')
+                                quantidade = Decimal(quantidade.replace(',', '.'))
+                                preco_unitario = Decimal(preco_unitario.replace(',', '.'))
+                                produto = get_object_or_404(Produto, id=int(produto_id))
 
-                                # Converter para Decimal
-                                quantidade = Decimal(quantidade)
-                                preco_unitario = Decimal(preco_unitario)
+                                produto.estoque += quantidade
+                                produto.save()
 
-                                # Converter produto_id para inteiro e buscar o produto
-                                produto_id = int(produto_id)
-                                produto = get_object_or_404(Produto, id=produto_id)
+                                total_pedido += quantidade * preco_unitario
 
-                                produto.estoque += quantidade # função para adcionar ao estoque
-                                produto.save() # salva
-
-                                # Cria o relacionamento entre o pedido e o produto (tabela associativa)
                                 PedidoProduto.objects.create(
-                                    pedido=pedido,
+                                    pedido=pedido,  
                                     produto=produto,
                                     quantidade=quantidade,
                                     preco_unitario=preco_unitario
                                 )
                             except (ValueError, InvalidOperation) as e:
-                                print(f'Erro ao converter valores: {e}')
-                                print(f'Valores recebidos - produto_id: {produto_id}, quantidade: {quantidade}, preco_unitario: {preco_unitario}')
+                                errors.append(f"Erro ao processar o produto {produto_id}: {e}")
                             except Exception as e:
-                                print(f'Erro ao salvar produto: {e}')
+                                errors.append(f"Erro ao salvar o produto {produto_id}: {e}")
                 else:
                     errors.append("A quantidade de produtos, quantidades e preços unitários não corresponde.")
-
-            except json.JSONDecodeError as e:
-                errors.append("Erro ao decodificar JSON dos produtos.")
+            except Exception as e:
+                errors.append(f"Erro ao processar os produtos: {e}")
 
             if errors:
                 context = {
@@ -126,71 +126,119 @@ def criar_pedido(request):
                     'errors': errors
                 }
                 return render(request, 'criar_pedido.html', context)
-            #TUDO EM RELAÇÃO A ERRO E VALIDAÇÃO
 
-            pedido.calcular_total() # faz o calculo do valor total do pedido, codigo no models!!
+            # Atualiza o valor da compra
+            pedido.total = total_pedido
+            pedido.save()  
+
+            if metodo_pagamento in ['cartao_credito', 'boleto', 'pix', 'cartao_debito']:
+                data_base = pedido.data_pedido or timezone.now().date()
+
+                if metodo_pagamento == 'cartao_credito':
+                    pedido.parcelas = parcelamento
+                    pedido.salvar_parcelas()
+
+                    valor_parcela = total_pedido / parcelamento
+
+                    for i in range(parcelamento):
+                        data_vencimento = data_base + timedelta(days=(i + 1) * 30)
+                        ContaPagar.objects.create(
+                            descricao=f"Parcela {i + 1} do Pedido {pedido.id}",
+                            valor=valor_parcela,
+                            data_vencimento=data_vencimento,
+                            metodo_pagamento=metodo_pagamento,
+                            numero_parcela=i + 1,
+                            pago=False,
+                            pedido=pedido,
+                            editavel=False,
+                        )
+                else:
+                    data_vencimento = data_base + timedelta(days=7) 
+                    ContaPagar.objects.create(
+                        descricao=f"Pagamento à vista do Pedido {pedido.id}",
+                        valor=total_pedido,
+                        data_vencimento=data_vencimento,
+                        metodo_pagamento=metodo_pagamento,
+                        numero_parcela=1, 
+                        pago=False,
+                        pedido=pedido,
+                        editavel=False,
+                    )
+
             return redirect('compra')
-
     else:
-        pedido_form = PedidoCompraForm() # exibe o formulario vazio para criar um novo pedido
-    
+        pedido_form = PedidoCompraForm()
+
     return render(request, 'criar_pedido.html', {'pedido_form': pedido_form})
+
 
 def removercompra(request, item_id):
     try:
         deletarCompra(item_id) # função no function para deletar do banco de dados
     except Exception as e:
-        # Lidar com a exceção, como registrar o erro ou mostrar uma mensagem para o usuário
         print(f"Erro ao remover item: {e}")
     return redirect('compra')
 
 def editar_pedido(request, item_id):
-    pedido = get_object_or_404(PedidoCompra, id=item_id) # Busca o pedido pelo ID ou retorna 404 se não encontrado
-    errors = [] #armazena os erros
+    pedido = get_object_or_404(PedidoCompra, id=item_id)
+    errors = []
 
     if request.method == 'POST':
-        pedido.fornecedor_id = request.POST.get('fornecedor') 
-        pedido.data_pedido = request.POST.get('data_pedido')
-        pedido.save()
-        # atualiza o fornecedor e a data do pedido
-
-
-        #recupera os dados dos produtos, quantidades e preços
+        data_pedido = request.POST.get('data_pedido')
+        fornecedor_id = request.POST.get('fornecedor')
         produtos = request.POST.get('produtos', '').split(',')
         quantidades = request.POST.get('quantidades', '').split(',')
         precos_unitarios = request.POST.get('precos_unitarios', '').split(',')
+        parcelamento = int(request.POST.get('parcelamento', '1'))
+        metodo_pagamento = request.POST.get('metodo_pagamento')
+
+        if not data_pedido:
+            errors.append("A data do pedido é obrigatória.")
+        if not fornecedor_id:
+            errors.append("O fornecedor é obrigatório.")
+        if len(produtos) == 0 or len(quantidades) == 0 or len(precos_unitarios) == 0:
+            errors.append("Pelo menos um produto deve ser adicionado ao pedido.")
+
+        if errors:
+            context = {
+                'pedido': pedido,
+                'errors': errors
+            }
+            return render(request, 'editar_pedido.html', context)
+
+        # Atualizar dados básicos do pedido
+        pedido.fornecedor_id = fornecedor_id
+        pedido.data_pedido = data_pedido
+        pedido.metodo_pagamento = metodo_pagamento
+        pedido.save()
 
         if len(produtos) == len(quantidades) == len(precos_unitarios):
             # Restaurar o estoque dos produtos antigos antes de excluir
             produtos_antigos = PedidoProduto.objects.filter(pedido=pedido)
             for item in produtos_antigos:
-                item.produto.estoque -= item.quantidade  # Subtrair o estoque antigo
+                item.produto.estoque -= item.quantidade
                 item.produto.save()
 
-            # Excluir os produtos antigos associados ao pedido
             PedidoProduto.objects.filter(pedido=pedido).delete()
 
-            # adiciona os novos produtos e ajusta o estoque
             for prod_id, quantidade, preco_unitario in zip(produtos, quantidades, precos_unitarios):
                 try:
                     if not prod_id:
-                        continue  # Ignorar se não houver produto
+                        continue  # Ignorar se não tiver nd
 
-                    produto = Produto.objects.get(id=int(prod_id)) # faz a busca pelo id
+                    produto = Produto.objects.get(id=int(prod_id))
                     quantidade = Decimal(quantidade.replace(',', '.'))
                     preco_unitario = Decimal(preco_unitario.replace(',', '.'))
 
-                    # Verificar se a quantidade e o preço são válidos
                     if quantidade <= 0:
                         errors.append(f"A quantidade para o produto '{produto.nome}' deve ser maior que zero.")
                     if preco_unitario < 0:
                         errors.append(f"O preço unitário para o produto '{produto.nome}' não pode ser negativo.")
 
                     if quantidade > 0 and preco_unitario >= 0:
-                        produto.estoque += quantidade  # Adicionar ao estoque
+                        produto.estoque += quantidade
                         produto.save()
 
-                        # Cria a nova associação entre o pedido e o produto
                         PedidoProduto.objects.create(
                             pedido=pedido,
                             produto=produto,
@@ -209,17 +257,65 @@ def editar_pedido(request, item_id):
                 'pedido': pedido,
                 'errors': errors
             }
-            return render(request, 'editar_pedido.html', context)  # Retornar ao formulário de edição
+            return render(request, 'editar_pedido.html', context)
 
-        pedido.calcular_total()
+        pedido.total = pedido.calcular_total()
+        pedido.save()
+
+        if metodo_pagamento == 'cartao_credito':
+            valor_total = pedido.calcular_total()
+
+            if valor_total is None or valor_total <= 0:
+                errors.append("O valor total do pedido é inválido.")
+            else:
+                with transaction.atomic():
+                    pedido.parcelas_pedido.all().delete() 
+                    ContaPagar.objects.filter(pedido=pedido).delete()  
+
+                    valor_parcela = (valor_total / parcelamento).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                    data_base = pedido.data_pedido or timezone.now().date()
+
+                    # Se data_base for uma string, converta-a para date
+                    if isinstance(data_base, str):
+                        try:
+                            data_base = datetime.strptime(data_base, '%Y-%m-%d').date()
+                        except ValueError:
+                            errors.append("Formato de data inválido. Use o formato YYYY-MM-DD.")
+                            context = {
+                                'pedido': pedido,
+                                'errors': errors
+                            }
+                            return render(request, 'editar_pedido.html', context)
+
+                    for i in range(parcelamento):
+                        data_vencimento = data_base + timedelta(days=(i + 1) * 30)
+
+                        parcela = ParcelaPedido.objects.create(
+                            pedido=pedido,
+                            numero_parcela=i + 1,
+                            valor_parcela=valor_parcela,
+                            data_vencimento=data_vencimento
+                        )
+
+                        ContaPagar.objects.create(
+                            descricao=f"Parcela {i + 1} do Pedido {pedido.id}",
+                            valor=valor_parcela,
+                            data_vencimento=data_vencimento,
+                            metodo_pagamento=metodo_pagamento,
+                            numero_parcela=i + 1,
+                            pago=False,
+                            pedido=pedido,
+                            editavel=False,
+                        )
+
         return redirect('compra')
 
+    produtos_pedido = pedido.pedidoproduto_set.all()
     context = {
         'pedido': pedido,
+        'produtos_pedido': produtos_pedido,
         'errors': errors
     }
-    #TUDO VALIDAÇÃO OU MENSAGEM DE ERRO!S
-
     return render(request, 'editar_pedido.html', context)
 
 def editar(request, item_id):

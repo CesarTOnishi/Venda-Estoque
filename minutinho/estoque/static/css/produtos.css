@@ -1,3 +1,12 @@
+:root{
+     
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
+}
 body {
     font-family: Arial, sans-serif;
     background-color: #333; 
@@ -11,7 +20,7 @@ body {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    background-color: #411f2d; 
+    background-color: var(--main-color); 
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
@@ -22,7 +31,7 @@ body {
 }
 
 #header h1 {
-    color: #ac4147; 
+    color: var(--dark-color); 
 }
 
 .caixa {
@@ -33,30 +42,30 @@ body {
     display: block;
     font-weight: bold;
     margin-bottom: 5px;
-    color: #f4f4f4; 
+    color: var(--dark-color); 
 }
 
 .caixa_input input,
 .caixa_input textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--differential-color);
     border-radius: 4px;
     box-sizing: border-box;
-    background-color: #222; 
-    color: #f4f4f4;
+    background-color: var(--background-color); 
+    color: var(--dark-color);
 }
 
 .caixa_input input:focus,
 .caixa_input textarea:focus {
-    border-color: #ac4147; 
+    border-color: var(--dark-color); 
 }
 
 #salvar {
     display: block;
     width: 100%;
     padding: 10px;
-    background-color: #ac4147;
+    background-color: var(--dark-color);
     color: #fff;
     border: none;
     border-radius: 4px;
@@ -66,7 +75,7 @@ body {
 }
 
 #salvar:hover {
-    background-color: #822f34; 
+    background-color: var(--differential-color); 
 }
 
 .notification {
@@ -94,6 +103,33 @@ body {
 .notification.fade-out {
     opacity: 0;
 }
+
 .hidden {
     display: none;
+}
+
+.caixa_input select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid var(--differential-color); 
+    border-radius: 4px;
+    background-color: var(--background-color); 
+    color: var(--dark-color);
+    transition: border-color 0.3s ease; 
+}
+
+.caixa_input select:focus {
+    border-color: var(--dark-color); 
+    outline: none; 
+}
+
+.caixa_input select:hover {
+    border-color: var(--differential-color); 
+}
+
+.caixa_input select option {
+    padding: 10px; 
+    background-color: var(--dark-color); 
+    color: #f4f4f4; 
 }

@@ -1,3 +1,12 @@
+:root {
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
@@ -29,7 +38,7 @@ body {
     position: block;
     top: 40px;
     right: 650px; 
-    background: #ac4147; 
+    background: var(--dark-color); 
     color: #fff; 
     border-radius: 50%; 
     width: 30px; 
@@ -50,15 +59,15 @@ body {
 }
 h1 {
     text-align: center;
-    color: #fff;
+    color: var(--main-color);
     margin: 20px 0;
     padding-top: 10px;
-    border-top: 3px solid #ac4147;
+    border-top: 3px solid var(--dark-color);
 }
 
 p {
     text-align: center;
-    color: #666;
+    color: var(--dark-color);
     font-size: 1.1rem;
     margin: 0;
 }
@@ -69,6 +78,7 @@ p {
     justify-content: center;
     gap: 20px;
     padding: 20px;
+    align-items: stretch; /* Faz todas as caixas ficarem com a mesma altura */
 }
 
 .menu {
@@ -78,9 +88,11 @@ p {
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 300px;
-    margin-bottom: 20px;
+    min-height: 380px; /* Altura fixa para todas as caixas */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
-
 .menu:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
@@ -89,28 +101,33 @@ p {
 
 .produto-info {
     padding: 20px;
+    flex-grow: 1;
 }
 
 .nome-produto {
     font-size: 1.5rem;
-    color: #333;
+    color: var(--dark-color);
     margin: 0 0 10px;
 }
 
 .descricao {
     font-size: 1rem;
     color: #666;
+    max-height: 1000px; /* Garante que todas tenham o mesmo tamanho */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .preco {
-    padding: 0 10px 3px;
+    padding: 10px;
     background: #f9f9f9;
     border-top: 2px solid #dcdcdc;
+    text-align: center;
 }
 
 .preco p {
     font-size: 1.3rem;
-    color: #ac4147;
+    color: var(--dark-color);
     margin: 0;
 }
 
@@ -121,22 +138,23 @@ p {
     padding: 10px;
     text-align: center;
     text-decoration: none;
-    background: #ac4147;
+    background: var(--dark-color);
     color: #fff;
     font-size: 1.1rem;
     border-radius: 5px;
     transition: background 0.3s ease, transform 0.3s ease;
+    margin-top: auto;
 }
 
 .btn-adicionar:hover {
-    background: #993d3b;
+    background: var(--differential-color);
     transform: scale(1.05);
 }
 
 .estoque {
-    font-size: 14px;          /* Tamanho da fonte */
-    margin: 10px 0;           /* Margem superior e inferior */
-    font-weight: bold;        /* Fonte em negrito */
+    font-size: 14px;        
+    margin: 10px 0;         
+    font-weight: bold;      
 }
 
 .estoque-positivo {
@@ -151,4 +169,81 @@ p {
     font-size: 16px; 
     font-weight: bold; 
     margin: 10px 0;     
+}
+
+form {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+form label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+form select {
+    padding: 8px 1px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    background-color: #fff;
+    color: #333;
+    max-width: 1500px;
+    transition: border-color 0.3s ease;
+}
+
+form select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+option {
+    padding: 10px;
+    font-size: 14px;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    display: none; 
+    opacity: 1; 
+    transition: opacity 0.5s ease; 
+}
+
+.notification.visible {
+    display: block; 
+}
+
+.notification.hidden {
+    display: none; 
+}
+
+.notification.fade-out {
+    opacity: 0;
+}
+.hidden {
+    display: none;
+}
+
+.btn-adicionar:disabled {
+    background-color: #cccccc !important;
+    cursor: not-allowed;
+}
+
+.estoque-zero {
+    color: #f44336;
+    font-weight: bold;
 }

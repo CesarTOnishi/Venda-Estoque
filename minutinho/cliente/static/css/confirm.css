@@ -1,10 +1,10 @@
 :root {
-    --main-color: #ac4147; /* Cor principal */
-    --dark-color: #411f2d; /* Cor escura */
-    --background-color: #333; /* Cor de fundo */
-    --button-color: #ff6f61; /* Cor dos botões */
-    --button-hover-color: #e64a19; /* Cor ao passar o mouse nos botões */
-    --text-color: #fff; /* Cor do texto */
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
 }
 
 /* Estilizando o container de confirmação */
@@ -12,7 +12,7 @@
     max-width: 600px;
     margin: 50px auto;
     padding: 20px;
-    background-color: var(--dark-color);
+    background-color: var(--main-color);
     border-radius: 12px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
     color: var(--text-color);
@@ -20,18 +20,19 @@
 }
 
 .confirm-container h1 {
-    color: var(--main-color);
+    color: var(--dark-color);
     margin-bottom: 20px;
 }
 
 .confirm-container p {
+    color: var(--dark-color);
     font-size: 18px;
     margin-bottom: 30px;
 }
 
 /* Estilizando o botão de confirmação */
 .confirm-button {
-    background-color: var(--button-color);
+    background-color: var(--dark-color);
     border: none;
     color: var(--text-color);
     padding: 15px 25px;
@@ -43,13 +44,13 @@
 }
 
 .confirm-button:hover {
-    background-color: var(--button-hover-color);
+    background-color: var(--differential-color);
 }
 
 /* Estilizando o botão de cancelamento */
 .cancel-button {
     display: inline-block;
-    background-color: #555;
+    background-color: rgb(200, 53, 53);
     color: var(--text-color);
     padding: 15px 25px;
     font-size: 16px;
@@ -60,5 +61,5 @@
 }
 
 .cancel-button:hover {
-    background-color: #333;
+    background-color: rgb(213, 164, 73);
 }

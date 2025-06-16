@@ -11,4 +11,5 @@ urlpatterns = [
     path('editar/<int:item_id>/', views.editar, name='editar'),
     path('editar_compra/<int:item_id>/', views.editar_pedido, name='editar_pedido'),
     path('compra/<int:item_id>/pdf/', notacompra, name='notacompra'),
+
 ]

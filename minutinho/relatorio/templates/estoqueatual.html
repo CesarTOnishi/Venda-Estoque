@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Vendas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #fff;
+            color: #000;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .empresa-info p {
+            margin: 1px 0;
+        }
+        .empresa-info h2 {
+            margin-bottom: 10px;
+        }
+        .header .logo {
+            max-width: 100px; 
+        }
+        .header .logo img {
+            max-width: 150px;
+            height: 100px;
+        }
+        .header .empresa-info {
+            text-align: left;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table width="100%">
+            <tr>
+                <td class="logo" width="30%">
+                    <img src="https://newlifenet.com.br/wp-content/uploads/2023/01/LOGO.png" alt="Logo da Empresa">
+                </td>
+                <td class="empresa-info" width="70%">
+                    <h2>Mercado NewLife</h2>
+                    <p><strong>Endereço:</strong>Rua Reinaldo Nassi, 546</p>
+                    <p><strong>Cidade:</strong>Diamante do Norte</p>
+                    <p><strong>CEP:</strong>87990-000</p>
+                    <p><strong>Email:</strong>exemplo@empresa.com.br</p>
+                    <p><strong>Telefone:</strong> (44) 99999-9999</p>
+                    <p><strong>CNPJ:</strong> 99.999.999/0001-99</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <h1>Relatório de Estoque</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID do Produto</th>
+                <th>Produto</th>
+                <th>Categoria</th>
+                <th>Quantidade</th>
+                <th>Estoque</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in estoque %}
+            <tr class="{{ produto.status }}">
+                <td>{{ produto.id }}</td>
+                <td>{{ produto.nome }}</td>
+                <td>{{ produto.categoria_nome }}</td>
+                <td>{{ produto.quantidade_total }}</td>
+                <td>
+                    {% if produto.status == 'fora_de_estoque' %}
+                        <span style="color: red;">Fora de Estoque</span>
+                    {% elif produto.status == 'pouco_estoque' %}
+                        <span style="color: orange;">Pouco em Estoque</span>
+                    {% else %}
+                        <span style="color: rgb(0, 255, 34);">Em Estoque</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">Nenhum produto encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

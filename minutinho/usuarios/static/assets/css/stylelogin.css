@@ -1,7 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=SUSE:wght@100..800&display=swap');
 
+:root{
+     
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
+}
+
+
 body {
-    background-color: #333; 
+    background-color: var(--main-color); 
     color: #f0f0f0; 
     font-family: "SUSE", sans-serif;
     margin: 0;
@@ -13,7 +24,7 @@ body {
 }
 
 #container {
-    background-color: #444;
+    background-color: var(--dark-color);
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); 
@@ -68,20 +79,20 @@ body {
 }
 
 #cadastro a {
-    color: #ac4147; 
+    color:  var(--background-color); 
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.3s;
 }
 
 #cadastro a:hover {
-    color: #993d3b; 
+    color: var(--differential-color); 
 }
 
 .botao_logar {
     width: 100%;
     padding: 12px;
-    background-color: #ac4147; 
+    background-color: var(--differential-color); 
     border: none;
     border-radius: 5px;
     color: #fff; 
@@ -91,7 +102,7 @@ body {
 }
 
 .botao_logar:hover {
-    background-color: #993d3b; 
+    background-color: var(--contrast-color); 
     transform: scale(1.05);
 }
 
@@ -100,6 +111,6 @@ body {
 }
 
 .caixa_input input:focus {
-    border-bottom: 2px solid #ac4147;
+    border-bottom: 2px solid var(--dark-color);
     transition: border-bottom 0.3s ease;
 }

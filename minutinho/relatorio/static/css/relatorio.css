@@ -1,0 +1,100 @@
+:root{
+     
+    --main-color: #ac4147;
+    --dark-color: #411f2d;
+    --light-color: #ffc27f;
+    --contrast-color: #f88863;
+    --differential-color: #ffe29a;
+
+}
+
+body {
+    background-color: #333;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #333;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: var(--main-color);
+    text-align: center;
+}
+
+h2 {
+    color: var(--dark-color);
+}
+
+.report-links {
+    margin-top: 20px;
+}
+
+.report-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.report-links ul li {
+    margin: 15px 0; 
+}
+
+.report-links ul li a {
+    text-decoration: none;
+    color: #333;
+    padding: 10px;
+    background-color: #e2e2e2;
+    border-radius: 5px;
+    display: block; 
+    transition: background-color 0.3s;
+}
+
+.report-links ul li a:hover {
+    background-color: var(--main-color);
+    color: white;
+}
+.filter-section {
+    background-color: #444;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.filter-section h2 {
+    color: #e2e2e2;
+}
+
+.filter-section label {
+    display: block;
+    margin: 10px 0 5px;
+    color: #fff;
+}
+
+.filter-section select {
+    padding: 8px;
+    margin-bottom: 15px;
+    width: 100%;
+    border-radius: 0px;
+    color: white;
+    background-color: #333;
+}
+
+.filter-section button {
+    padding: 10px;
+    background-color: #ac4147;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.filter-section button:hover {
+    background-color: #411f2d;
+}

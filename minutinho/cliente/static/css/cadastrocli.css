@@ -1,6 +1,15 @@
+:root {
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
+}
+
 body {
     background-color: #333; 
-    color: #f0f0f0; 
+    color: var(--dark-color); 
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
@@ -10,9 +19,10 @@ body {
     max-width: 700px;
     margin: 40px auto;
     padding: 20px;
-    background-color: #444; 
+    background-color: var(--main-color); 
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: var(--dark-color);
 }
 
 #header {
@@ -21,7 +31,7 @@ body {
 }
 
 h1 {
-    color: #ac4147;
+    color: var(--dark-color);
     margin: 0;
     font-size: 2rem;
 }
@@ -54,20 +64,20 @@ label {
     padding: 12px;
     border: 1px solid #666;
     border-radius: 8px;
-    background-color: #555; 
-    color: #fff; 
+    background-color: var(--background-color); 
+    color: var(--dark-color); 
     font-size: 1rem;
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .caixa_input input:focus {
-    border-color: #ac4147;
-    box-shadow: 0 0 8px rgba(172, 65, 71, 0.5);
+    border-color: var(--dark-color);
+    box-shadow: 0 0 8px var(--differential-color);
     outline: none;
 }
 
 button#salvar {
-    background-color: #ac4147; 
+    background-color: var(--dark-color); 
     color: #fff; 
     border: none;
     padding: 12px 20px;
@@ -78,7 +88,7 @@ button#salvar {
 }
 
 button#salvar:hover {
-    background-color: #993d3b; 
+    background-color: var(--differential-color); 
     transform: scale(1.05);
 }
 

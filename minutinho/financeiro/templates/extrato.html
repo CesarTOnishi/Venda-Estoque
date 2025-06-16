@@ -1,0 +1,82 @@
+{% extends 'tela.html' %}
+{% load static %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'css/extrato.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <title>Extrato</title>
+{% endblock %}
+
+{% block 'dashboard' %}
+{% csrf_token %}
+<body>
+    <div class="container">
+        <nav class="menu">
+            <a class="nav-button" href="{% url 'financeiro' %}">Extrato</a>
+            <a class="nav-button" href="{% url 'contasPagar' %}">Contas a Pagar</a>
+            <a class="nav-button" href="{% url 'contasReceber' %}">Contas a Receber</a>
+        </nav>
+
+        <div class="saldo">
+            <h3>Saldo Atual:</h3>
+            <p class="{% if saldo_total >= 0 %}saldo-positivo{% else %}saldo-negativo{% endif %}">
+                R$ {{ saldo_total|floatformat:2 }}
+            </p>
+        </div>
+    
+        <section id="extrato" class="section active">
+            <h2>Extrato Financeiro</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Metodo de Pagamento</th>
+                        <th>Valor</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for extrato in extratos %}
+                        <tr>
+                            <td>{{ extrato.data_transacao|date:"d/m/Y H:i" }}</td>
+                            <td>{{ extrato.descricao }}</td>
+                            <td>{{ extrato.metodo_pagamento }}</td>
+                            <td class="{% if extrato.tipo == 'entrada' %}valor-positivo{% else %}valor-negativo{% endif %}">
+                                {% if extrato.tipo == 'entrada' %}
+                                    + R$ {{ extrato.valor|floatformat:2 }}
+                                {% else %}
+                                    - R$ {{ extrato.valor|floatformat:2 }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if extrato.tipo == 'entrada' %}
+                                    Entrada
+                                {% else %}
+                                    Saída
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">Nenhuma transação paga encontrada.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    
+        <section id="contas-pagar" class="section">
+            <h2>Contas a Pagar</h2>
+            <p>Aqui ficará a listagem das contas a pagar...</p>
+        </section>
+    
+    </div>
+    
+
+    <script src="{% static 'js/extrato.js' %}"></script>
+
+</body>
+{% endblock %}

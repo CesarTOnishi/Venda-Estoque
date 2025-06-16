@@ -1,9 +1,11 @@
-:root {
-    --primary-color: #ac4147;
-    --secondary-color: #411f2d;
-    --background-color: #333;
-    --text-color: #eaeaea;
-    --accent-color: #e87b7e;
+:root{
+     
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
 }
 
 body {
@@ -20,13 +22,13 @@ form {
     max-width: 1200px;
     margin: 50px auto;
     padding: 40px;
-    background-color: var(--secondary-color);
+    background-color: var(--main-color);
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 button {
-    background-color: var(--primary-color);
+    background-color: var(--dark-color);
     color: #fff;
     border: none;
     padding: 14px 28px;
@@ -44,10 +46,10 @@ button {
 #search {
     padding: 14px;
     border-radius: 8px;
-    border: none;
+    border: 2px solid #3b6790;
     width: 100%;
     font-size: 18px;
-    background-color: #444;
+    background-color: var(--dark-color);
     color: var(--text-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
@@ -56,7 +58,7 @@ button {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
-    background-color: #444;
+    background-color: var(--dark-color);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5);
@@ -69,23 +71,24 @@ button {
 }
 
 .tabela_compra th {
-    background-color: var(--primary-color);
-    color: #fff;
+    background-color: var(--dark-color);
+    color:var(--main-color);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 .tabela_compra td {
-    color: var(--text-color);
+    color: var(--dark-color);
     border-bottom: 1px solid #555;
+    background-color: var(--main-color);
 }
 
 .tabela_compra tr:nth-child(even) {
-    background-color: #3b3b3b;
+    background-color: var(--dark-color);
 }
 
 .tabela_compra tr:nth-child(odd) {
-    background-color: #2e2e2e;
+    background-color: var(--main-color);
 }
 
 .tabela_compra a {
@@ -95,13 +98,19 @@ button {
 }
 
 .pdf-button {
-    background-color: var(--primary-color);
+    background-color: var(--dark-color);
     color: #fff;
     padding: 10px 20px;
     border-radius: 6px;
     font-size: 14px;
     text-align: center;
     display: inline-block;
+}
+.pdf-button:hover {
+    background-color: var(--differential-color);
+    color: #fff;
+    transition: background-color 0.3s ease;
+
 }
 
 .caixa {
@@ -129,7 +138,7 @@ input[type="hidden"] {
 .botao {
     display: inline-block;
     padding: 12px 24px;
-    background-color: #ac4147;
+    background-color: var(--dark-color);
     color: #fff;
     border-radius: 6px;
     text-decoration: none;
@@ -140,5 +149,5 @@ input[type="hidden"] {
 }
 
 .botao:hover {
-    background-color: #ff676d;
+    background-color: var(--differential-color);
 }

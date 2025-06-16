@@ -1,99 +1,129 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% load static%}
+{% extends "tela.html" %}
+{% load static %}
+
+{% block 'head' %}
     <link rel="stylesheet" href="{% static 'css/produtos.css'%}">
     <title>Adicionar ao Estoque</title>
-</head>
+{% endblock %}
+
 <body>
-    <main id="container">
-        <form id="lista_cadastro" action="{% url 'estoque' %}" method="POST">{% csrf_token %}
-            <div id="header">
-                <h1>Estoque</h1>
-            </div>
+    {% block 'dashboard' %}
+        <main id="container">
+            <form id="lista_cadastro" action="{% url 'estoque' %}" method="POST">{% csrf_token %}
+                <div id="header">
+                    <h1>Estoque</h1>
+                </div>
 
-            <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
-                <span id="notification-message">
-                    {% if errors %}
-                        {% for error in errors %}
-                            {{ error }}<br>
-                        {% endfor %}
-                    {% endif %}
-                </span>
-                <span class="close" onclick="closeNotification()">&times;</span>
-            </div>
-            <div class="caixa">
-                <label for="nome">
-                    Nome do Produto:
-                    <div class="caixa_input">
-                        <input type="text" id="usuario" name="nome" value="{{nome}}">
-                    </div>
-                </label>
-            </div>
+                <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+                    <span id="notification-message">
+                        {% if errors %}
+                            {% for error in errors %}
+                                {{ error }}<br>
+                            {% endfor %}
+                        {% endif %}
+                    </span>
+                    <span class="close" onclick="closeNotification()">&times;</span>
+                </div>
+                <div class="caixa">
+                    <label for="nome">
+                        Nome do Produto:
+                        <div class="caixa_input">
+                            <input type="text" id="usuario" name="nome" value="{{nome}}">
+                        </div>
+                    </label>
+                </div>
 
-            <div class="caixa">
-                <label for="estoque">
-                    Estoque
-                    <div class="caixa_input">
-                        
-                        <input type="number" id="usuario" name="estoque" value="{{estoque}}">
-                    </div>
-                </label>
-            </div>
+                <div class="caixa">
+                    <label for="categoria">
+                        Categoria:
+                        <div class="caixa_input">
+                            <select name="categoria" id="categoria">
+                                <option value="">Selecione uma categoria</option>
+                                {% for categoria in categorias %}
+                                    <option value="{{ categoria.nome }}" {% if categoria.nome == produto.categoria_nome %}selected{% endif %}>
+                                        {{ categoria.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </label>
+                </div>
 
-            <div class="caixa">
-                <label for="descricao">
-                    Descrição do produto
-                    <div class="caixa_input">
-                        <textarea id="descricao1" cols="21" rows="6" name="descricao">{{produto.descricao}}</textarea>
-                    </div>
-                </label>
-            </div>
+                <div class="caixa">
+                    <label for="estoque">
+                        Estoque
+                        <div class="caixa_input">
+                            
+                            <input type="number" id="usuario" name="estoque" value="{{estoque}}">
+                        </div>
+                    </label>
+                </div>
 
-            <div class="caixa">
-                <label for="preco">
-                    Valor:
-                    <div class="caixa_input">
-                        <input type="text" pattern="^\d+(\,\d{1,2})?$|^\d+\.\d{1,2}$" id="usuario" name="preco" value="{{value}}">
-                    </div>
-                </label>
-            </div>
+                <div class="caixa">
+                    <label for="descricao">
+                        Descrição do produto
+                        <div class="caixa_input">
+                            <textarea id="descricao1" cols="21" rows="6" name="descricao" maxlength="100"> {{produto.descricao}}</textarea>
+                            <div id="charCount">0/100</div>
+                        </div>
+                    </label>
+                </div>
 
-            <button type="submit" id="salvar">
-                Inserir Produto
-            </button>
-        </form>
-    </main>
-    <script>
-            function closeNotification() {
-    const notification = document.getElementById('notification');
-    notification.classList.add('fade-out'); 
-    setTimeout(() => {
-        notification.classList.remove('visible', 'fade-out');
-        notification.classList.add('hidden'); 
-    }, 500); 
-}
+                <div class="caixa">
+                    <label for="preco">
+                        Valor:
+                        <div class="caixa_input">
+                            <input type="text" pattern="^\d+(\,\d{1,2})?$|^\d+\.\d{1,2}$" id="usuario" name="preco" value="{{value}}">
+                        </div>
+                    </label>
+                </div>
 
-function showNotification(message) {
-    const notification = document.getElementById('notification');
-    const messageSpan = document.getElementById('notification-message');
+                <button type="submit" id="salvar">
+                    Inserir Produto
+                </button>
+            </form>
+        </main>
+        <script>
+                const textarea = document.getElementById('descricao1');
+        const charCount = document.getElementById('charCount');
 
-    messageSpan.innerHTML = message;
-    notification.classList.add('visible');
-    notification.classList.remove('hidden');
+        textarea.addEventListener('input', function() {
+            const currentLength = textarea.value.length;
+            charCount.textContent = `${currentLength}/100`; 
+        });
 
-    setTimeout(() => {
-        closeNotification();
-    }, 5000);
-}
-if ($('.notification').hasClass('visible')) {
-            setTimeout(() => {
-                closeNotification();
-            }, 5000);
+        window.onload = function() {
+            const currentLength = textarea.value.length;
+            charCount.textContent = `${currentLength}/100`;
         }
-</script>
+                function closeNotification() {
+        const notification = document.getElementById('notification');
+        notification.classList.add('fade-out'); 
+        setTimeout(() => {
+            notification.classList.remove('visible', 'fade-out');
+            notification.classList.add('hidden'); 
+        }, 500); 
+    }
+
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        const messageSpan = document.getElementById('notification-message');
+
+        messageSpan.innerHTML = message;
+        notification.classList.add('visible');
+        notification.classList.remove('hidden');
+
+        setTimeout(() => {
+            closeNotification();
+        }, 5000);
+    }
+    if ($('.notification').hasClass('visible')) {
+                setTimeout(() => {
+                    closeNotification();
+                }, 5000);
+            }
     </script>
+        </script>
+    {% endblock %}
 </body>
 </html>

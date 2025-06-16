@@ -129,6 +129,8 @@
     <div class="total">
         <p><strong>Quantidade Total de Itens:</strong> {{ quantidade_total }}</p>
         <p><strong>Total Geral:</strong> R$ {{ total_geral|floatformat:2 }}</p>
+        <p><strong>Método de Pagamento:</strong> {{ metodo_pagamento|formatarPagamento }}</p>
+        <p><strong>Parcelas:</strong> {{ parcelas }}x de R$ {{ valor_parcela|floatformat:2 }}</p>
     </div>
 </body>
 </html>

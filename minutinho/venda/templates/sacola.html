@@ -1,11 +1,12 @@
 {% load static %}
-<!DOCTYPE html>
+{% load math_tags %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/stylesacola.css' %}">
     <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <title>Carrinho de Compra</title>
 </head>
 <body>
@@ -18,15 +19,13 @@
             {% csrf_token %}
 
             <div class="client-selection">
-                <label for="cliente_nome">Selecione o Cliente:</label>
-                <input type="text" name="cliente_nome" id="cliente_nome" class="inputcliente" placeholder="Cliente..." list="clientes">
-                <input type="hidden" name="cliente_id" id="cliente_id">
-
-                <datalist id="clientes">
+                <label for="cliente_id">Selecione o Cliente:</label>
+                <select name="cliente_id" id="cliente_id" class="inputcliente" required>
+                    <option value="">Selecione um cliente...</option>
                     {% for cliente in clientes %}
-                        <option value="{{ cliente.nome }}" data-id="{{ cliente.id }}"></option>
+                        <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
                     {% endfor %}
-                </datalist>
+                </select>
             </div>
 
             <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
@@ -35,7 +34,7 @@
                         {% for error in errors %}
                             {{ error }}<br>
                         {% endfor %}
-                    {% endif %}    
+                    {% endif %}
                 </span>
                 <span class="close" onclick="closeNotification()">&times;</span>
             </div>
@@ -57,60 +56,160 @@
                         <td>{{ car.nome }}</td>
                         <td>{{ car.quantidade }}</td>
                         <td>{{ car.estoque }}</td>
-                        <td>{{ car.valor_unitario }}</td>
-                        <td>{{ car.valor_total }}</td>
+                        <td>R$:{{ car.valor_unitario }}</td>
+                        <td>R$:{{ car.valor_total }}</td>
                         <td>
                             <a href="{% url 'dellcarrinho' car.id %}" class="delete-item">
                                 <img width="24" height="24" src="{% static 'img/Deletar.png' %}" alt="Remover Item">
                             </a>
                         </td>
                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">Carrinho Vazio</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
-
-            <div class="total-section">
-                <h1>Valor Total: R$ {{ valor_geral|floatformat:2 }}</h1>
-            </div>
+            
+            <div class="pagamento">
+                <div class="metodo-pagamento">
+                    <label for="metodo_pagamento">Método de Pagamento:</label>
+                    <select name="metodo_pagamento" id="metodo_pagamento" class="inputpagamento" required>
+                        <option value="">Selecione um método...</option>
+                        {% for key, value in tipo_pagamento.items %}
+                            <option value="{{ key }}" {% if metodo_selecionado == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div id="condicao-pagamento-section" class="condicao-pagamento-section {% if not condicao_selecionada %}hidden{% endif %}">
+                    <h3>Condições de Pagamento</h3>
+                    <div class="form-group">
+                        <label for="condicao_pagamento_id">Selecione a condição:</label>
+                        <select name="condicao_pagamento_id" id="condicao_pagamento_id" required>
+                            <option value="" disabled selected>Selecione uma condição</option>
+                            {% for condicao in condicoes_pagamento %}
+                                <option value="{{ condicao.id }}"
+                                    data-s="{{ condicao.parcelas }}"
+                                    data-juros="{{ condicao.juros }}"
+                                    data-desconto="{{ condicao.desconto }}"
+                                    data-valor-parcela="{{ valor_geral|divide:condicao.parcelas|floatformat:2 }}"
+                                    data-valor-final="{{ valor_geral|floatformat:2 }}"
+                                    {% if condicao_selecionada and condicao_selecionada.id == condicao.id %}selected{% endif %}>
+                                    {{ condicao.nome }} ({{ condicao.get_tipo_pagamento_display }} - {{ condicao.parcelas }}x)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                
+                    <div class="condicao-detalhes mt-3" {% if not condicao_selecionada %}style="display:none;"{% endif %}>
+                        {% if condicao_selecionada %}
+                            <h4>Detalhes da Condição</h4>
+                            <p><strong>Forma de Pagamento:</strong> {{ condicao_selecionada.get_tipo_pagamento_display }}</p>
+                            <p><strong>Parcelas:</strong> {{ condicao_selecionada.parcelas }}x de R$ {{ valor_parcela|floatformat:2 }}</p>
+                            <p><strong>Valor Total:</strong> R$ {{ valor_final|floatformat:2 }}</p>
+                            
+                            {% if condicao_selecionada.desconto > 0 %}
+                            <p><strong>Desconto:</strong> {{ condicao_selecionada.desconto }}%</p>
+                            {% endif %}
+                            
+                            {% if condicao_selecionada.juros > 0 %}
+                            <p><strong>Juros:</strong> {{ condicao_selecionada.juros }}%</p>
+                            {% endif %}
+                        {% else %}
+                            <p>Selecione uma condição de pagamento para ver os detalhes.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            
 
             <button type="submit" name="button" class="realizar">Enviar Pedido</button>
         </form>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="{% static 'js/sacolajs.js' %}"></script>
     <script>
-        function closeNotification() {
-            const notification = document.getElementById('notification');
-            notification.classList.add('fade-out'); 
-            setTimeout(() => {
-                notification.classList.remove('visible', 'fade-out');
-                notification.classList.add('hidden'); 
-            }, 500); 
+ $(document).ready(function() {
+    // Inicializa Select2 apenas no campo de cliente
+    $('#cliente_id').select2({
+        placeholder: "Selecione um cliente...",
+        allowClear: true
+    });
+
+    // Quando o método de pagamento for alterado
+    $('#metodo_pagamento').change(function() {
+        var metodoPagamento = $(this).val();
+        var valorTotal = parseFloat("{{ valor_geral|default:0 }}");
+
+        if (metodoPagamento && valorTotal > 0) {
+            $.ajax({
+                url: "{% url 'api_condicoes_pagamento' %}",
+                data: { 'metodo': metodoPagamento },
+                method: "GET",
+                success: function(response) {
+                    var selectCondicao = $('#condicao_pagamento_id');
+                    selectCondicao.empty();
+                    selectCondicao.append('<option value="" disabled selected>Selecione uma condição</option>');
+
+                    response.forEach(function(condicao) {
+                        // Calcula os valores para cada condição
+                        var valorComDesconto = valorTotal * (1 - condicao.desconto/100);
+                        var valorFinal = valorComDesconto * (1 + condicao.juros/100);
+                        var valorParcela = condicao.parcelas > 0 ? valorFinal / condicao.parcelas : valorFinal;
+                        
+                        selectCondicao.append(
+                            '<option value="' + condicao.id + '" ' +
+                            'data-parcelas="' + condicao.parcelas + '" ' +
+                            'data-juros="' + condicao.juros + '" ' +
+                            'data-desconto="' + condicao.desconto + '" ' +
+                            'data-valor-parcela="' + valorParcela.toFixed(2) + '" ' +
+                            'data-valor-final="' + valorFinal.toFixed(2) + '">' +
+                            condicao.nome + ' (' + condicao.tipo_display + ' - ' + condicao.parcelas + 'x)' +
+                            '</option>'
+                        );
+                    });
+
+                    $('#condicao-pagamento-section').removeClass('hidden');
+                },
+                error: function() {
+                    alert("Erro ao carregar condições de pagamento.");
+                }
+            });
+        } else {
+            $('#condicao-pagamento-section').addClass('hidden');
         }
+    });
 
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            const messageSpan = document.getElementById('notification-message');
+    // Quando a condição de pagamento for alterada
+    $('#condicao_pagamento_id').change(function() {
+        var selectedOption = $(this).find('option:selected');
+        var parcelas = selectedOption.data('parcelas');
+        var juros = selectedOption.data('juros');
+        var desconto = selectedOption.data('desconto');
+        var valorParcela = selectedOption.data('valor-parcela');
+        var valorFinal = selectedOption.data('valor-final');
+        
+        // Atualiza os detalhes na página
+        $('.condicao-detalhes').html(`
+            <h4>Detalhes da Condição</h4>
+            <p><strong>Forma de Pagamento:</strong> ${selectedOption.text().match(/\((.*?)\s*-/)[1]}</p>
+            <p><strong>Parcelas:</strong> ${parcelas}x de R$ ${valorParcela}</p>
+            <p><strong>Valor Total:</strong> R$ ${valorFinal}</p>
+            ${desconto > 0 ? '<p><strong>Desconto:</strong> ' + desconto + '%</p>' : ''}
+            ${juros > 0 ? '<p><strong>Juros:</strong> ' + juros + '%</p>' : ''}
+        `).show();
+    });
 
-            messageSpan.innerHTML = message;
-            notification.classList.add('visible');
-            notification.classList.remove('hidden');
-
-            setTimeout(() => {
-                closeNotification();
-            }, 5000);
-        }
-
-        document.getElementById('cliente_nome').addEventListener('input', function() {
-            var input = this;
-            var datalist = document.getElementById('clientes');
-            var selectedOption = Array.from(datalist.options).find(option => option.value === input.value);
-
-            if (selectedOption) {
-                document.getElementById('cliente_id').value = selectedOption.getAttribute('data-id');
-            } else {
-                document.getElementById('cliente_id').value = '';  
-            }
-        });
-    </script>
+    // Fecha a notificação automaticamente após 5 segundos
+    if ($('#notification').hasClass('visible')) {
+        setTimeout(() => {
+            $('#notification').removeClass('visible').addClass('hidden');
+        }, 5000);
+    }
+});
+        </script>
 </body>
 </html>

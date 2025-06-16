@@ -1,0 +1,47 @@
+{% extends 'tela.html' %}
+{% load static %}
+
+{% block 'head' %}
+<link rel="stylesheet" href="{% static 'css/categoria.css' %}">
+<title>Categorias</title>
+{% endblock %}
+
+{% block 'dashboard' %}
+<div class="container-principal">
+    <div class="botoes-superiores">
+        <a href="{% url 'lista' %}" class="botao">Retornar</a>
+        <a href="{% url 'cadastroCategoria' %}" class="botao">Adicionar Nova Categoria</a>
+    </div>
+    
+    <div class="principal">
+        <h2>Lista de Categorias</h2>
+        
+        <table class="tabela_categoria">
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th>Editar</th>
+                    <th>Deletar</th>
+                </tr>
+            </thead>
+            <tbody class="corpo_tabela">
+                {% for categoria in categorias %}
+                <tr>
+                    <td>{{ categoria.nome }}</td>
+                    <td>
+                        <a href="{% url 'editCategoria' categoria.id %}">
+                            <img width="30" height="30" src="{% static 'img/Editar.png' %}" alt="Editar">
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'deletarCategoria' categoria.id %}">
+                            <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Deletar">
+                        </a>       
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

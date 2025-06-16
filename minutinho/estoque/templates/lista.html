@@ -2,42 +2,62 @@
 {% load static %}
 
 {% block 'head' %}
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/listastyle.css' %}">
     <title>Tela de venda</title>
 {% endblock %}
 <body>
     {% block 'dashboard' %}
-    <form action="." method="POST">
+    <form action="." method="GET">
         <div class="pesquisa">
-                {% csrf_token %}
-                <div class="search-container">
-                    <input type="text" id="search" placeholder="Buscar produto...">
-                </div>
-                <a href="{% url 'estoque' %}" class="botao">Adicionar Produto</a>
+            {% csrf_token %}
+            <div class="search-container">
+                <input type="text" id="pesquisa" name="pesquisa" placeholder="Buscar produto...">
+            </div>
+            <div class="filtro_categoria">
+                <label for="categoria">Filtrar por categoria:</label>
+                    <select name="categoria" id="categoria" onchange="this.form.submit()">
+                        <option value="">Todas as categorias</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" {% if categoria.id|stringformat:"s" == filtroCategoria %}selected{% endif %}>
+                            {{ categoria.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+            </div>
+            <a href="{% url 'categoria' %}" class="botao">Categorias</a>
+            <a href="{% url 'estoque' %}" class="botao">Adicionar Produto</a>
         </div>
 
         <div class="principal">
-            <table class="tabela_produto">
+            <table class="tabela_produto" id="productTable">
                 <thead>
-                    <tr> <th>Produto</th> <th>Estoque</th> <th>Descrição</th> <th>Preço</th> <th>Editar</th> <th>Deletar</th></tr>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Estoque</th>
+                        <th>Descrição</th>
+                        <th>Preço</th>
+                        <th>Categoria</th>
+                        <th>Editar</th>
+                        <th>Deletar</th>
+                    </tr>
                 </thead>
                 <tbody class="corpo_tabela">
                     {% for produto in produtos %}
                     <tr>
-                        <td>{{ produto.nome }}</td>
+                        <td class="product-name">{{ produto.nome }}</td>
                         <td>{{ produto.estoque }}</td>
                         <td>{{ produto.descricao }}</td>
-                        <td>{{ produto.preco }}</td>
-                        <td><a href="{% url 'editar' produto.id %}"> <img width="30" height="30" src="{% static 'img/Editar.png' %}"></a></td>
-                        <td><a href="{% url 'remover' produto.id %}"> <img width="30" height="30" src="{% static 'img/Deletar.png' %}"></a></td>
+                        <td>R$:{{ produto.preco }}</td>
+                        <td class="product-category">{{ produto.categoria.nome }}</td>
+                        <td><a href="{% url 'editarProd' produto.id %}"><img width="30" height="30" src="{% static 'img/Editar.png' %}"></a></td>
+                        <td><a href="{% url 'removerProd' produto.id %}"><img width="30" height="30" src="{% static 'img/Deletar.png' %}"></a></td>
                     </tr>
+                    {% endfor %}
                 </tbody>
-                {%endfor%}
             </table>
         </div>
-        <script src="{% static 'js/listajs.js' %}"></script>
     </form>
-    {%endblock%}
+    <script src="{% static 'js/listajs.js' %}"></script>
+    {% endblock %}
 </body>
 </html>

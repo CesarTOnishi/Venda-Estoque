@@ -1,22 +1,21 @@
-document.addEventListener('DOMContentLoaded', function() {
-    function filterTable() {
-        const query = document.getElementById('search').value.toLowerCase();
-        const rows = document.querySelectorAll('.tabela_produto tbody tr');
-        
-        rows.forEach(row => {
-            const cells = row.getElementsByTagName('td');
-            let match = false;
-            for (let i = 0; i < cells.length; i++) {
-                if (cells[i].textContent.toLowerCase().includes(query)) {
-                    match = true;
-                    break;
-                }
-            }
-            row.style.display = match ? '' : 'none';
-        });
-    }
+function aplicarFiltro() {
+    const searchValue = document.getElementById('pesquisa').value.toLowerCase();
+    const selectedCategory = document.getElementById('categoria').value.toLowerCase();
+    const rows = document.querySelectorAll('#productTable tbody tr');
 
-    document.getElementById('search').addEventListener('input', filterTable);
+    rows.forEach(row => {
+        const productName = row.querySelector('.product-name').textContent.toLowerCase();
+        const productCategory = row.querySelector('.product-category').textContent.toLowerCase();
 
-    addTableAnimations();
-});
+        const matchesSearch = productName.includes(searchValue);
+        const matchesCategory = selectedCategory === '' || productCategory === selectedCategory;
+
+        if (matchesSearch && matchesCategory) {
+            row.style.display = ''; 
+        } else {
+            row.style.display = 'none'; 
+        }
+    });
+}
+
+document.getElementById('pesquisa').addEventListener('input', aplicarFiltro);

@@ -1,0 +1,43 @@
+{% extends 'tela.html' %}
+{% load static %}
+
+{% block 'head' %}
+<title>Relatórios</title>
+<link rel="stylesheet" href="{% static 'css/relatorio.css' %}">
+{% endblock %}
+
+{% block 'dashboard' %}
+<div class="container">
+    <h1>Relatórios</h1>
+
+    <div class="filter-section">
+        <h2>Relatório de Vendas</h2>
+        <form method="GET" action="{% url 'relatoriovenda' %}">
+            <label for="quantidade">Filtro por Quantidade ou Valor:</label>
+            <select id="filtro_venda" name="filtro">
+                <option value="quantidade_alta">Quantidade Alta</option>
+                <option value="quantidade_baixa">Quantidade Baixa</option>
+                <option value="valor_alto">Maior Valor Venda</option>
+                <option value="valor_baixo">Menor Valor Venda</option>
+            </select>
+
+            <button type="submit">Gerar Relatório</button>
+        </form>
+    </div>
+
+    <div class="filter-section">
+        <h2>Relatório de Estoque</h2>
+        <form method="GET" action="{% url 'relatorioestoque' %}">
+            <label for="quantidade">Filtro:</label>
+            <select id="filtro_estoque" name="filtro">
+                <option value="estoque_total">Tudo</option>
+                <option value="sem_estoque">Fora de Estoque</option>
+                <option value="pouco_estoque">Pouco em Estoque</option>
+                <option value="estoque_alto">Estoque Alto</option>
+            </select>
+
+            <button type="submit">Gerar Relatório</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

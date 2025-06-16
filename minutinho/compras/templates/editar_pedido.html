@@ -17,6 +17,17 @@
             <span class="close" onclick="closeNotification()">&times;</span>
         </div>
 
+        <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
+            <span id="notification-message">
+                {% if errors %}
+                    {% for error in errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                {% endif %}
+            </span>
+            <span class="close" onclick="closeNotification()">&times;</span>
+        </div>
+
         <form id="pedidoForm" action="{% url 'editar_pedido' pedido.id %}" method="POST">
             {% csrf_token %}
             
@@ -80,137 +91,263 @@
             <input type="hidden" id="quantidades" name="quantidades">
             <input type="hidden" id="precos_unitarios" name="precos_unitarios">
 
+            <div class="pagamento">
+                <label for="metodo_pagamento">Método de Pagamento:</label>
+                <select name="metodo_pagamento" id="metodo_pagamento" class="inputpagamento" required>
+                    <option value="">Selecione um método...</option>
+                    <option value="boleto" {% if pedido.metodo_pagamento == 'boleto' %}selected{% endif %}>Boleto</option>
+                    <option value="pix" {% if pedido.metodo_pagamento == 'pix' %}selected{% endif %}>PIX</option>
+                    <option value="cartao_credito" {% if pedido.metodo_pagamento == 'cartao_credito' %}selected{% endif %}>Cartão de Crédito</option>
+                    <option value="cartao_debito" {% if pedido.metodo_pagamento == 'cartao_debito' %}selected{% endif %}>Cartão de Débito</option>
+                </select>
+            </div>
+            
+            <div id="parcelamento" style="display: none;">
+                <label for="parcelas">Número de Parcelas:</label>
+                <select name="parcelamento" id="parcelas" class="inputparcelamento">
+                    <option value="1">1x (à vista)</option>
+                    <option value="2">2x</option>
+                    <option value="3">3x</option>
+                    <option value="4">4x</option>
+                    <option value="5">5x</option>
+                    <option value="6">6x</option>
+                </select>
+            </div>
+
+            <div class="total-section">
+                <h2 id="parcelamento-info">Valor Total: R$ {{ valor_geral|floatformat:2 }}</h2>
+            </div>
+
             <button type="submit" id="salvar">Salvar Alterações</button>
         </form>
     </main>
     <script>
-        $(document).ready(function() {
-            // Inicializa o Select2 para o fornecedor e produto
-            $('#fornecedor-select').select2({
-                width: '100%',
-                placeholder: 'Selecione um Fornecedor',
-                ajax: {
-                    url: "{% url 'fornecedor_autocomplete' %}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            term: params.term
-                        };
-                    },
-                    processResults: function(data) {
-                        return {
-                            results: data.results
-                        };
-                    },
-                    cache: true
-                }
-            });
+$(document).ready(function() {
+    // Inicializa o Select2 para o fornecedor e produto
+    $('#fornecedor-select').select2({
+        width: '100%',
+        placeholder: 'Selecione um Fornecedor',
+        ajax: {
+            url: "{% url 'fornecedor_autocomplete' %}",
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    term: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        }
+    });
 
-            $('#produto-select').select2({
-                width: '100%',
-                placeholder: 'Selecione um Produto',
-                ajax: {
-                    url: "{% url 'produto_autocomplete' %}",
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            term: params.term
-                        };
-                    },
-                    processResults: function(data) {
-                        return {
-                            results: data.results
-                        };
-                    },
-                    cache: true
-                }
-            });
+    $('#produto-select').select2({
+        width: '100%',
+        placeholder: 'Selecione um Produto',
+        ajax: {
+            url: "{% url 'produto_autocomplete' %}",
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    term: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        }
+    });
 
-            function atualizarCamposOcultos() {
-                var produtos = [];
-                var quantidades = [];
-                var precosUnitarios = [];
+    // Função para atualizar os campos ocultos com os dados da tabela
+    function atualizarCamposOcultos() {
+        var produtos = [];
+        var quantidades = [];
+        var precosUnitarios = [];
 
-                $('#tabela-produtos tbody tr').each(function() {
-                    var produtoId = $(this).data('id');
-                    var quantidade = $(this).find('td:eq(1)').text().replace(',', '.');
-                    var precoUnitario = $(this).find('td:eq(2)').text().replace('R$: ', '').replace(',', '.');
+        $('#tabela-produtos tbody tr').each(function() {
+            var produtoId = $(this).data('id');
+            var quantidade = $(this).find('td:eq(1)').text().replace(',', '.');
+            var precoUnitario = $(this).find('td:eq(2)').text().replace('R$: ', '').replace(',', '.');
 
-                    produtos.push(produtoId);
-                    quantidades.push(quantidade);
-                    precosUnitarios.push(precoUnitario);
-                });
-
-                $('#produtos').val(produtos.join(','));
-                $('#quantidades').val(quantidades.join(','));
-                $('#precos_unitarios').val(precosUnitarios.join(','));
-            }
-
-            // Adicionar produto à tabela
-            $('#add-produto').click(function() {
-                var produtoId = $('#produto-select').val();
-                var produtoNome = $('#produto-select option:selected').text();
-                var quantidade = parseFloat($('#quantidade').val());
-                var precoUnitario = parseFloat($('#preco_unitario').val());
-
-                // Limpar mensagens de erro anteriores
-                $('#notification').removeClass('visible').addClass('hidden');
-                $('#notification-message').empty();
-
-                var erros = [];
-
-                if (!produtoId) {
-                    erros.push("Selecione um produto.");
-                }
-                if (quantidade <= 0) {
-                    erros.push("A quantidade deve ser maior que zero.");
-                }
-                if (precoUnitario < 0) {
-                    erros.push("O preço unitário não pode ser negativo.");
-                }
-
-                if (erros.length > 0) {
-                    erros.forEach(function(error) {
-                        $('#notification-message').append(error + '<br>');
-                    });
-                    $('#notification').removeClass('hidden').addClass('visible');
-
-                    // Ocultar a notificação após 5 segundos
-                    setTimeout(function() {
-                        $('#notification').removeClass('visible').addClass('hidden');
-                    }, 5000);
-
-                    return; // Para aqui se houver erros
-                }
-
-                var total = (quantidade * precoUnitario).toFixed(2);
-                var quantidadeFormatada = quantidade % 1 === 0 ? quantidade.toFixed(0) : quantidade.toFixed(2);
-                var precoUnitarioFormatado = precoUnitario.toFixed(2);
-
-                var linha = `
-                    <tr data-id="${produtoId}">
-                        <td>${produtoNome}</td>
-                        <td>${quantidadeFormatada}</td>
-                        <td>R$: ${precoUnitarioFormatado}</td>
-                        <td>R$: ${total}</td>
-                        <td><button type="button" class="remove-produto">Remover</button></td>
-                    </tr>
-                `;
-                $('#tabela-produtos tbody').append(linha);
-                atualizarCamposOcultos();
-
-                $('#produto-select').val('').trigger('change');
-                $('#quantidade').val('1');
-                $('#preco_unitario').val('0.00');
-            });
-
-            // Remover produto da tabela
-            $('#tabela-produtos').on('click', '.remove-produto', function() {
-                $(this).closest('tr').remove();
-                atualizarCamposOcultos();
-            });
+            produtos.push(produtoId);
+            quantidades.push(quantidade);
+            precosUnitarios.push(precoUnitario);
         });
+
+        $('#produtos').val(produtos.join(','));
+        $('#quantidades').val(quantidades.join(','));
+        $('#precos_unitarios').val(precosUnitarios.join(','));
+    }
+
+    // Função para calcular o valor total da compra
+    function calcularTotalCompra() {
+        let totalCompra = 0;
+
+        $('#tabela-produtos tbody tr').each(function() {
+            let quantidade = parseFloat($(this).find('td:eq(1)').text().replace(',', '.'));
+            let precoUnitario = parseFloat($(this).find('td:eq(2)').text().replace('R$: ', '').replace(',', '.'));
+
+            if (!isNaN(quantidade) && !isNaN(precoUnitario)) {
+                totalCompra += quantidade * precoUnitario;
+            }
+        });
+
+        return totalCompra;
+    }
+
+    // Função para atualizar o parcelamento
+    function atualizarParcelamento(totalCompra) {
+        let parcelas = parseInt($('#parcelas').val(), 10);
+
+        if (!isNaN(totalCompra) && totalCompra > 0 && !isNaN(parcelas) && parcelas > 0) {
+            let valorParcela = (totalCompra / parcelas).toFixed(2);
+            $('#parcelamento-info').html(`Parcelas: ${parcelas}x de R$ ${valorParcela}`);
+        }
+    }
+
+    // Exibir ou ocultar o campo de parcelamento com base no método de pagamento
+    $('#metodo_pagamento').change(function() {
+        if ($(this).val() === 'cartao_credito') {
+            $('#parcelamento').show();
+            let totalCompra = calcularTotalCompra();
+            atualizarParcelamento(totalCompra);
+        } else {
+            $('#parcelamento').hide();
+            $('#parcelamento-info').html(`Valor Total: R$ ${calcularTotalCompra().toFixed(2)}`);
+        }
+    });
+
+    // Atualizar o parcelamento ao mudar o número de parcelas
+    $('#parcelas').change(function() {
+        let totalCompra = calcularTotalCompra();
+        atualizarParcelamento(totalCompra);
+    });
+
+    // Adicionar produto à tabela
+    $('#add-produto').click(function() {
+        var produtoId = $('#produto-select').val();
+        var produtoNome = $('#produto-select option:selected').text();
+        var quantidade = parseFloat($('#quantidade').val());
+        var precoUnitario = parseFloat($('#preco_unitario').val());
+
+        // Limpar mensagens de erro anteriores
+        $('#notification').removeClass('visible').addClass('hidden');
+        $('#notification-message').empty();
+
+        var erros = [];
+
+        if (!produtoId) {
+            erros.push("Selecione um produto.");
+        }
+        if (quantidade <= 0) {
+            erros.push("A quantidade deve ser maior que zero.");
+        }
+        if (precoUnitario < 0) {
+            erros.push("O preço unitário não pode ser negativo.");
+        }
+
+        if (erros.length > 0) {
+            erros.forEach(function(error) {
+                $('#notification-message').append(error + '<br>');
+            });
+            $('#notification').removeClass('hidden').addClass('visible');
+
+            // Ocultar a notificação após 5 segundos
+            setTimeout(function() {
+                $('#notification').removeClass('visible').addClass('hidden');
+            }, 5000);
+
+            return; // Para aqui se houver erros
+        }
+
+        var total = (quantidade * precoUnitario).toFixed(2);
+        var quantidadeFormatada = quantidade % 1 === 0 ? quantidade.toFixed(0) : quantidade.toFixed(2);
+        var precoUnitarioFormatado = precoUnitario.toFixed(2);
+
+        var linha = `
+            <tr data-id="${produtoId}">
+                <td>${produtoNome}</td>
+                <td>${quantidadeFormatada}</td>
+                <td>R$: ${precoUnitarioFormatado}</td>
+                <td>R$: ${total}</td>
+                <td><button type="button" class="remove-produto">Remover</button></td>
+            </tr>
+        `;
+        $('#tabela-produtos tbody').append(linha);
+        atualizarCamposOcultos();
+
+        // Atualizar o valor total e o parcelamento
+        let totalCompra = calcularTotalCompra();
+        $('#parcelamento-info').html(`Valor Total: R$ ${totalCompra.toFixed(2)}`);
+
+        if ($('#metodo_pagamento').val() === 'cartao_credito') {
+            atualizarParcelamento(totalCompra);
+        }
+
+        // Limpar campos do formulário
+        $('#produto-select').val('').trigger('change');
+        $('#quantidade').val('1');
+        $('#preco_unitario').val('0.00');
+    });
+
+    // Remover produto da tabela
+    $('#tabela-produtos').on('click', '.remove-produto', function() {
+        $(this).closest('tr').remove();
+        atualizarCamposOcultos();
+
+        // Atualizar o valor total e o parcelamento
+        let totalCompra = calcularTotalCompra();
+        $('#parcelamento-info').html(`Valor Total: R$ ${totalCompra.toFixed(2)}`);
+
+        if ($('#metodo_pagamento').val() === 'cartao_credito') {
+            atualizarParcelamento(totalCompra);
+        }
+    });
+
+    // Inicializar o parcelamento com base no método de pagamento selecionado
+    if ($('#metodo_pagamento').val() === 'cartao_credito') {
+        $('#parcelamento').show();
+        let totalCompra = calcularTotalCompra();
+        atualizarParcelamento(totalCompra);
+    } else {
+        $('#parcelamento').hide();
+        $('#parcelamento-info').html(`Valor Total: R$ ${calcularTotalCompra().toFixed(2)}`);
+    }
+});
+function closeNotification() {
+    const notification = document.getElementById('notification');
+    notification.classList.add('fade-out'); 
+    setTimeout(() => {
+        notification.classList.remove('visible', 'fade-out');
+        notification.classList.add('hidden'); 
+    }, 500); 
+}
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    const messageSpan = document.getElementById('notification-message');
+
+    messageSpan.innerHTML = message;
+    notification.classList.add('visible');
+    notification.classList.remove('hidden');
+
+    setTimeout(() => {
+        closeNotification();
+    }, 5000);
+}
+if ($('.notification').hasClass('visible')) {
+            setTimeout(() => {
+                closeNotification();
+            }, 5000);
+        }
+
     </script>
 </body>

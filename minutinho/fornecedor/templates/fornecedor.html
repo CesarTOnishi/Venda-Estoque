@@ -10,17 +10,17 @@
 <body> 
     <form method="POST" action=".">
         {% csrf_token %}
-        <div>
+        <div class="filtros-container">
             <a href="{% url 'cadastrofornecedor' %}" class="botao">Adicionar Fornecedor</a>
-        </div>
-        <div class="caixa">
-            <label>Tipo de Pessoa:</label>
-            <div class="caixa_input">
-                <input type="radio" id="tipo_fisica" name="tipo_pessoa" value="Pessoa Física" {% if tipo_pessoa == 'Pessoa Física' %}checked{% endif %} onclick="mostrarFormulario('fisica')">
-                <label for="tipo_fisica">Pessoa Física</label>
-
-                <input type="radio" id="tipo_juridica" name="tipo_pessoa" value="Pessoa Jurídica" {% if tipo_pessoa == 'Pessoa Jurídica' %}checked{% endif %} onclick="mostrarFormulario('juridica')">
-                <label for="tipo_juridica">Pessoa Jurídica</label>
+            <div class="caixa">
+                <label>Tipo de Pessoa:</label>
+                <div class="caixa_input">
+                    <input type="radio" id="tipo_fisica" name="tipo_pessoa" value="Pessoa Física" {% if tipo_pessoa == 'Pessoa Física' %}checked{% endif %} onclick="mostrarFormulario('fisica')">
+                    <label for="tipo_fisica">Pessoa Física</label>
+        
+                    <input type="radio" id="tipo_juridica" name="tipo_pessoa" value="Pessoa Jurídica" {% if tipo_pessoa == 'Pessoa Jurídica' %}checked{% endif %} onclick="mostrarFormulario('juridica')">
+                    <label for="tipo_juridica">Pessoa Jurídica</label>
+                </div>
             </div>
         </div>
         <div class="search-container">

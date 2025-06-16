@@ -5,21 +5,78 @@
 {% block 'head' %}
     <link rel="stylesheet" href="{% static 'css/stylepedido.css' %}">
     <title>Pedidos Cliente</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 {% endblock %}
 
 {% block 'dashboard' %}
 <body>
-    <form method="POST" action=".">
-        {% csrf_token %}
-        <div class="container">
+    <div class="pedidos-container">
+        <form method="GET" action="{% url 'meuspedidos' %}" class="filter-form">
+            <label for="cliente">Filtrar por Cliente:</label>
+            <select id="cliente" name="cliente">
+                <option value="">Todos os Clientes</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.nome }}">{{ cliente.nome }}</option> 
+                {% endfor %}
+            </select>
+
+            <div>
+                <label for="data_inicio">Data de Início:</label>
+                <input type="date" name="data_inicio" id="data_inicio" value="{{ data_inicio }}">
+            </div>
+            
+            <div>
+                <label for="data_fim">Data de Fim:</label>
+                <input type="date" name="data_fim" id="data_fim" value="{{ data_fim }}">
+            </div>
+
+            <label for="ordem">Ordenar por:</label>
+            <select id="ordem" name="ordem">
+                <option value="recente" {% if ordem == 'recente' %}selected{% endif %}>Mais Recentes</option>
+                <option value="antiga" {% if ordem == 'antiga' %}selected{% endif %}>Mais Antigos</option>
+            </select>
+
+            <label for="numero_pedido">Número do Pedido:</label>
+            <input type="text" id="numero_pedido" name="numero_pedido" placeholder="Digite o número do pedido" value="{{ numero_pedido }}">
+
+            <button type="submit">Filtrar</button>
+        </form>
+
+        {% if pedidos_dict|length == 0 %}
+        <div class="no-pedidos-message">
+            <p>Não foram encontrados pedidos com os critérios selecionados.</p>
+        </div>
+        {% else %}
+
+        <div class="pedidos-list">
+            <!-- Mantenha todo o cabeçalho e formulário de filtro igual -->
+
             {% for nr_pedido, pedido_info in pedidos_dict.items %}
             <div class="pedido-section">
                 <div class="pedido-header">
                     <h1>Pedido #{{ nr_pedido }}</h1>
-                    <p>Data do Pedido: {{ pedido_info.data_pedido }}</p>
+                    <p>Data do Pedido: {{ pedido_info.data_pedido|date:"d/m/Y" }}</p>
                     <p class="cliente-nome">Cliente: {{ pedido_info.cliente_nome }}</p>
+                    <p>Método de Pagamento: {{ pedido_info.metodo_pagamento|formatarPagamento }}</p>
+                    {% if pedido_info.parcelas > 1 %}
+                    <div class="parcelamento">
+                        <p>Pagamento em {{ pedido_info.parcelas }} parcelas:</p>
+                        <ul>
+                            {% for parcela in pedido_info.parcelas_detalhadas %}
+                            <li>Parcela {{ parcela.numero_parcela }} - 
+                                Vencimento: {{ parcela.data_vencimento }} - 
+                                Valor: R$ {{ parcela.valor_parcela|floatformat:2 }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <p>Pagamento à vista</p>
+                    {% endif %}
                 </div>
+                
                 <a href="{% url 'gerarpdf' pedido_info.id %}" class="pdf-button">Gerar Nota</a>
+                
                 <table class="table_nome">
                     <thead>
                         <tr>
@@ -30,22 +87,37 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for pedido in pedido_info.itens %}
+                        {% for item in pedido_info.itens %}
                         <tr>
-                            <td>{{ pedido.nome }}</td>  	
-                            <td>{{ pedido.quantidade }}</td>
-                            <td>{{ pedido.valor_unitario }}</td>
-                            <td>{{ pedido.valor_total }}</td>
+                            <td>{{ item.nome }}</td>
+                            <td>{{ item.quantidade }}</td>
+                            <td>R$ {{ item.valor_unitario|floatformat:2 }}</td>
+                            <td>R$ {{ item.valor_total|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
                         <tr class="total-row">
-                            <td colspan="4">Valor Total R$: {{ pedido_info.itens|valor_geral|floatformat:2}}</td>
+                            <td colspan="3">Valor Total:</td>
+                            <td>R$ {{ pedido_info.valor_total|floatformat:2 }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             {% endfor %}
         </div>
-    </form>
+        {% endif %}
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('form').on('submit', function(e) {
+                const startDate = new Date($('#data_inicio').val());
+                const endDate = new Date($('#data_fim').val());
+                if (startDate.getFullYear().toString().length > 4 || endDate.getFullYear().toString().length > 4) {
+                    alert('O ano deve ter 4 dígitos.');
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+
 </body>
 {% endblock %}

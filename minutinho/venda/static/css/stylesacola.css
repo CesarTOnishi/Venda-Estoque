@@ -1,12 +1,15 @@
-:root {
-    --main-color: #ac4147;
-    --dark-color: #411f2d;
-    --background-color: #333;
+:root{ 
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
 }
 
 body {
     font-family: 'Arial', sans-serif;
-    background-color: var(--background-color);
+    background-color: var(--differential-color);
     margin: 0;
     padding: 0;
     color: #f1f1f1;
@@ -17,7 +20,7 @@ body {
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
-    background-color: var(--dark-color);
+    background-color: var(--main-color);
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
@@ -26,13 +29,13 @@ body {
     display: inline-block;
     margin-bottom: 20px;
     font-size: 18px;
-    color: #f1f1f1;
+    color: var(--dark-color);
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .back-link:hover {
-    color: var(--main-color);
+    color: var(--differential-color);
 }
 
 .client-selection {
@@ -41,7 +44,7 @@ body {
 
 .client-selection label {
     font-size: 16px;
-    color: #f1f1f1;
+    color: var(--dark-color);
 }
 
 .inputcliente {
@@ -49,10 +52,10 @@ body {
     padding: 12px;
     font-size: 16px;
     margin-top: 10px;
-    border: 1px solid #999;
+    border: 1px solid var(--dark-color);
     border-radius: 5px;
-    background-color: #555;
-    color: #fff;
+    background-color: var(--dark-color);
+    color: var(--dark-color);
 }
 
 .notification {
@@ -80,13 +83,13 @@ body {
 .cart-table th, .cart-table td {
     padding: 15px;
     text-align: center;
-    border: 1px solid #444;
-    color: #f1f1f1;
+    border: 1px solid var(--dark-color);
+    color: black;
 }
 
 .cart-table th {
     background-color: var(--main-color);
-    color: white;
+    color: var(--dark-color);
     font-weight: bold;
     text-transform: uppercase;
 }
@@ -106,7 +109,8 @@ body {
 }
 
 .total-section {
-    text-align: right;
+    text-align: left;
+    color: var(--dark-color);
     margin-bottom: 20px;
 }
 
@@ -120,8 +124,8 @@ body {
     width: 100%;
     padding: 15px;
     font-size: 18px;
-    background-color: var(--main-color);
-    color: white;
+    background-color: var(--dark-color);
+    color: var(--main-color);
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -129,10 +133,310 @@ body {
 }
 
 .realizar:hover {
-    background-color: #922a2d;
+    background-color: var(--differential-color);
 }
 
 .fade-out {
     opacity: 0;
     transition: opacity 0.5s ease;
+}
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    display: none; 
+    opacity: 1; 
+    transition: opacity 0.5s ease; 
+}
+
+.notification.visible {
+    display: block; 
+}
+
+.notification.hidden {
+    display: none; 
+}
+
+.notification.fade-out {
+    opacity: 0;
+}
+.hidden {
+    display: none;
+}
+.filter-form {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.filter-form label {
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.filter-form input,
+.filter-form select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.filter-form button {
+    padding: 5px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.select2-dropdown {
+    background-color: var(--background-color);
+    color: #333;
+}
+
+
+
+
+
+
+
+.pagamento, #parcelamento {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-bottom: 8px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+.inputpagamento, .inputparcelamento {
+    max-width: 300px;
+
+}
+#parcelamento {
+    margin-top: 10px;
+    color: var(--dark-color);
+}
+
+#parcelamento label {
+    font-size: 14px;
+    font-weight: normal;
+}
+
+#parcelamento select {
+    margin-top: 5px;
+}
+
+@media (max-width: 600px) {
+    .inputpagamento, .inputparcelamento {
+        max-width: 100%;
+    }
+}
+
+/* Seção de Pagamento */
+.pagamento {
+    background-color: var(--dark-color);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: var(--light-color);
+}
+
+.metodo-pagamento {
+    margin-bottom: 20px;
+}
+
+.metodo-pagamento label {
+    color: var(--main-color);
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.inputpagamento {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid var(--main-color);
+    border-radius: 5px;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    transition: all 0.3s ease;
+}
+
+.inputpagamento:focus {
+    border-color: var(--contrast-color);
+    outline: none;
+    box-shadow: 0 0 5px rgba(248, 136, 99, 0.5);
+}
+
+/* Seção de Condições de Pagamento */
+.condicao-pagamento-section {
+    background-color: rgba(61, 64, 91, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+}
+
+.condicao-pagamento-section h3 {
+    color: var(--main-color);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.condicao-pagamento-section select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid var(--main-color);
+    border-radius: 5px;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    margin-bottom: 15px;
+}
+
+.condicao-detalhes {
+    background-color: rgba(215, 200, 170, 0.1);
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid var(--contrast-color);
+}
+
+.condicao-detalhes h4 {
+    color: var(--main-color);
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.condicao-detalhes p {
+    margin: 8px 0;
+    color: var(--light-color);
+    font-size: 15px;
+}
+
+.condicao-detalhes strong {
+    color: var(--main-color);
+}
+
+/* Opções de Condição de Pagamento */
+.condicoes-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.condicao-option {
+    background-color: rgba(215, 200, 170, 0.1);
+    border: 1px solid var(--main-color);
+    border-radius: 5px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.condicao-option:hover {
+    background-color: rgba(215, 200, 170, 0.2);
+    transform: translateY(-2px);
+}
+
+.condicao-option input[type="radio"] {
+    display: none;
+}
+
+.condicao-option label {
+    display: block;
+    cursor: pointer;
+    color: var(--light-color);
+}
+
+.condicao-option input[type="radio"]:checked + label {
+    color: var(--main-color);
+    font-weight: bold;
+}
+
+.condicao-option input[type="radio"]:checked ~ .condicao-option {
+    border-color: var(--contrast-color);
+    background-color: rgba(248, 136, 99, 0.1);
+}
+
+/* Seção Total */
+.total-section {
+    background-color: var(--dark-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.total-section h2 {
+    color: var(--main-color);
+    margin: 0;
+    font-size: 22px;
+}
+
+/* Botão de Enviar Pedido */
+.realizar {
+    background-color: var(--contrast-color);
+    color: var(--light-color);
+    border: none;
+    padding: 15px;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.realizar:hover {
+    background-color: #e07756;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .condicoes-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .inputpagamento, .condicao-pagamento-section select {
+        font-size: 14px;
+        padding: 10px;
+    }
 }

@@ -1,17 +1,26 @@
+:root {
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
+}
+
 body {
-    background-color: #333; 
-    color: #f0f0f0; 
+    background-color: var(--dark-color);
+    color: var(--main-color);
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
 }
 
 button {
-    background-color: #ac4147; 
+    background-color: var(--main-color);
     border: none;
     border-radius: 8px;
-    color: #fff; 
-    padding: 10px 30px; 
+    color: var(--dark-color);
+    padding: 10px 30px;
     cursor: pointer;
     font-size: 1rem;
     transition: background-color 0.3s, transform 0.2s;
@@ -19,56 +28,80 @@ button {
 }
 
 button a {
-    color: #fff; 
+    color: #fff;
     text-decoration: none;
 }
 
 button:hover {
-    background-color: #993d3b;
+    background-color: var(--main-color);
     transform: scale(1.05);
 }
 
 button:active {
-    background-color: #842e2a; 
+    background-color: var(--main-color)
 }
 
 .tabela_cliente {
     width: 100%;
-    max-width: 1200px; 
+    max-width: 1200px;
     border-collapse: collapse;
-    margin: 20px 0;
+    margin: 10px 0;
+    z-index: 200;
 }
 
 .tabela_cliente th, .tabela_cliente td {
-    padding: 12px;
+    padding: 6px;
     text-align: left;
-    border-bottom: 1px solid #666;
+    border: 1px solid var(--dark-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tabela_cliente td {
+    background-color: var(--main-color);
+    color: var(--dark-color);
 }
 
 .tabela_cliente th {
-    background-color: #ac4147; 
-    color: #fff; 
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    position: relative;
+    border: none;
 }
 
-.tabela_cliente tr:nth-child(even) {
-    background-color: #555; 
+.tabela_cliente th:first-child {
+    border-top-left-radius: 10px;
 }
 
-.tabela_cliente tr:nth-child(odd) {
-    background-color: #444; 
+.tabela_cliente th:last-child {
+    border-top-right-radius: 10px;
+}
+
+.tabela_cliente tr {
+    transition: background-color 0.3s ease;
 }
 
 .tabela_cliente tr:hover {
-    background-color: #666;
+    background-color: var(--differential-color);
 }
 
+.tabela_cliente tr:hover td {
+    background-color: var(--dark-color);
+    border: 1px solid var(--main-color);
+    color: #fff;
+}
+
+.tabela_cliente td:hover {
+    background-color: transparent;
+}
+ 
 .principal {
     max-width: 1200px;
     margin: auto;
     padding: 20px;
-    background-color: #444; 
+    background-color: var(--main-color);
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-left: 78px;
 }
 
 .search-container {
@@ -78,12 +111,12 @@ button:active {
 
 .search-container input {
     width: 100%;
-    max-width: 600px; 
-    padding: 12px; 
-    border: 2px solid #ac4147;
+    max-width: 600px;
+    padding: 12px;
+    border: 2px solid var(--light-color);
     border-radius: 5px;
     font-size: 1rem;
-    background-color: #555;
+    background-color: var(--dark-color);
     color: #f0f0f0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -94,15 +127,15 @@ button:active {
 }
 
 .search-container input:focus {
-    border-color: #993d3b;
+    border-color: var(--differential-color);
     outline: none;
-    background-color: #444;
+    background-color: var(--dark-color);
 }
 
 .botao {
     display: inline-block;
     padding: 12px 24px;
-    background-color: #ac4147;
+    background-color: var(--dark-color);
     color: #fff;
     border-radius: 6px;
     text-decoration: none;
@@ -113,5 +146,6 @@ button:active {
 }
 
 .botao:hover {
-    background-color: #ff676d;
+    background-color: var(--main-color);
+    color: var(--dark-color);
 }
