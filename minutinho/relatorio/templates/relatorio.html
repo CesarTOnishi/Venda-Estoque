@@ -50,17 +50,18 @@
     </div>
 
     <div class="card">
-      <h2>📑 Vendas</h2>
-      <p>Todas as vendas realizadas.</p>
-      <form method="GET" action="{% url 'relatoriovenda' %}">
+      <h2>📒 Extrato Financeiro</h2>
+      <p>Movimentações financeiras consolidadas.</p>
+      <form method="GET" action="{% url 'relatorioextrato' %}">
         <button type="submit" class="btn primary">Gerar Relatório</button>
       </form>
     </div>
 
     <div class="card">
-      <h2>📒 Extrato Financeiro</h2>
-      <p>Movimentações financeiras consolidadas.</p>
-      <form method="GET" action="{% url 'relatorioextrato' %}">
+      <h2>🛍️ Vendas por Cliente</h2>
+      <p>Histórico de compras de um cliente específico.</p>
+      <form method="GET" action="#">
+        <input type="text" name="cliente" placeholder="Nome do cliente" required>
         <button type="submit" class="btn primary">Gerar Relatório</button>
       </form>
     </div>
@@ -89,8 +90,12 @@
     <div class="card">
       <h2>⏳ Vendas por Período</h2>
       <p>Filtradas por intervalo de datas.</p>
-      <form method="GET" action="#">
+      <form method="GET" action="{% url 'relatoriovendas' %}">
+
+        <label for="inicio">Data Inicial:</label>
         <input type="date" name="inicio" required>
+
+        <label for="fim">Data Final:</label>
         <input type="date" name="fim" required>
         <button type="submit" class="btn primary">Gerar Relatório</button>
       </form>
@@ -116,18 +121,6 @@
         <button type="submit" class="btn primary">Gerar Relatório</button>
         <button type="submit" class="btn" name="fornecedor" value="todos">Todos</button>
     </form>
-    </div>
-
-
-    <!-- Relatório de Vendas por Cliente -->
-    <div class="card">
-      <h2>🛍️ Vendas por Cliente</h2>
-      <p>Histórico de compras de um cliente específico.</p>
-      <form method="GET" action="#">
-        <label>Cliente:</label>
-        <input type="text" name="cliente" placeholder="Nome do cliente" required>
-        <button type="submit" class="btn primary">Gerar Relatório</button>
-      </form>
     </div>
 
 

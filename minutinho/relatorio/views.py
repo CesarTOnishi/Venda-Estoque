@@ -18,43 +18,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 def relatorio(request):
     return render(request, 'relatorio.html')
 
-def relatoriovenda(request):
-    filtro = request.GET.get('filtro', 'quantidade_alta')
-
-    queryset = View_Pedido.objects.values('produto_id', 'nome',).annotate(
-        quantidade_total=Sum('quantidade'),
-        valor_total=Sum('valor_total')
-    )
-
-    # Filtros e ordenação
-    if filtro == 'quantidade_alta':
-        maisvendido = queryset.order_by('-quantidade_total')[:10]
-    elif filtro == 'quantidade_baixa':
-        maisvendido = queryset.order_by('quantidade_total')[:10]
-    elif filtro == 'valor_alto':
-        maisvendido = queryset.order_by('-valor_total')[:10]
-    elif filtro == 'valor_baixo':
-        maisvendido = queryset.order_by('valor_total')[:10]
-    else:
-        maisvendido = queryset 
-
-    context = {
-        'maisvendido': maisvendido
-    }
-
-    template_path = 'maisvendido.html'
-    template = get_template(template_path)
-    html = template.render(context)
-
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="relatorio_mais_vendidos.pdf"'
-
-    pisa_status = pisa.CreatePDF(html, dest=response)
-
-    if pisa_status.err:
-        return HttpResponse('Erro ao gerar o PDF', status=500)
-
-    return response
 
 def relatorioestoque(request):
     filtro = request.GET.get('filtro', 'estoque_total')
@@ -256,6 +219,38 @@ def relatorioextrato(request):
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="extrato_financeiro.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    return response
+
+def relatoriovendas(request):
+    inicio = request.GET.get('inicio')
+    fim = request.GET.get('fim')
+
+    vendas = View_Pedido.objects.all().order_by('data_pedido')
+
+    if inicio and fim:
+        vendas = vendas.filter(
+            data_pedido__gte=inicio,
+            data_pedido__lte=fim
+        )
+
+    context = {
+        'vendas': vendas,
+        'inicio': inicio,
+        'fim': fim
+    }
+
+    template_path = "maisvendido.html"
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="relatorio_vendas_periodo.pdf"'
 
     pisa_status = pisa.CreatePDF(html, dest=response)
 
