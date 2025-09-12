@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório de Vendas</title>
+    <title>Relatório de Contas a Pagar e Receber</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -60,47 +60,69 @@
                 </td>
                 <td class="empresa-info" width="70%">
                     <h2>Mercado NewLife</h2>
-                    <p><strong>Endereço:</strong>Rua Reinaldo Nassi, 546</p>
-                    <p><strong>Cidade:</strong>Diamante do Norte</p>
-                    <p><strong>CEP:</strong>87990-000</p>
-                    <p><strong>Email:</strong>exemplo@empresa.com.br</p>
+                    <p><strong>Endereço:</strong> Rua Reinaldo Nassi, 546</p>
+                    <p><strong>Cidade:</strong> Diamante do Norte</p>
+                    <p><strong>CEP:</strong> 87990-000</p>
+                    <p><strong>Email:</strong> exemplo@empresa.com.br</p>
                     <p><strong>Telefone:</strong> (44) 99999-9999</p>
                     <p><strong>CNPJ:</strong> 99.999.999/0001-99</p>
                 </td>
             </tr>
         </table>
     </div>
-    <h1>Relatório de Estoque</h1>
+
+    <h1>Relatório de Contas a Pagar e Receber</h1>
+
     <table>
         <thead>
             <tr>
-                <th>ID do Produto</th>
-                <th>Produto</th>
-                <th>Categoria</th>
-                <th>Quantidade</th>
-                <th>Estoque</th>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Data Criação</th>
+                <th>Data de Vencimento</th>
+                <th>Data de <br>Pag/Rec</th>
+                <th>Método de Pagamento</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
-            {% for produto in estoque %}
-            <tr class="{{ produto.status }}">
-                <td>{{ produto.id }}</td>
-                <td>{{ produto.nome }}</td>
-                <td>{{ produto.categoria__nome }}</td>
-                <td>{{ produto.quantidade_total }}</td>
+            {% for conta in contas %}
+            <tr>
+                <td>{{ conta.id }}</td>
+                <td>{{ conta.tipo_conta|title }}</td>
+                <td>{{ conta.descricao }}</td>
+                <td>R$ {{ conta.valor|floatformat:2 }}</td>
+
+                {# Data de Criação #}
                 <td>
-                    {% if produto.status == 'fora_de_estoque' %}
-                        <span style="color: red;">Fora de Estoque</span>
-                    {% elif produto.status == 'pouco_estoque' %}
-                        <span style="color: orange;">Pouco em Estoque</span>
+                    {% if conta.tipo_conta == "pagar" %}
+                        {{ conta.criacao|date:"d/m/Y" }}
                     {% else %}
-                        <span style="color: rgb(0, 255, 34);">Em Estoque</span>
+                        {{ conta.criado_em|date:"d/m/Y" }}
+                    {% endif %}
+                </td>
+                <td>{{ conta.data_vencimento|date:"d/m/Y" }}</td>
+                <td>
+                    {% if conta.tipo_conta == "pagar" %}
+                        {{ conta.data_pagamento|date:"d/m/Y"|default:"-" }}
+                    {% else %}
+                        {{ conta.data_recebimento|date:"d/m/Y"|default:"-" }}
+                    {% endif %}
+                </td>
+                <td>{{ conta.metodo_pagamento|default:"-" }}</td>
+                <td>
+                    {% if conta.tipo_conta == "pagar" %}
+                        {% if conta.pago %} Pago {% else %} Pendente {% endif %}
+                    {% else %}
+                        {% if conta.recebido %} Recebido {% else %} Pendente {% endif %}
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4">Nenhum produto encontrado.</td>
+                <td colspan="8">Nenhuma conta encontrada.</td>
             </tr>
             {% endfor %}
         </tbody>

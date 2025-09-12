@@ -9,7 +9,7 @@
 }
 
 body {
-    background-color: var(--background-color);
+    background-color: var(--differential-color);
     color: #fff;
     font-family: Arial, sans-serif;
 }

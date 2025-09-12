@@ -1,152 +1,220 @@
 {% load static %}
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/styletela.css' %}">
-    <link rel="stylesheet" href="{% static 'css/general.css' %}">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    {% block 'head' %}{% endblock %}
-
-    <title>{% block 'title' %}{% endblock %}</title>
-  </head>
-  <body>
-    
-    <div class="sidebar">
-      <div class="logo-details">
-          <div class="logo_name">NEWLIFE</div>
-          <i class="bx bx-menu" id="btn"></i>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static 'css/styletela.css' %}">
+  <link rel="stylesheet" href="{% static 'css/general.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel='stylesheet'>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  {% block 'head' %}{% endblock %}
+  <title>{% block 'title' %}{% endblock %}</title>
+</head>
+<body>
+  
+  <div class="sidebar-tech">
+    <div class="logo-container">
+      <div class="logo-tech">
+        <div class="logo-icon"><i class='bx bxs-heart-circle'></i></div>
+        <div class="logo-text">NEWLIFE</div>
       </div>
-      <ul class="nav-list">
-          <li>
-              <a href="{% url 'inicial' %}">
-                  <i class="bx bx-grid-alt"></i>
-                  <span class="links_name">Página inicial</span>
-              </a>
-          </li>
-          
-          <!-- Dropdown Cadastros -->
-          <li class="dropdown">
-              <a href="#" class="dropdown-toggle">
-                  <i class="bx bx-folder"></i>
-                  <span class="links_name">Cadastros</span>
-                  <i class="bx bx-chevron-down dropdown-icon"></i>
-              </a>
-              <ul class="submenu">
-                  <li>
-                      <a href="{% url 'cliente' %}">
-                          <i class="bx bx-user"></i>
-                          <span class="links_name">Clientes</span>
-                      </a>
-                  </li>
-                  <li>
-                      <a href="{% url 'fornecedor' %}">
-                          <i class="bx bx-building"></i>
-                          <span class="links_name">Fornecedores</span>
-                      </a>
-                  </li>
-                  <li>
-                    <a href="{% url 'tabelaFuncionarios' %}">
-                        <i class='bx bx-user-pin'></i>
-                        <span class="links_name">Funcionários</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{% url 'condicaoPagamento' %}">
-                        <i class='bx bxs-credit-card'></i>
-                        <span class="links_name">Pagamento</span>
-                    </a>
-                  </li>
-                  <li>
-                      <a href="{% url 'lista' %}">
-                          <i class="bx bx-book"></i>
-                          <span class="links_name">Estoque</span>
-                      </a>
-                  </li>
-                  <li>
-                    <a href="{% url 'categoria' %}">
-                        <i class='bx bx-align-left'></i>
-                        <span class="links_name">Categoria</span>
-                    </a>
-                </li>
-              </ul>
-          </li>
-          
-          <!-- Dropdown Movimentos -->
-          <li class="dropdown">
-              <a href="#" class="dropdown-toggle">
-                  <i class="bx bx-transfer"></i>
-                  <span class="links_name">Movimentos</span>
-                  <i class="bx bx-chevron-down dropdown-icon"></i>
-              </a>
-              <ul class="submenu">
-                  <li>
-                      <a href="{% url 'catalogo' %}">
-                          <i class="bx bx-money-withdraw"></i>
-                          <span class="links_name">Vendas</span>
-                      </a>
-                  </li>
-                  <li>
-                      <a href="{% url 'compra' %}">
-                          <i class="bx bx-cart"></i>
-                          <span class="links_name">Compras</span>
-                      </a>
-                  </li>
-                  <li>
-                    <a href="{% url 'financeiro' %}">
-                      <i class="bx bx-bar-chart-alt"></i>
-                      <span class="links_name">Financeiro</span>
-                    </a>
-                  </li>
-              </ul>
-          </li>
-          
-          <!-- Dropdown Relatórios -->
-          <li class="dropdown">
-              <a href="#" class="dropdown-toggle">
-                  <i class="bx bx-pie-chart-alt"></i>
-                  <span class="links_name">Relatórios</span>
-                  <i class="bx bx-chevron-down dropdown-icon"></i>
-              </a>
-              <ul class="submenu">
-                  <li>
-                    <a href="{% url 'meuspedidos' %}">
-                      <i class="bx bx-badge-check"></i>
-                      <span class="links_name">Pedidos</span>
-                    </a>
-                  </li>
-                  <li>
-                      <a href="{% url 'relatorio' %}">
-                          <i class="bx bxs-report"></i>
-                          <span class="links_name">Relatórios</span>
-                      </a>
-                  </li>
-              </ul>
-          </li>
-          
-          <li class="profile">
-              <a href="{% url 'logout' %}">
-                  <i class="bx bx-log-out"></i>
-                  <span class="links_name">Sair</span>
-              </a>
-          </li>
-      </ul>
+      <i class="bx bx-menu toggle-btn" id="sidebarToggle"></i>
     </div>
-      
-      <section class="home-section">
-          {% block 'dashboard'%}
-          {% endblock %}
-
-      </section>
-
-    {% block 'body' %}
+    
+    
+    <nav class="nav-tech">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="{% url 'inicial' %}" class="nav-link">
+            <i class="bx bx-home-alt"></i>
+            <span class="link-text">Dashboard</span>
+            <div class="link-badge">3</div>
+          </a>
+        </li>
+        
+        <!-- Cadastros -->
+        <li class="nav-group">
+          <div class="group-header">
+            <i class="bx bx-folder"></i>
+            <span class="group-title">Cadastros</span>
+            <i class="bx bx-chevron-down group-arrow"></i>
+          </div>
+          <ul class="group-content">
+            <li>
+              <a href="{% url 'cliente' %}" class="sub-link">
+                <i class='bx bxs-user-account'></i>
+                <span>Clientes</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'fornecedor' %}" class="sub-link">
+                <i class="bx bxs-factory"></i>
+                <span>Fornecedores</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'tabelaFuncionarios' %}" class="sub-link">
+                <i class='bx bxs-id-card'></i>
+                <span>Funcionários</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'condicaoPagamento' %}" class="sub-link">
+                <i class='bx bxs-credit-card'></i>
+                <span>Pagamento</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'lista' %}" class="sub-link">
+                <i class="bx bxs-box"></i>
+                <span>Estoque</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'categoria' %}" class="sub-link">
+                <i class='bx bxs-category'></i>
+                <span>Categoria</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+        <!-- RH -->
+        <li class="nav-group">
+          <div class="group-header">
+            <i class="bx bxs-file-doc"></i>
+            <span class="group-title">Recursos Humanos</span>
+            <i class="bx bx-chevron-down group-arrow"></i>
+          </div>
+          <ul class="group-content">
+            <li>
+              <a href="{% url 'catalogo' %}" class="sub-link">
+                <i class="bx bxs-user-detail"></i>
+                <span>Mov. Funcionários</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'compra' %}" class="sub-link">
+                <i class="bx bxs-receipt"></i>
+                <span>Folha Pagamento</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+        <!-- Movimentos -->
+        <li class="nav-group">
+          <div class="group-header">
+            <i class="bx bx-transfer"></i>
+            <span class="group-title">Movimentos</span>
+            <i class="bx bx-chevron-down group-arrow"></i>
+          </div>
+          <ul class="group-content">
+            <li>
+              <a href="{% url 'catalogo' %}" class="sub-link">
+                <i class="bx bxs-cart-add"></i>
+                <span>Vendas</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'compra' %}" class="sub-link">
+                <i class="bx bxs-cart-download"></i>
+                <span>Compras</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+        <!-- Financeiro -->
+        <li class="nav-group">
+          <div class="group-header">
+            <i class='bx bx-dollar-circle'></i> 
+            <span class="group-title">Financeiro</span>
+            <i class="bx bx-chevron-down group-arrow"></i>
+          </div>
+          <ul class="group-content">
+            <li>
+              <a href="{% url 'financeiro' %}" class="sub-link">
+                <i class="bx bxs-bank"></i>
+                <span>Extrato</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'contasPagar' %}" class="sub-link">
+                <i class='bx bxs-wallet'></i> 
+                <span>Contas Pagar</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'contasReceber' %}" class="sub-link">
+                <i class="bx bxs-bar-chart-alt-2"></i>
+                <span>Contas Receber</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="sub-link">
+                <i class='bx bxs-file-import'></i>
+                <span>Despesas</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+        <!-- Relatórios -->
+        <li class="nav-group">
+          <div class="group-header">
+            <i class="bx bx-pie-chart-alt"></i>
+            <span class="group-title">Relatórios</span>
+            <i class="bx bx-chevron-down group-arrow"></i>
+          </div>
+          <ul class="group-content">
+            <li>
+              <a href="{% url 'meuspedidos' %}" class="sub-link">
+                <i class="bx bx-badge-check"></i>
+                <span>Pedidos</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'relatorio' %}" class="sub-link">
+                <i class="bx bxs-report"></i>
+                <span>Relatórios</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+    
+    <div class="user-panel">
+      <div class="user-info">
+        <div class="user-avatar">
+          <i class='bx bxs-user-circle'></i>
+        </div>
+        <div class="user-details">
+          <div class="user-name">Usuário</div>
+          <div class="user-role">Administrador</div>
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="logout-btn">
+        <i class="bx bx-log-out"></i>
+        <span>Sair</span>
+      </a>
+    </div>
+  </div>
+    
+  <section class="main-content">
+    {% block 'dashboard'%}
     {% endblock %}
-    <script src="{% static 'js/telajs.js' %}"></script>
-    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+  </section>
+
+  {% block 'body' %}
+  {% endblock %}
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+  <script src="{% static 'js/telajs.js' %}"></script>
+</body>
 </html>

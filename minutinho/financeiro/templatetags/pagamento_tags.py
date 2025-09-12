@@ -21,3 +21,13 @@ def metodo_pagamento_label(codigo):
     Ex: 'boleto' => 'Boleto Bancário'
     """
     return TIPOS_PAGAMENTO.get(codigo, 'Desconhecido')
+
+@register.simple_tag(takes_context=True)
+def param_replace(context, **kwargs):
+    """
+    Preserve query parameters when creating pagination links
+    """
+    params = context['request'].GET.copy()
+    for key, value in kwargs.items():
+        params[key] = value
+    return params.urlencode()

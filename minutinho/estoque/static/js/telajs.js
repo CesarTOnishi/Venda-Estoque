@@ -1,60 +1,83 @@
 document.addEventListener('DOMContentLoaded', function() {
-    let sidebar = document.querySelector(".sidebar");
-    let closeBtn = document.querySelector("#btn");
+  // Elementos principais
+  const sidebar = document.querySelector('.sidebar-tech');
+  const toggleBtn = document.getElementById('sidebarToggle');
+  
+  // Verifica se os elementos existem
+  if (!sidebar || !toggleBtn) return;
+
+  // 1. Funcionalidade de abrir/fechar a sidebar
+  toggleBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    sidebar.classList.toggle('collapsed');
     
-    closeBtn.addEventListener("click", ()=>{
-        sidebar.classList.toggle("open");
-        menuBtnChange();
+    // Fecha todos os dropdowns ao minimizar
+    if (sidebar.classList.contains('collapsed')) {
+      document.querySelectorAll('.nav-group').forEach(group => {
+        group.classList.remove('active');
+      });
+    }
+  });
+  
+  // 2. Funcionalidade dos dropdowns
+  document.querySelectorAll('.group-header').forEach(header => {
+    header.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const group = this.parentElement;
+      const wasActive = group.classList.contains('active');
+      
+      // Se sidebar estiver minimizada, fecha outros dropdowns
+      if (sidebar.classList.contains('collapsed')) {
+        document.querySelectorAll('.nav-group').forEach(g => {
+          if (g !== group) g.classList.remove('active');
+        });
+      }
+      
+      // Alterna o estado do dropdown clicado
+      group.classList.toggle('active', !wasActive);
     });
-    
-    function menuBtnChange() {
-      if(sidebar.classList.contains("open")){
-          closeBtn.classList.replace("bx-menu", "bx-menu-alt-right");
-      } else {
-          closeBtn.classList.replace("bx-menu-alt-right","bx-menu");
-          // Fecha todos os dropdowns quando a sidebar fecha
-          document.querySelectorAll('.dropdown').forEach(dropdown => {
-              dropdown.classList.remove('active');
-          });
+  });
+  
+  // 3. Fechar dropdowns ao clicar fora
+  document.addEventListener('click', function(e) {
+    // Fecha dropdowns se clicar fora (exceto quando sidebar está minimizada)
+    if (!sidebar.classList.contains('collapsed')) {
+      const isDropdown = e.target.closest('.nav-group');
+      if (!isDropdown) {
+        document.querySelectorAll('.nav-group').forEach(group => {
+          group.classList.remove('active');
+        });
       }
     }
-    
-    // Dropdown functionality
-    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-      // Adiciona data-title para o tooltip
-      const title = toggle.querySelector('.links_name').textContent;
-      toggle.setAttribute('data-title', title);
-      
-      toggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        const dropdown = this.parentElement;
-        
-        // Fecha outros dropdowns antes de abrir este
-        if (!dropdown.classList.contains('active')) {
-          document.querySelectorAll('.dropdown').forEach(item => {
-            if (item !== dropdown) item.classList.remove('active');
-          });
-        }
-        
-        // Alterna o dropdown clicado
-        dropdown.classList.toggle('active');
-        
-        // Se a sidebar estiver fechada, fecha o dropdown ao clicar fora
-        if (!sidebar.classList.contains('open')) {
-          e.stopPropagation();
-        }
-      });
-    });
-    
-    // Fecha dropdowns ao clicar fora (quando sidebar fechada)
-    document.addEventListener('click', function(e) {
-      if (!sidebar.classList.contains('open')) {
-        const isDropdown = e.target.closest('.dropdown');
-        if (!isDropdown) {
-          document.querySelectorAll('.dropdown').forEach(dropdown => {
-            dropdown.classList.remove('active');
+  });
+  
+  // 4. Fechar dropdowns ao minimizar a sidebar
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.attributeName === 'class') {
+        if (sidebar.classList.contains('collapsed')) {
+          document.querySelectorAll('.nav-group').forEach(group => {
+            group.classList.remove('active');
           });
         }
       }
     });
   });
+  
+  observer.observe(sidebar, {
+    attributes: true
+  });
+  
+  // 5. Fechar dropdowns ao redimensionar para mobile
+  function handleResize() {
+    if (window.innerWidth <= 768) {
+      document.querySelectorAll('.nav-group').forEach(group => {
+        group.classList.remove('active');
+      });
+    }
+  }
+  
+  window.addEventListener('resize', handleResize);
+});

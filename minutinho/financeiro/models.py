@@ -13,6 +13,11 @@ class ContaPagar(models.Model):
     pago = models.BooleanField(default=False)
     criacao = models.DateTimeField(auto_now_add=True)
     numero_parcela = models.PositiveIntegerField(null=True)
+    editavel = models.BooleanField(default=False)
+
+    @property
+    def tipo_conta(self):
+        return "pagar"
 
     def __str__(self):
         return f"Pagar: {self.descricao} - R$ {self.valor}"
@@ -46,6 +51,10 @@ class ContaReceber(models.Model):
     
     def __str__(self):
         return f"Receber: {self.descricao} - R$ {self.valor}"
+    
+    @property
+    def tipo_conta(self):
+        return "receber"
 
     def receber(self):
         if not self.recebido:

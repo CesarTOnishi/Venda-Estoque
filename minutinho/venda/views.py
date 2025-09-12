@@ -328,7 +328,8 @@ def realizarPedido(request):
                         metodo_pagamento=condicao_pagamento.tipo_pagamento,
                         criado_em=timezone.now(),
                         recebido=False,
-                        numero_parcela=i + 1
+                        numero_parcela=i + 1,
+                        editavel=False,
                     )
 
                 limparItensCarrinho(request, user_id)

@@ -2,42 +2,183 @@
 {% load static %}
 
 {% block 'head' %}
-<title>Relatórios</title>
+<title>Central de Relatórios</title>
 <link rel="stylesheet" href="{% static 'css/relatorio.css' %}">
 {% endblock %}
 
 {% block 'dashboard' %}
-<div class="container">
-    <h1>Relatórios</h1>
+<div class="page">
+  <div class="header">
+    <h1>📊 Central de Relatórios</h1>
+    <p>Escolha o relatório desejado e aplique filtros quando necessário.</p>
+  </div>
 
-    <div class="filter-section">
-        <h2>Relatório de Vendas</h2>
-        <form method="GET" action="{% url 'relatoriovenda' %}">
-            <label for="quantidade">Filtro por Quantidade ou Valor:</label>
-            <select id="filtro_venda" name="filtro">
-                <option value="quantidade_alta">Quantidade Alta</option>
-                <option value="quantidade_baixa">Quantidade Baixa</option>
-                <option value="valor_alto">Maior Valor Venda</option>
-                <option value="valor_baixo">Menor Valor Venda</option>
-            </select>
-
-            <button type="submit">Gerar Relatório</button>
-        </form>
+  <div class="grid" id="cards">
+    <!-- Relatório de Produtos -->
+    <div class="card">
+      <h2>📦 Produtos</h2>
+      <p>Estoque atual, preço de venda e categoria.</p>
+      <form method="GET" action="{% url 'relatorioestoque' %}">
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
     </div>
 
-    <div class="filter-section">
-        <h2>Relatório de Estoque</h2>
-        <form method="GET" action="{% url 'relatorioestoque' %}">
-            <label for="quantidade">Filtro:</label>
-            <select id="filtro_estoque" name="filtro">
-                <option value="estoque_total">Tudo</option>
-                <option value="sem_estoque">Fora de Estoque</option>
-                <option value="pouco_estoque">Pouco em Estoque</option>
-                <option value="estoque_alto">Estoque Alto</option>
-            </select>
-
-            <button type="submit">Gerar Relatório</button>
-        </form>
+    <!-- Relatório de Funcionários -->
+    <div class="card">
+      <h2>👨‍💼 Funcionários</h2>
+      <p>Consulta de todos funcionários cadastrados.</p>
+      <form method="GET" action="{% url 'relatoriofuncionarios' %}">
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
     </div>
+
+    <!-- Relatório de Vendas por Forma de Pagamento -->
+    <div class="card">
+      <h2>💳 Vendas por Pagamento</h2>
+      <p>Consulta como os clientes estão pagando.</p>
+      <form method="GET" action="{% url 'relatoriovendapagamento' %}">
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>👥 Clientes</h2>
+      <p>Consulta de todos clientes cadastrados.</p>
+      <form method="GET" action="{%url 'relatorioclientes'%}">
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📑 Vendas</h2>
+      <p>Todas as vendas realizadas.</p>
+      <form method="GET" action="{% url 'relatoriovenda' %}">
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📒 Extrato Financeiro</h2>
+      <p>Movimentações financeiras consolidadas.</p>
+      <form method="GET" action="{% url 'relatorioextrato' %}">
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
+    </div>
+
+    <div class="card">
+    <h2>💰 Contas a Pagar/Receber</h2>
+    <p>Obrigações financeiras da empresa.</p>
+    <form method="GET" action="{% url 'relatoriocontas' %}">
+        <label for="tipo_conta">Tipo de Conta:</label>
+        <select name="tipo_conta" id="tipo_conta" required>
+        <option value="todos">Todas</option>
+        <option value="pagar">Contas a Pagar</option>
+        <option value="receber">Contas a Receber</option>
+        </select>
+
+        <label for="inicio">Data Inicial:</label>
+        <input type="date" id="inicio" name="inicio" required>
+
+        <label for="fim">Data Final:</label>
+        <input type="date" id="fim" name="fim" required>
+
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+    </form>
+    </div>
+
+    <div class="card">
+      <h2>⏳ Vendas por Período</h2>
+      <p>Filtradas por intervalo de datas.</p>
+      <form method="GET" action="#">
+        <input type="date" name="inicio" required>
+        <input type="date" name="fim" required>
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📦 Compras</h2>
+      <p>Compras efetuadas em um período.</p>
+      <form method="GET" action="#">
+        <input type="date" name="inicio" required>
+        <input type="date" name="fim" required>
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
+    </div>
+
+    <div class="card">
+    <h2>🛒 Compras por Fornecedor</h2>
+    <p>Compras realizadas de um fornecedor.</p>
+    <form method="GET" action="{% url 'relatoriofornecedores' %}">
+        <label>Fornecedor:</label>
+        <input type="text" id="fornecedor" name="fornecedor" placeholder="Digite o nome do fornecedor" autocomplete="off">
+        <ul id="fornecedor-list" style="position: absolute; z-index: 1000; list-style: none; padding: 0; margin: 0; border: 1px solid #ccc; background: #fff;"></ul>
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+        <button type="submit" class="btn" name="fornecedor" value="todos">Todos</button>
+    </form>
+    </div>
+
+
+    <!-- Relatório de Vendas por Cliente -->
+    <div class="card">
+      <h2>🛍️ Vendas por Cliente</h2>
+      <p>Histórico de compras de um cliente específico.</p>
+      <form method="GET" action="#">
+        <label>Cliente:</label>
+        <input type="text" name="cliente" placeholder="Nome do cliente" required>
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
+    </div>
+
+
+    <div class="card">
+      <h2>📅 Compras por Período</h2>
+      <p>Apresenta todas as compras dentro do intervalo.</p>
+      <form method="GET" action="#">
+        <input type="date" name="inicio" required>
+        <input type="date" name="fim" required>
+        <button type="submit" class="btn primary">Gerar Relatório</button>
+      </form>
+    </div>
+
+  </div>
 </div>
+
+<script src="{% static 'js/relatorio.js' %}"></script>
+<script>
+const input = document.getElementById('fornecedor');
+const list = document.getElementById('fornecedor-list');
+
+input.addEventListener('input', function() {
+    const query = this.value.trim();
+    if(query.length < 1) {
+        list.innerHTML = '';
+        return;
+    }
+
+    fetch("{% url 'autocomplete_fornecedor' %}?q=" + encodeURIComponent(query))
+        .then(response => response.json())
+        .then(data => {
+            list.innerHTML = '';
+            data.forEach(f => {
+                const item = document.createElement('li');
+                item.textContent = f.nome;
+                item.style.padding = '5px';
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', () => {
+                    input.value = f.nome;
+                    list.innerHTML = '';
+                });
+                list.appendChild(item);
+            });
+        });
+});
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', function(e) {
+    if(e.target !== input) {
+        list.innerHTML = '';
+    }
+});
+</script>
 {% endblock %}

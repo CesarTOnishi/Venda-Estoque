@@ -8,8 +8,8 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
     background-color: var(--differential-color);
+    font-family: Arial, sans-serif;
     color: var(--dark-color);
     margin: 0;
     padding: 0;

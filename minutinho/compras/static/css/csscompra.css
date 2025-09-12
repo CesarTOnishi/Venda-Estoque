@@ -10,7 +10,6 @@
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: var(--background-color);
     color: var(--text-color);
     margin: 0;
     padding: 0;
@@ -150,4 +149,6 @@ input[type="hidden"] {
 
 .botao:hover {
     background-color: var(--differential-color);
+    color: var(--main-color);
+    transition: background-color 0.3s ease;
 }

@@ -9,4 +9,5 @@ urlpatterns = [
     path('atualizarPagamento/<int:conta_id>/', atualizarPagamento, name='atualizarPagamento'),
     path('atualizarPagamentoPagar/<int:conta_id>/', atualizarPagamentoPagar, name='atualizarPagamentoPagar'),
     path('atualizarSaldo/<int:conta_id>/', atualizarSaldo, name='atualizarSaldo'),
+    path('detalhes-conta/<str:tipo_conta>/<int:conta_id>/', views.detalhes_conta, name='detalhes_conta'),
 ]

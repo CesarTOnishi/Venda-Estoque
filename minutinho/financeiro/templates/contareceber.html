@@ -3,14 +3,15 @@
 {% load pagamento_tags %}
 
 {% block 'head' %}
-<link rel="stylesheet" href="{% static 'css/extrato.css' %}">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-<title>Contas a Receber</title>
+    <link rel="stylesheet" href="{% static 'css/extrato.css' %}">
+    <link rel="stylesheet" href="{% static 'css/financeiro.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <title>Contas a Receber</title>
 {% endblock %}
 
 {% block 'dashboard' %}
-{% csrf_token %}
 <body>
     <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
         <span id="notification-message">
@@ -22,12 +23,12 @@
         </span>
         <span class="close" onclick="closeNotification()">&times;</span>
     </div>
-
+    
     <div class="container">
         <nav class="menu">
             <a class="nav-button" href="{% url 'financeiro' %}">Extrato</a>
             <a class="nav-button" href="{% url 'contasPagar' %}">Contas a Pagar</a>
-            <a class="nav-button" href="{% url 'contasReceber' %}">Contas a Receber</a>
+            <a class="nav-button active" href="{% url 'contasReceber' %}">Contas a Receber</a>
         </nav>
 
         <div class="saldo">
@@ -37,67 +38,15 @@
             </p>
         </div>
 
-
-        <form method="GET" action="{% url 'contasReceber' %}" class="filter-form">
-            <div>
-                <label for="filtro_mes">Mês Vencimento:</label>
-                <select name="mes" id="filtro_mes">
-                    <option value="">Todos</option>
-                    {% for num, nome in meses_filtro.items %}
-                        <option value="{{ num }}" {% if num == mes_selecionado %}selected{% endif %}>{{ nome }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label for="filtro_ano">Ano Vencimento:</label>
-                <input type="number" name="ano" id="filtro_ano" 
-                    value="{{ ano_selecionado|default:ano_atual_para_filtro }}" 
-                    placeholder="Ano" min="2000" max="2099">
-            </div>
-
-
-            <div>
-                <label for="data_inicio">Data Início:</label>
-                <input type="date" id="data_inicio" name="data_inicio" value="{{ data_inicio }}">
-            </div>
-            <div>
-                <label for="data_fim">Data Fim:</label>
-                <input type="date" id="data_fim" name="data_fim" value="{{ data_fim }}">
-            </div>
-
-            <div>
-                <label for="filtro_status">Status:</label>
-                <select name="status" id="filtro_status">
-                    <option value="">Todos</option>
-                    <option value="pago" {% if status_selecionado == 'pago' %}selected{% endif %}>Pagos</option>
-                    <option value="pendente" {% if status_selecionado == 'pendente' %}selected{% endif %}>Pendentes</option>
-                    <option value="vencido" {% if status_selecionado == 'vencido' %}selected{% endif %}>Vencidos</option>
-                </select>
-            </div>
-
-            <div>
-            <label for="filtro_recebido">Recebimento:</label>
-            <select name="recebido" id="filtro_recebido">
-                <option value="">Todos</option>
-                <option value="true" {% if recebido_selecionado == 'true' %}selected{% endif %}>Recebidos</option>
-                <option value="false" {% if recebido_selecionado == 'false' %}selected{% endif %}>Não Recebidos</option>
-            </select>
-            </div>
-            <button type="submit">Filtrar</button>
-            <a href="{% url 'contasReceber' %}" class="button-link">Limpar Filtro</a>
-        </form>
-
-
-        <button id="open_modal_button" class="modal-button">Adicionar Conta a Receber</button>
-
+        <!-- Modal para adicionar/editar contas -->
         <div class="modal-container" id="modal_container">
             <div class="modal-content">
                 <button type="button" class="modal-button" id="close_modal_button">Fechar</button>
-                <h1 id="modal-title">Adicionar Contas Receber</h1>
+                <h1 id="modal-title">Adicionar Conta a Receber</h1>
                 <form method="POST" action="{% url 'contasReceber' %}">
                     {% csrf_token %}
                     <input type="hidden" id="pagamento_id" name="pagamento_id">
-                    
+
                     <label for="tipo_pagamento">Tipo de Pagamento:</label>
                     <select id="tipo_pagamento" name="tipo_pagamento" required>
                         <option value="" disabled selected>Selecione um tipo</option>
@@ -106,7 +55,7 @@
                         {% endfor %}
                     </select>
 
-                    <label for="nome">Descrição:</label>
+                    <label for="descricao">Descrição:</label>
                     <input type="text" id="descricao" name="descricao" required>
 
                     <label for="vencimento">Vencimento:</label>
@@ -120,66 +69,224 @@
             </div>
         </div>
 
+        <!-- Seção de Filtros Avançados para Contas a Receber -->
+        <div class="filtros-container">
+            <button id="toggle-filtros" class="btn-filtros">
+                <i class="fas fa-sliders-h"></i> Filtros Avançados
+            </button>
+            
+            <form method="GET" action="{% url 'contasReceber' %}" id="form-filtros" class="filtros-form">
+                <div class="filtro-group">
+                    <label for="data_inicio"><i class="far fa-calendar-alt"></i> Período:</label>
+                    <div class="date-range">
+                        <input type="date" id="data_inicio" name="data_inicio" value="{{ request.GET.data_inicio }}">
+                        <span>até</span>
+                        <input type="date" id="data_fim" name="data_fim" value="{{ request.GET.data_fim }}">
+                    </div>
+                </div>
+
+                <div class="filtro-group">
+                    <label for="vencimento_inicio"><i class="fas fa-calendar-times"></i> Vencimento:</label>
+                    <div class="date-range">
+                        <input type="date" id="vencimento_inicio" name="vencimento_inicio" value="{{ request.GET.vencimento_inicio }}">
+                        <span>até</span>
+                        <input type="date" id="vencimento_fim" name="vencimento_fim" value="{{ request.GET.vencimento_fim }}">
+                    </div>
+                </div>
+
+                <div class="filtro-group">
+                    <label for="status"><i class="fas fa-check-circle"></i> Status:</label>
+                    <select id="status" name="status">
+                        <option value="">Todos</option>
+                        <option value="pago" {% if request.GET.status == 'pago' %}selected{% endif %}>Pago</option>
+                        <option value="pendente" {% if request.GET.status == 'pendente' %}selected{% endif %}>Pendentes</option>
+                        <option value="vencido" {% if request.GET.status == 'vencido' %}selected{% endif %}>Vencidos</option>
+                    </select>
+                </div>
+
+                <div class="filtro-group">
+                    <label for="metodo"><i class="fas fa-credit-card"></i> Método Pagamento:</label>
+                    <select id="metodo" name="metodo">
+                        <option value="">Todos</option>
+                        {% for key, value in tipos_pagamento.items %}
+                            <option value="{{ key }}" {% if request.GET.metodo == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filtro-group">
+                    <label for="valor_min"><i class="fas fa-money-bill-wave"></i> Valor:</label>
+                    <div class="valor-range">
+                        <input type="number" id="valor_min" name="valor_min" placeholder="Mínimo" step="0.01" value="{{ request.GET.valor_min }}">
+                        <span>-</span>
+                        <input type="number" id="valor_max" name="valor_max" placeholder="Máximo" step="0.01" value="{{ request.GET.valor_max }}">
+                    </div>
+                </div>
+
+                <div class="filtro-group">
+                    <label for="search"><i class="fas fa-search"></i> Busca:</label>
+                    <input type="text" id="search" name="search" 
+                        placeholder="Descrição ou ID" 
+                        value="{{ request.GET.search }}">
+                </div>
+
+                <div class="filtro-actions">
+                    <button type="submit" class="btn-filtrar">
+                        <i class="fas fa-filter"></i> Aplicar Filtros
+                    </button>
+                    <a href="{% url 'contasReceber' %}" class="btn-limpar">
+                        <i class="fas fa-broom"></i> Limpar Filtros
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <button id="open_modal_button" class="modal-button">Adicionar Conta a Receber</button>
+
         <section id="contas-receber" class="section active">
-            <h2>Contas a Receber</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Edição</th>
-                        <th>Data</th>
-                        <th>Descrição</th>
-                        <th>Valor</th>
-                        <th>Método Pagamento</th>
-                        <th>Data de Vencimento</th>
-                        <th>Ação</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for conta in contas %}
+            <div class="header-extrato">
+                <h2>Contas a Receber</h2>
+                <div class="info-filtros">
+                    {% if request.GET %}
+                        <small>Filtros aplicados: 
+                        {% for key, value in request.GET.items %}
+                            {% if value and key != 'page' %}{{ key }}: {{ value }}{% if not forloop.last %}, {% endif %}{% endif %}
+                        {% endfor %}
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+
+
+            <div class="status-buttons">
+                <a href="?{% param_replace status='' %}" class="status-btn {% if not request.GET.status %}active{% endif %}">
+                    Todos ({{ total_contas }})
+                </a>
+                <a href="?{% param_replace status='pendente' %}" class="status-btn {% if request.GET.status == 'pendente' %}active{% endif %}">
+                    Pendentes ({{ contas_pendentes }})
+                </a>
+                <a href="?{% param_replace status='pago' %}" class="status-btn {% if request.GET.status == 'pago' %}active{% endif %}">
+                    Recebidos ({{ contas_recebidas }})
+                </a>
+                <a href="?{% param_replace status='vencido' %}" class="status-btn {% if request.GET.status == 'vencido' %}active{% endif %}">
+                    Vencidos ({{ contas_vencidas }})
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
                         <tr>
-                            <td>
-                                {% if conta.editavel %}
-                                    <button class="editar-modal-button" 
-                                            data-id="{{ conta.id }}"
-                                            data-descricao="{{ conta.descricao }}"
-                                            data-vencimento="{{ conta.data_vencimento|date:'Y-m-d' }}"
-                                            data-valor="{{ conta.valor|floatformat:2 }}"
-                                            data-metodo="{{ conta.metodo_pagamento }}">
-                                        Editar
-                                    </button>
-                                {% else %}
-                                    <span class="nao-editavel">Não editável</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ conta.criado_em|date:"d/m/Y H:i" }}</td>
-                            <td>{{ conta.descricao }}</td>
-                            <td class="valor-positivo">R$ {{ conta.valor|floatformat:2 }}</td>
-                            <td>{{ conta.metodo_pagamento|metodo_pagamento_label }}</td>
-                            <td>{{ conta.data_vencimento|date:"d/m/Y" }}</td>
-                            <td>
-                                <select class="acao" data-conta-id="{{ conta.id }}">
-                                    <option value="pendente" {% if not conta.recebido %}selected{% endif %}>Pendente</option>
-                                    <option value="pago" {% if conta.recebido %}selected{% endif %}>Pago</option>
-                                </select>
-                            </td>
+                            <th>Edição</th>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Método Pagamento</th>
+                            <th>Vencimento</th>
+                            <th>Status</th>
                         </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="7">Nenhuma conta a receber encontrada.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for conta in contas %}
+                            <tr class="{% if conta.vencida %}conta-vencida{% endif %}">
+                                <td>
+                                    {% if conta.editavel %}
+                                        <button class="editar-btn" 
+                                                data-metodo="{{ conta.metodo_pagamento }}"
+                                                data-id="{{ conta.id }}"
+                                                data-descricao="{{ conta.descricao }}"
+                                                data-valor="{{ conta.valor|floatformat:2 }}"
+                                                data-vencimento="{{ conta.data_vencimento|date:'Y-m-d' }}">
+                                            Editar
+                                        </button>
+                                    {% else %}
+                                        <span class="nao-editavel">Não editável</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ conta.criado_em|date:"d/m/Y H:i" }}</td>
+                                <td>{{ conta.descricao }}</td>
+                                <td class="valor-positivo">R$ {{ conta.valor|floatformat:2 }}</td>
+                                <td>{{ conta.metodo_pagamento|metodo_pagamento_label }}</td>
+                                <td class="{% if conta.vencida %}data-vencida{% endif %}">
+                                    {{ conta.data_vencimento|date:"d/m/Y" }}
+                                    {% if conta.vencida %}<i class="fas fa-exclamation-triangle"></i>{% endif %}
+                                </td>
+                                <td>
+                                    <select class="acao" data-conta-id="{{ conta.id }}">
+                                        <option value="pendente" {% if not conta.recebido %}selected{% endif %}>Pendente</option>
+                                        <option value="pago" {% if conta.recebido %}selected{% endif %}>Pago</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7">Nenhuma conta a receber encontrada com os filtros aplicados.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                    <div class="paginacao">
+                        <span class="step-links">
+                            {% if contas.has_previous %}
+                                <a href="?{% param_replace page=1 %}">&laquo; Primeira</a>
+                                <a href="?{% param_replace page=contas.previous_page_number %}">Anterior</a>
+                            {% endif %}
+
+                            <span class="current">
+                                Página {{ contas.number }} de {{ contas.paginator.num_pages }}.
+                            </span>
+
+                            {% if contas.has_next %}
+                                <a href="?{% param_replace page=contas.next_page_number %}">Próxima</a>
+                                <a href="?{% param_replace page=contas.paginator.num_pages %}">Ultima &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+            </div>
         </section>
     </div>
 
-    <script src="{% static 'js/extrato.js' %}"></script>
-    <script src="{% static 'js/pagar.js' %}"></script>
+    <script src="{% static 'js/contasreceber.js' %}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const selects = document.querySelectorAll('.acao');
+            const modal = document.getElementById('modal_container');
 
-            selects.forEach(select => {
+            filtrosForm.style.display = 'none';
+
+            // Controle do modal
+            document.getElementById('open_modal_button').addEventListener('click', function() {
+                modal.style.display = 'flex';
+                document.getElementById('modal-title').textContent = 'Adicionar Conta a Receber';
+                document.getElementById('pagamento_id').value = '';
+                document.getElementById('descricao').value = '';
+                document.getElementById('vencimento').value = '';
+                document.getElementById('valor').value = '';
+                document.getElementById('tipo_pagamento').value = '';
+            });
+
+            document.getElementById('close_modal_button').addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+
+            // Edição de contas
+            document.querySelectorAll('.editar-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.style.display = 'flex';
+                    document.getElementById('modal-title').textContent = 'Editar Conta a Receber';
+                    document.getElementById('pagamento_id').value = this.dataset.id;
+                    document.getElementById('descricao').value = this.dataset.descricao;
+                    document.getElementById('vencimento').value = this.dataset.vencimento;
+                    
+                    let valor = this.dataset.valor || '';
+                    valor = valor.toString().replace(',', '.'); 
+                    document.getElementById('valor').value = valor;
+                    
+                    document.getElementById('tipo_pagamento').value = this.dataset.metodo;
+                });
+            });
+
+            // Atualização de status
+            document.querySelectorAll('.acao').forEach(select => {
                 let valorAnterior = select.value;
 
                 select.addEventListener('focus', function () {
@@ -187,7 +294,7 @@
                 });
 
                 select.addEventListener('change', function () {
-                    const contaId = this.getAttribute('data-conta-id');
+                    const contaId = this.dataset.contaId;
                     const novoStatus = this.value;
                     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -201,80 +308,67 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
+                        if (!data.success) {
+                            alert('Erro ao atualizar status');
+                            this.value = valorAnterior;
+                        } else {
+                            // Atualiza o saldo exibido
                             const saldoElement = document.querySelector('.saldo p');
                             saldoElement.textContent = `R$ ${data.saldo_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
                             saldoElement.className = data.saldo_total >= 0 ? 'saldo-positivo' : 'saldo-negativo';
-                        } else {
-                            alert('Erro ao atualizar o status.');
-                            this.value = valorAnterior;
                         }
                     })
                     .catch(() => {
-                        alert('Erro na requisição.');
+                        alert('Erro na conexão');
                         this.value = valorAnterior;
                     });
                 });
             });
 
-            document.getElementById('open_modal_button').addEventListener('click', () => {
-                document.getElementById('modal_container').style.display = 'flex';
-                document.getElementById('modal-title').textContent = 'Adicionar Contas Receber';
-                document.getElementById('pagamento_id').value = '';
-                document.getElementById('descricao').value = '';
-                document.getElementById('vencimento').value = '';
-                document.getElementById('valor').value = '';
-                document.getElementById('tipo_pagamento').value = '';
-            });
+            // Controle dos filtros
+        document.getElementById('toggle-filtros').addEventListener('click', function() {
+            const form = document.getElementById('form-filtros');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'grid' : 'none';
+            this.querySelector('i').classList.toggle('fa-chevron-down');
+            this.querySelector('i').classList.toggle('fa-chevron-up');
+        });
 
-            document.querySelectorAll('.editar-modal-button').forEach(button => {
-                button.addEventListener('click', function () {
-                    document.getElementById('modal_container').style.display = 'flex';
-                    document.getElementById('modal-title').textContent = 'Editar Contas Receber';
-                    document.getElementById('pagamento_id').value = this.dataset.id;
-                    document.getElementById('descricao').value = this.dataset.descricao;
-                    document.getElementById('vencimento').value = this.dataset.vencimento;
-                    document.getElementById('valor').value = this.dataset.valor;
-
-                        let valor = this.dataset.valor || '';
-                            valor = valor.toString().replace(',', '.'); 
-                            document.getElementById('valor').value = valor;
-
-                    document.getElementById('tipo_pagamento').value = this.dataset.metodo;
+            // Validação de datas
+            const dataInicio = document.getElementById('data_inicio');
+            const dataFim = document.getElementById('data_fim');
+            const vencimentoInicio = document.getElementById('vencimento_inicio');
+            const vencimentoFim = document.getElementById('vencimento_fim');
+            
+            if (dataInicio && dataFim) {
+                dataInicio.addEventListener('change', function() {
+                    dataFim.min = this.value;
                 });
-            });
+                
+                dataFim.addEventListener('change', function() {
+                    dataInicio.max = this.value;
+                });
+            }
 
-            document.getElementById('close_modal_button').addEventListener('click', () => {
-                document.getElementById('modal_container').style.display = 'none';
-            });
+            if (vencimentoInicio && vencimentoFim) {
+                vencimentoInicio.addEventListener('change', function() {
+                    vencimentoFim.min = this.value;
+                });
+                
+                vencimentoFim.addEventListener('change', function() {
+                    vencimentoInicio.max = this.value;
+                });
+            }
+
+            // Máscara para valores monetários
+            if (typeof $ !== 'undefined') {
+                $('.valor-range input').mask('#.##0,00', {reverse: true});
+            }
         });
 
         function closeNotification() {
             const notification = document.getElementById('notification');
-            notification.classList.add('fade-out');
-            setTimeout(() => {
-                notification.classList.remove('visible', 'fade-out');
-                notification.classList.add('hidden');
-            }, 500);
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            const messageSpan = document.getElementById('notification-message');
-
-            messageSpan.innerHTML = message;
-            notification.classList.add('visible');
-            notification.classList.remove('hidden');
-
-            setTimeout(() => {
-                closeNotification();
-            }, 5000);
-        }
-
-        if ($('.notification').hasClass('visible')) {
-            setTimeout(() => {
-                closeNotification();
-            }, 5000);
+            notification.classList.remove('visible');
+            notification.classList.add('hidden');
         }
     </script>
 </body>

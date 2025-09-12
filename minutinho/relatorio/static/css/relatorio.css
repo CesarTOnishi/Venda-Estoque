@@ -1,100 +1,85 @@
-:root{
-     
-    --main-color: #ac4147;
-    --dark-color: #411f2d;
-    --light-color: #ffc27f;
+:root {
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
     --contrast-color: #f88863;
-    --differential-color: #ffe29a;
-
+    --differential-color: #3b6790;
+    --background-color: #fff8e3;
+  --radius: 12px;
+  --shadow: 0 4px 14px rgba(0,0,0,0.08);
 }
 
 body {
-    background-color: #333;
-    color: #fff;
-    font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
+  background: var(--differential-color);
+  margin: 0;
+  color: black;
 }
 
-.container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    background-color: #333;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.page {
+  padding: 20px;
 }
 
-h1 {
-    color: var(--main-color);
-    text-align: center;
+.header {
+  margin-bottom: 20px;
 }
 
-h2 {
-    color: var(--dark-color);
+.header h1 {
+  margin: 0;
+  font-size: 26px;
+  color: var(--main-color);
 }
 
-.report-links {
-    margin-top: 20px;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
-.report-links ul {
-    list-style: none;
-    padding: 0;
+.card {
+  background: var(--main-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
-.report-links ul li {
-    margin: 15px 0; 
+.card h2 {
+  margin: 0 0 6px;
+  color: black;
+  font-size: 18px;
 }
 
-.report-links ul li a {
-    text-decoration: none;
-    color: #333;
-    padding: 10px;
-    background-color: #e2e2e2;
-    border-radius: 5px;
-    display: block; 
-    transition: background-color 0.3s;
+.card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 12px;
 }
 
-.report-links ul li a:hover {
-    background-color: var(--main-color);
-    color: white;
-}
-.filter-section {
-    background-color: #444;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.filter-section h2 {
-    color: #e2e2e2;
+input[type="text"], input[type="date"] {
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
 }
 
-.filter-section label {
-    display: block;
-    margin: 10px 0 5px;
-    color: #fff;
+.btn {
+  background: var(--dark-color);
+  border: none;
+  padding: 10px;
+  color: #fff;
+  border-radius: var(--radius);
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.filter-section select {
-    padding: 8px;
-    margin-bottom: 15px;
-    width: 100%;
-    border-radius: 0px;
-    color: white;
-    background-color: #333;
-}
-
-.filter-section button {
-    padding: 10px;
-    background-color: #ac4147;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.filter-section button:hover {
-    background-color: #411f2d;
+.btn:hover {
+  background: var(--differential-color);
 }

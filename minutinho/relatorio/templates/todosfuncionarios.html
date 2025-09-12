@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório de Vendas</title>
+    <title>Relatório de Funcionários</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -60,47 +60,48 @@
                 </td>
                 <td class="empresa-info" width="70%">
                     <h2>Mercado NewLife</h2>
-                    <p><strong>Endereço:</strong>Rua Reinaldo Nassi, 546</p>
-                    <p><strong>Cidade:</strong>Diamante do Norte</p>
-                    <p><strong>CEP:</strong>87990-000</p>
-                    <p><strong>Email:</strong>exemplo@empresa.com.br</p>
+                    <p><strong>Endereço:</strong> Rua Reinaldo Nassi, 546</p>
+                    <p><strong>Cidade:</strong> Diamante do Norte</p>
+                    <p><strong>CEP:</strong> 87990-000</p>
+                    <p><strong>Email:</strong> exemplo@empresa.com.br</p>
                     <p><strong>Telefone:</strong> (44) 99999-9999</p>
                     <p><strong>CNPJ:</strong> 99.999.999/0001-99</p>
                 </td>
             </tr>
         </table>
     </div>
-    <h1>Relatório de Estoque</h1>
+    <h1>Relatório de Funcionários</h1>
     <table>
         <thead>
             <tr>
-                <th>ID do Produto</th>
-                <th>Produto</th>
-                <th>Categoria</th>
-                <th>Quantidade</th>
-                <th>Estoque</th>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Email</th>
+                <th>Cargo</th>
+                <th>Salário</th>
+                <th>Data de Admissão</th>
+                <th>Telefone</th>
+                <th>Cidade</th>
+                <th>Estado</th>
             </tr>
         </thead>
         <tbody>
-            {% for produto in estoque %}
-            <tr class="{{ produto.status }}">
-                <td>{{ produto.id }}</td>
-                <td>{{ produto.nome }}</td>
-                <td>{{ produto.categoria__nome }}</td>
-                <td>{{ produto.quantidade_total }}</td>
-                <td>
-                    {% if produto.status == 'fora_de_estoque' %}
-                        <span style="color: red;">Fora de Estoque</span>
-                    {% elif produto.status == 'pouco_estoque' %}
-                        <span style="color: orange;">Pouco em Estoque</span>
-                    {% else %}
-                        <span style="color: rgb(0, 255, 34);">Em Estoque</span>
-                    {% endif %}
-                </td>
+            {% for funcionario in funcionarios %}
+            <tr>
+                <td>{{ funcionario.nome }}</td>
+                <td>{{ funcionario.cpf }}</td>
+                <td>{{ funcionario.email }}</td>
+                <td>{{ funcionario.cargo }}</td>
+                <td>R$ {{ funcionario.salario }}</td>
+                <td>{{ funcionario.data_admissao|date:"d/m/Y" }}</td>
+                <td>{{ funcionario.telefone }}</td>
+                <td>{{ funcionario.cidade }}</td>
+                <td>{{ funcionario.estado }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4">Nenhum produto encontrado.</td>
+                <td colspan="10">Nenhum funcionário encontrado.</td>
             </tr>
             {% endfor %}
         </tbody>
