@@ -9,14 +9,14 @@
 {% block 'dashboard' %}
 <div class="page">
   <div class="header">
-    <h1>📊 Central de Relatórios</h1>
+    <h1>Central de Relatórios</h1>
     <p>Escolha o relatório desejado e aplique filtros quando necessário.</p>
   </div>
 
   <div class="grid" id="cards">
     <!-- Relatório de Produtos -->
     <div class="card">
-      <h2>📦 Produtos</h2>
+      <h2>Produtos</h2>
       <p>Estoque atual, preço de venda e categoria.</p>
       <form method="GET" action="{% url 'relatorioestoque' %}">
         <button type="submit" class="btn primary">Gerar Relatório</button>
@@ -25,7 +25,7 @@
 
     <!-- Relatório de Funcionários -->
     <div class="card">
-      <h2>👨‍💼 Funcionários</h2>
+      <h2>Funcionários</h2>
       <p>Consulta de todos funcionários cadastrados.</p>
       <form method="GET" action="{% url 'relatoriofuncionarios' %}">
         <button type="submit" class="btn primary">Gerar Relatório</button>
@@ -34,7 +34,7 @@
 
     <!-- Relatório de Vendas por Forma de Pagamento -->
     <div class="card">
-      <h2>💳 Vendas por Pagamento</h2>
+      <h2>Vendas por Pagamento</h2>
       <p>Consulta como os clientes estão pagando.</p>
       <form method="GET" action="{% url 'relatoriovendapagamento' %}">
         <button type="submit" class="btn primary">Gerar Relatório</button>
@@ -42,7 +42,7 @@
     </div>
 
     <div class="card">
-      <h2>👥 Clientes</h2>
+      <h2>Clientes</h2>
       <p>Consulta de todos clientes cadastrados.</p>
       <form method="GET" action="{%url 'relatorioclientes'%}">
         <button type="submit" class="btn primary">Gerar Relatório</button>
@@ -50,24 +50,28 @@
     </div>
 
     <div class="card">
-      <h2>📒 Extrato Financeiro</h2>
+      <h2>Extrato Financeiro</h2>
       <p>Movimentações financeiras consolidadas.</p>
       <form method="GET" action="{% url 'relatorioextrato' %}">
         <button type="submit" class="btn primary">Gerar Relatório</button>
       </form>
     </div>
 
-    <div class="card">
-      <h2>🛍️ Vendas por Cliente</h2>
-      <p>Histórico de compras de um cliente específico.</p>
-      <form method="GET" action="#">
-        <input type="text" name="cliente" placeholder="Nome do cliente" required>
-        <button type="submit" class="btn primary">Gerar Relatório</button>
-      </form>
-    </div>
+<div class="card">
+  <h2>Vendas por Cliente</h2>
+  <p>Histórico de compras de um cliente específico.</p>
+
+  <form method="GET" action="{% url 'relatoriovendacliente' %}">
+      <label for="cliente">Cliente:</label>
+      <input type="text" id="cliente-input" name="cliente" placeholder="Digite um cliente" autocomplete="off" required>
+      <ul id="cliente-list" class="dropdown-suggestions"></ul>
+
+      <button type="submit" class="btn primary">Gerar Relatório</button>
+  </form>
+</div>
 
     <div class="card">
-    <h2>💰 Contas a Pagar/Receber</h2>
+    <h2>Contas a Pagar/Receber</h2>
     <p>Obrigações financeiras da empresa.</p>
     <form method="GET" action="{% url 'relatoriocontas' %}">
         <label for="tipo_conta">Tipo de Conta:</label>
@@ -88,7 +92,7 @@
     </div>
 
     <div class="card">
-      <h2>⏳ Vendas por Período</h2>
+      <h2>Vendas por Período</h2>
       <p>Filtradas por intervalo de datas.</p>
       <form method="GET" action="{% url 'relatoriovendas' %}">
 
@@ -102,17 +106,20 @@
     </div>
 
     <div class="card">
-      <h2>📦 Compras</h2>
+      <h2>Compras</h2>
       <p>Compras efetuadas em um período.</p>
-      <form method="GET" action="#">
+      <form method="GET" action="{% url 'relatoriocompras' %}">
+        <label for="inicio">Data Inicial:</label>
         <input type="date" name="inicio" required>
+
+        <label for="fim">Data Final:</label>
         <input type="date" name="fim" required>
         <button type="submit" class="btn primary">Gerar Relatório</button>
       </form>
     </div>
 
     <div class="card">
-    <h2>🛒 Compras por Fornecedor</h2>
+    <h2>Compras por Fornecedor</h2>
     <p>Compras realizadas de um fornecedor.</p>
     <form method="GET" action="{% url 'relatoriofornecedores' %}">
         <label>Fornecedor:</label>
@@ -124,54 +131,86 @@
     </div>
 
 
-    <div class="card">
-      <h2>📅 Compras por Período</h2>
-      <p>Apresenta todas as compras dentro do intervalo.</p>
-      <form method="GET" action="#">
-        <input type="date" name="inicio" required>
-        <input type="date" name="fim" required>
-        <button type="submit" class="btn primary">Gerar Relatório</button>
-      </form>
-    </div>
-
   </div>
 </div>
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{% static 'js/relatorio.js' %}"></script>
 <script>
-const input = document.getElementById('fornecedor');
-const list = document.getElementById('fornecedor-list');
+document.addEventListener("DOMContentLoaded", () => {
+    // ===== CLIENTES =====
+    let clientes = [];
 
-input.addEventListener('input', function() {
-    const query = this.value.trim();
-    if(query.length < 1) {
-        list.innerHTML = '';
-        return;
-    }
-
-    fetch("{% url 'autocomplete_fornecedor' %}?q=" + encodeURIComponent(query))
+    // Pega lista de clientes via JSON
+    fetch("{% url 'clientes_json' %}")
         .then(response => response.json())
         .then(data => {
-            list.innerHTML = '';
-            data.forEach(f => {
-                const item = document.createElement('li');
-                item.textContent = f.nome;
-                item.style.padding = '5px';
-                item.style.cursor = 'pointer';
-                item.addEventListener('click', () => {
-                    input.value = f.nome;
-                    list.innerHTML = '';
-                });
-                list.appendChild(item);
-            });
+            clientes = data;
         });
-});
 
-// Fechar dropdown ao clicar fora
-document.addEventListener('click', function(e) {
-    if(e.target !== input) {
-        list.innerHTML = '';
-    }
+    const clienteInput = document.getElementById("cliente-input");
+    const clienteList = document.getElementById("cliente-list");
+
+    clienteInput.addEventListener("input", () => {
+        const value = clienteInput.value.toLowerCase();
+        clienteList.innerHTML = "";
+
+        if (value.length === 0) return;
+
+        const filtered = clientes.filter(c => c.nome.toLowerCase().includes(value));
+        filtered.forEach(c => {
+            const li = document.createElement("li");
+            li.textContent = c.nome;
+            li.style.padding = "5px";
+            li.style.cursor = "pointer";
+            li.addEventListener("click", () => {
+                clienteInput.value = c.nome;
+                clienteList.innerHTML = "";
+            });
+            clienteList.appendChild(li);
+        });
+    });
+
+    // ===== FORNECEDORES =====
+    const fornecedorInput = document.getElementById("fornecedor");
+    const fornecedorList = document.getElementById("fornecedor-list");
+
+    fornecedorInput.addEventListener("input", function() {
+        const query = this.value.trim();
+        if (query.length < 1) {
+            fornecedorList.innerHTML = '';
+            return;
+        }
+
+        fetch("{% url 'autocomplete_fornecedor' %}?q=" + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                fornecedorList.innerHTML = '';
+                data.forEach(f => {
+                    const li = document.createElement("li");
+                    li.textContent = f.nome;
+                    li.style.padding = '5px';
+                    li.style.cursor = 'pointer';
+                    li.addEventListener('click', () => {
+                        fornecedorInput.value = f.nome;
+                        fornecedorList.innerHTML = '';
+                    });
+                    fornecedorList.appendChild(li);
+                });
+            });
+    });
+
+    // ===== Fechar dropdown ao clicar fora =====
+    document.addEventListener("click", (e) => {
+        if (!clienteInput.contains(e.target)) {
+            clienteList.innerHTML = "";
+        }
+        if (!fornecedorInput.contains(e.target)) {
+            fornecedorList.innerHTML = "";
+        }
+    });
 });
 </script>
 {% endblock %}

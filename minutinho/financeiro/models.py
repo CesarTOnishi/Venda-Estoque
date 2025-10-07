@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 from compras.models import PedidoCompra
 from venda.models import Pedido
+from decimal import Decimal
+
 
 class ContaPagar(models.Model):
     pedido = models.ForeignKey(PedidoCompra, on_delete=models.CASCADE, null=True, blank=True)
@@ -108,3 +110,49 @@ class Extrato(models.Model):
 
     def __str__(self):
         return f"{self.descricao} - {self.tipo} - R$ {self.valor}"
+    
+
+class ContaBancaria(models.Model):
+    TIPO_CONTA_CHOICES = [
+        ('corrente', 'Conta Corrente'),
+        ('poupanca', 'Poupança'),
+    ]
+
+    nome = models.CharField(max_length=100)
+    banco = models.CharField(max_length=100)
+    agencia = models.CharField(max_length=20, blank=True, null=True)
+    numero_conta = models.CharField(max_length=50)
+    tipo_conta = models.CharField(max_length=20, choices=TIPO_CONTA_CHOICES)
+    saldo_inicial = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    data_criacao = models.DateTimeField(default=timezone.now)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    ativo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.banco} - {self.get_tipo_conta_display()}"
+    
+class MovimentacaoBancaria(models.Model):
+    TIPO_MOVIMENTACAO = [
+        ('entrada', 'Entrada'),
+        ('saida', 'Saída'),
+    ]
+
+    conta = models.ForeignKey(ContaBancaria, on_delete=models.CASCADE, related_name="movimentacoes")
+    descricao = models.CharField(max_length=255)
+    tipo = models.CharField(max_length=10, choices=TIPO_MOVIMENTACAO)
+    valor = models.DecimalField(max_digits=12, decimal_places=2)
+    data = models.DateTimeField(default=timezone.now)
+    saldo_apos = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  
+            if self.tipo == 'entrada':
+                self.conta.saldo_inicial += self.valor
+            elif self.tipo == 'saida':
+                self.conta.saldo_inicial -= self.valor
+            self.conta.save()
+        self.saldo_apos = self.conta.saldo_inicial
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.conta.nome} - {self.tipo} R$ {self.valor:.2f}"

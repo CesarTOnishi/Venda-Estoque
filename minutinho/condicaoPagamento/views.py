@@ -7,6 +7,8 @@ import re
 from .models import CondicaoPagamento
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.db.models import ProtectedError
+
 
 
 
@@ -140,3 +142,18 @@ def filtroPagamento(request):
         })
 
     return JsonResponse({"pagamentos": lista})
+
+def deletarCondicao(request, condicao_id):
+    condicao = get_object_or_404(CondicaoPagamento, id=condicao_id)
+    try:
+        condicao.delete()
+        messages.success(request, f'A condição "{condicao.nome}" foi deletada com sucesso.')
+    except ProtectedError:
+        messages.error(
+            request,
+            f'Não foi possível deletar a condição "{condicao.nome}" porque existem registros associados.'
+        )
+    except Exception as e:
+        messages.error(request, f'Ocorreu um erro ao deletar: {str(e)}')
+
+    return redirect('condicaoPagamento')

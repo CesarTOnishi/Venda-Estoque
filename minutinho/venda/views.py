@@ -128,21 +128,16 @@ def sacola(request):
     results = Cliente.objects.all()
     viewCarrinho = getViewCarrinho(user_id, request)
     valor_geral = View_Carrinho.objects.filter(user_id=user_id).aggregate(Sum('valor_total')).get('valor_total__sum') or 0.00
-    
-    # Pega o método de pagamento selecionado, se existir
+
     metodo_selecionado = request.GET.get('metodo_pagamento') or request.POST.get('metodo_pagamento')
     
-    # Filtra as condições de pagamento com base no método selecionado
     condicoes_pagamento = CondicaoPagamento.objects.filter(ativo=True)
     if metodo_selecionado:
         condicoes_pagamento = condicoes_pagamento.filter(tipo_pagamento=metodo_selecionado)
     
-    # Se um método de pagamento for selecionado, tenta pegar a primeira condição de pagamento
     condicao_selecionada = None
     if metodo_selecionado:
         condicao_selecionada = condicoes_pagamento.first()
-    
-    # Se o formulário foi enviado, pega o ID da condição de pagamento
     if request.method == 'POST':
         condicao_id = request.POST.get('condicao_pagamento_id')
         cliente_id = request.POST.get('cliente_id')
@@ -169,7 +164,6 @@ def sacola(request):
             }
             return render(request, 'sacola.html', context)
 
-    # Contexto para a renderização padrão da página
     context = {
         'viewCarrinho': viewCarrinho,
         'user_id': user_id,
@@ -178,7 +172,7 @@ def sacola(request):
         'condicoes_pagamento': condicoes_pagamento,
         'tipo_pagamento': tipo_pagamento,
         'metodo_selecionado': metodo_selecionado,
-        'condicao_selecionada': condicao_selecionada,  # Passando a condição selecionada para o template
+        'condicao_selecionada': condicao_selecionada, 
     }
 
     if not viewCarrinho:
@@ -229,51 +223,34 @@ def realizarPedido(request):
         viewCarrinho = getViewCarrinho(user_id, request)
         valor_geral = View_Carrinho.objects.filter(user_id=user_id).aggregate(Sum('valor_total')).get('valor_total__sum', 0.00)
 
-        # Validações
-        if not condicao_pagamento_id:
-            errors.append("Selecione uma condição de pagamento!")
-            context = {
-                'errors': errors,
-                'viewCarrinho': viewCarrinho,
-                'condicoes_pagamento': condicoes_pagamento,
-                'valor_geral': valor_geral,
-                'clientes': Cliente.objects.all()
-            }
-            return render(request, 'sacola.html', context)
-
         if not cliente_id:
             errors.append("Selecione um cliente válido.")
-            context = {
+        if not condicao_pagamento_id:
+            errors.append("Selecione uma condição de pagamento!")
+        if not viewCarrinho:
+            errors.append("Carrinho vazio. Adicione itens antes de realizar um pedido.")
+
+        if errors:
+            return render(request, 'sacola.html', {
                 'errors': errors,
                 'viewCarrinho': viewCarrinho,
                 'condicoes_pagamento': condicoes_pagamento,
                 'valor_geral': valor_geral,
                 'clientes': Cliente.objects.all()
-            }
-            return render(request, 'sacola.html', context)
-        
+            })
+
         try:
             cliente = Cliente.objects.get(id=int(cliente_id))
             condicao_pagamento = CondicaoPagamento.objects.get(id=int(condicao_pagamento_id))
-        except (ValueError, Cliente.DoesNotExist, CondicaoPagamento.DoesNotExist):
+        except (Cliente.DoesNotExist, CondicaoPagamento.DoesNotExist):
             errors.append("Cliente ou condição de pagamento não encontrados.")
-            context = {
+            return render(request, 'sacola.html', {
                 'errors': errors,
                 'viewCarrinho': viewCarrinho,
                 'condicoes_pagamento': condicoes_pagamento,
                 'valor_geral': valor_geral,
                 'clientes': Cliente.objects.all()
-            }
-            return render(request, 'sacola.html', context)
-
-        if not viewCarrinho:
-            errors.append("Carrinho vazio. Adicione itens ao carrinho antes de realizar um pedido.")
-            context = {
-                'errors': errors,
-                'condicoes_pagamento': condicoes_pagamento,
-                'clientes': Cliente.objects.all()
-            }
-            return render(request, 'sacola.html', context)
+            })
 
         desconto = (valor_geral * condicao_pagamento.desconto / 100)
         valor_com_desconto = valor_geral - desconto
@@ -285,22 +262,15 @@ def realizarPedido(request):
             with transaction.atomic():
                 max_nr_pedido = Pedido.objects.filter(user_id=user_id).aggregate(Max('nr_pedido'))
                 ultimo_nr_pedido = max_nr_pedido['nr_pedido__max'] or 0
+                novo_nr = ultimo_nr_pedido + 1
 
                 for car in viewCarrinho:
                     produto = Produto.objects.get(id=car['produto_id'])
                     if produto.estoque < car['quantidade']:
-                        errors.append(f"Estoque insuficiente para o produto {produto.nome}")
-                        context = {
-                            'errors': errors,
-                            'viewCarrinho': viewCarrinho,
-                            'condicoes_pagamento': condicoes_pagamento,
-                            'valor_geral': valor_geral,
-                            'clientes': Cliente.objects.all()
-                        }
-                        return render(request, 'sacola.html', context)
+                        raise ValueError(f"Estoque insuficiente para o produto {produto.nome}")
 
                     pedido = Pedido(
-                        nr_pedido=ultimo_nr_pedido + 1,
+                        nr_pedido=novo_nr,
                         user_id=user_id,
                         cliente=cliente,
                         produto_id=car['produto_id'],
@@ -310,19 +280,23 @@ def realizarPedido(request):
                         data_pedido=timezone.now(),
                         metodo_pagamento=condicao_pagamento.tipo_pagamento,
                         parcelas=condicao_pagamento.parcelas,
-                        condicao_pagamento=condicao_pagamento
+                        condicao_pagamento=condicao_pagamento,
+                        condicao_nome=condicao_pagamento.nome,
+                        condicao_tipo=condicao_pagamento.tipo_pagamento,
+                        condicao_parcelas=condicao_pagamento.parcelas,
+                        condicao_juros=condicao_pagamento.juros,
+                        condicao_desconto=condicao_pagamento.desconto
                     )
                     pedido.save()
+
                     produto.estoque -= car['quantidade']
                     produto.save()
 
-                # Cria contas a receber
                 for i in range(condicao_pagamento.parcelas):
                     data_vencimento = timezone.now().date() + timedelta(days=condicao_pagamento.intervalo_parcelas * (i + 1))
-                    
                     ContaReceber.objects.create(
                         pedido=pedido,
-                        descricao=f"Venda Pedido {ultimo_nr_pedido + 1} - Parcela {i + 1}/{condicao_pagamento.parcelas}",
+                        descricao=f"Venda Pedido {novo_nr} - Parcela {i + 1}/{condicao_pagamento.parcelas}",
                         valor=valor_parcela,
                         data_vencimento=data_vencimento,
                         metodo_pagamento=condicao_pagamento.tipo_pagamento,
@@ -337,26 +311,25 @@ def realizarPedido(request):
 
         except Exception as e:
             errors.append(f"Erro ao processar pedido: {str(e)}")
-            context = {
+            return render(request, 'sacola.html', {
                 'errors': errors,
                 'viewCarrinho': viewCarrinho,
                 'condicoes_pagamento': condicoes_pagamento,
                 'valor_geral': valor_geral,
                 'clientes': Cliente.objects.all()
-            }
-            return render(request, 'sacola.html', context)
+            })
 
     else:
         viewCarrinho = getViewCarrinho(request.user.id, request)
         valor_geral = View_Carrinho.objects.filter(user_id=request.user.id).aggregate(Sum('valor_total')).get('valor_total__sum', 0.00)
         condicoes_ativas = CondicaoPagamento.objects.filter(ativo=True)
         metodos_disponiveis = CondicaoPagamento.TIPO_PAGAMENTO_CHOICES
-        
+
         context = {
             'viewCarrinho': viewCarrinho,
             'valor_geral': valor_geral,
             'condicoes_pagamento': condicoes_ativas,
-            'tipos_pagamento': dict(metodos_disponiveis),
+            'tipo_pagamento': dict(metodos_disponiveis),
             'clientes': Cliente.objects.all()
         }
         return render(request, 'sacola.html', context)
@@ -369,6 +342,7 @@ def meuspedidos(request):
     valor_geral = View_Pedido.objects.filter(user_id=user_id).aggregate(Sum('valor_total')).get('valor_total__sum', 0.00)
     clientes = Cliente.objects.all()
 
+    # Filtros
     cliente_filtro = request.GET.get('cliente')
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
@@ -376,21 +350,23 @@ def meuspedidos(request):
     numero_pedido = request.GET.get('numero_pedido')
     condicao_pagamento_filtro = request.GET.get('condicao_pagamento')
 
+    # Query base
     pedidos = View_Pedido.objects.filter(user_id=user_id)
 
+    # Aplicando filtros
     if cliente_filtro:
-        pedidos = pedidos.filter(cliente_nome__iexact=cliente_filtro) 
-    
+        pedidos = pedidos.filter(cliente_nome__iexact=cliente_filtro)
+
     if data_inicio:
-        if data_fim: 
+        if data_fim:
             pedidos = pedidos.filter(data_pedido__range=[data_inicio, data_fim])
-        else: 
+        else:
             pedidos = pedidos.filter(data_pedido__gte=data_inicio, data_pedido__lte=timezone.now())
 
     if ordem == 'recente':
-        pedidos = pedidos.order_by('-nr_pedido')  
+        pedidos = pedidos.order_by('-nr_pedido')
     elif ordem == 'antiga':
-        pedidos = pedidos.order_by('nr_pedido') 
+        pedidos = pedidos.order_by('nr_pedido')
 
     if numero_pedido:
         pedidos = pedidos.filter(nr_pedido__iexact=numero_pedido)
@@ -398,38 +374,46 @@ def meuspedidos(request):
     if condicao_pagamento_filtro:
         pedidos = pedidos.filter(condicao_pagamento_nome__iexact=condicao_pagamento_filtro)
 
-
+    # Construindo dicionário de pedidos
     pedidos_dict = {}
-    
+
     if pedidos.exists():
         for pedido in pedidos:
             nr_pedido = pedido.nr_pedido
-            
+
             if nr_pedido not in pedidos_dict:
                 valor_total = View_Pedido.objects.filter(nr_pedido=nr_pedido).aggregate(Sum('valor_total')).get('valor_total__sum', 0.00)
                 parcelas = pedido.parcelas
                 valor_parcela = valor_total / parcelas if parcelas > 0 else valor_total
+
+                condicao_pagamento = {
+                    'nome': pedido.condicao_pagamento_nome,
+                    'tipo_pagamento': getattr(pedido, 'condicao_tipo_pagamento', 'Não informado'),
+                    'parcelas': pedido.parcelas,
+                    'juros': getattr(pedido, 'condicao_juros', 0),
+                    'desconto': getattr(pedido, 'condicao_desconto', 0),
+                }
 
                 pedidos_dict[nr_pedido] = {
                     'data_pedido': pedido.data_pedido,
                     'itens': [],
                     'cliente_nome': pedido.cliente_nome,
                     'metodo_pagamento': pedido.metodo_pagamento,
-                    'condicao_pagamento': pedido.condicao_pagamento_nome,
+                    'condicao_pagamento': condicao_pagamento,
                     'parcelas': parcelas,
                     'id': pedido.id,
                     'valor_total': valor_total,
                     'valor_parcela': valor_parcela,
                     'parcelas_detalhadas': [],
                 }
-            
+
             pedidos_dict[nr_pedido]['itens'].append({
                 'nome': pedido.nome,
                 'quantidade': pedido.quantidade,
                 'valor_unitario': pedido.valor_unitario,
                 'valor_total': pedido.valor_total
             })
-          
+
             if len(pedidos_dict[nr_pedido]['parcelas_detalhadas']) == 0 and pedido.parcelas > 0:
                 vencimento_inicial = pedido.data_pedido
                 for i in range(pedido.parcelas):
@@ -440,8 +424,8 @@ def meuspedidos(request):
                         'data_vencimento': data_vencimento.strftime('%Y-%m-%d')
                     })
 
-    condicoes_pagamento = View_Pedido.objects.filter(user_id=user_id)\
-                            .values_list('condicao_pagamento_nome', flat=True)\
+    condicoes_pagamento = View_Pedido.objects.filter(user_id=user_id) \
+                            .values_list('condicao_pagamento_nome', flat=True) \
                             .distinct()
 
     context = {
@@ -454,9 +438,9 @@ def meuspedidos(request):
         'data_fim': data_fim,
         'ordem': ordem,
         'condicoes_pagamento': condicoes_pagamento,
-        'condicao_pagamento_filtro': condicao_pagamento_filtro,  
+        'condicao_pagamento_filtro': condicao_pagamento_filtro,
     }
-    
+
     return render(request, "meuspedidos.html", context)
 
 def gerarpdf(request, ped_id):

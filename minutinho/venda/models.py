@@ -30,41 +30,45 @@ class View_Carrinho(models.Model):
 class Pedido(models.Model):
     nr_pedido = models.IntegerField(null=True, blank=True)
     user_id = models.IntegerField(null=True, blank=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)  
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, null=True, blank=True, db_column='produto_id')
     quantidade = models.IntegerField(null=True, blank=True)
     valor_unitario = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
     valor_total = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
     data_pedido = models.DateField(blank=True, null=True)
+
     metodo_pagamento = models.CharField(max_length=50, blank=True, null=True)
     parcelas = models.IntegerField(null=True, blank=True, default=1)
-    condicao_pagamento = models.ForeignKey(CondicaoPagamento, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # 🔹 Condição de pagamento original (pode ser apagada depois)
+    condicao_pagamento = models.ForeignKey(
+        'condicaoPagamento.CondicaoPagamento',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    # 🔹 Cópia dos dados da condição (permanece mesmo se deletar)
+    condicao_nome = models.CharField(max_length=100, blank=True, null=True)
+    condicao_tipo = models.CharField(max_length=20, blank=True, null=True)
+    condicao_parcelas = models.IntegerField(blank=True, null=True)
+    condicao_juros = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    condicao_desconto = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     class Meta:
         db_table = 'venda_pedido'
 
-    def salvar_parcelas(self):
-        """Cria parcelas automaticamente ao salvar um pedido parcelado."""
-        if self.parcelas > 1:
-            valor_parcela = self.valor_total / self.parcelas
-            data_base = self.data_pedido or timezone.now().date()
-
-            with transaction.atomic():
-                for i in range(self.parcelas):
-                    data_vencimento = data_base + timedelta(days=(i + 1) * 30)
-                    ParcelaPedido.objects.create(
-                        pedido=self,
-                        numero_parcela=i + 1,
-                        valor_parcela=valor_parcela,
-                        data_vencimento=data_vencimento
-                    )
-
     def save(self, *args, **kwargs):
-        novo_pedido = self.pk is None 
+        # 🔸 Antes de salvar, copia dados da condição
+        if self.condicao_pagamento:
+            self.condicao_nome = self.condicao_pagamento.nome
+            self.condicao_tipo = self.condicao_pagamento.tipo_pagamento
+            self.condicao_parcelas = self.condicao_pagamento.parcelas
+            self.condicao_juros = self.condicao_pagamento.juros
+            self.condicao_desconto = self.condicao_pagamento.desconto
+
         super().save(*args, **kwargs)
 
-        if novo_pedido:
-            self.salvar_parcelas()  
 
 class View_Pedido(models.Model):
     produto_id = models.IntegerField(null=True, blank=True)

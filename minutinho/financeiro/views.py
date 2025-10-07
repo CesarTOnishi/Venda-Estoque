@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ValidationError
-from .models import Extrato, ContaReceber, ContaPagar
+from .models import Extrato, ContaReceber, ContaPagar, ContaBancaria, MovimentacaoBancaria
 from datetime import date
 from django.contrib.auth.decorators import login_required
 from fornecedor.functions import removerFornecedor
@@ -16,7 +16,8 @@ import datetime
 from django.db.models import Q
 from django.views.decorators.http import require_GET
 from django.core.paginator import Paginator
-
+from decimal import Decimal
+from django.db import models                
 
 @login_required(login_url="/login/")
 def contasReceber(request):
@@ -484,7 +485,7 @@ def financeiro(request):
         for extrato in extratos
     )
 
-    paginator = Paginator(extratos, 10)  # 10 itens por página
+    paginator = Paginator(extratos, 10) 
     page_number = request.GET.get('page')
     extratos_paginados = paginator.get_page(page_number)
 
@@ -685,10 +686,7 @@ def atualizarPagamentoPagar(request, conta_id):
 def detalhes_conta(request, tipo_conta, conta_id):
     if tipo_conta == 'receber':
         conta = get_object_or_404(ContaReceber, id=conta_id)
-        # Usando o template tag personalizado para mostrar o método de pagamento
-        metodo_pagamento = conta.metodo_pagamento  # Valor bruto
-        # Ou use o filtro personalizado se existir:
-        # metodo_pagamento = conta.metodo_pagamento|metodo_pagamento_label
+        metodo_pagamento = conta.metodo_pagamento  
         
         data = {
             'success': True,
@@ -716,3 +714,88 @@ def detalhes_conta(request, tipo_conta, conta_id):
         data = {'success': False, 'error': 'Tipo de conta inválido'}
     
     return JsonResponse(data)
+
+
+@login_required(login_url='/login/')
+def contaBancaria(request):
+    contas = ContaBancaria.objects.all().order_by('banco')
+    erros = []
+
+    if request.method == "POST":
+        conta_id = request.POST.get("conta_id")
+        nome = request.POST.get("nome")
+        banco = request.POST.get("banco")
+        tipo_conta = request.POST.get("tipo_conta")
+        numero_conta = request.POST.get("numero_conta")
+        agencia = request.POST.get("agencia")
+        saldo_inicial = request.POST.get("saldo_inicial") or 0
+        ativo = request.POST.get("ativo") == "True"
+
+        if not banco or not tipo_conta:
+            erros.append("Preencha todos os campos obrigatórios.")
+        else:
+            if conta_id:
+                conta = get_object_or_404(ContaBancaria, id=conta_id)
+            else:
+                conta = ContaBancaria()
+
+            conta.banco = banco
+            conta.nome = nome
+            conta.tipo_conta = tipo_conta
+            conta.numero_conta = numero_conta
+            conta.agencia = agencia
+            conta.saldo_inicial = saldo_inicial
+            conta.ativo = ativo
+            conta.save()
+            return redirect('contaBancaria')
+
+    tipos_conta = dict(ContaBancaria.TIPO_CONTA_CHOICES)
+
+    context = {
+        'contas': contas,
+        'tipos_conta': tipos_conta,
+        'errors': erros,
+    }
+    return render(request, 'conta.html', context)
+
+
+@login_required(login_url='/login/')
+def deletarConta(request, id):
+    conta = get_object_or_404(ContaBancaria, id=id)
+    conta.delete()
+    return redirect('contaBancaria')
+
+
+@login_required(login_url='/login/')
+def alternarAtivo(request, id):
+    conta = get_object_or_404(ContaBancaria, id=id)
+    conta.ativo = not conta.ativo
+    conta.save()
+    return redirect('contaBancaria')
+
+@login_required(login_url='/login/')
+def movimentacoes(request, conta_id):
+    conta = get_object_or_404(ContaBancaria, id=conta_id)
+    movimentacoes = conta.movimentacoes.order_by('-data')
+
+    saldo_total = conta.saldo_inicial
+    hoje = timezone.now()
+    movimentacoes_mes = movimentacoes.filter(data__month=hoje.month, data__year=hoje.year)
+    total_entradas_mes = movimentacoes_mes.filter(tipo='entrada').aggregate(total=models.Sum('valor'))['total'] or 0
+    total_saidas_mes = movimentacoes_mes.filter(tipo='saida').aggregate(total=models.Sum('valor'))['total'] or 0
+
+    if request.method == 'POST':
+        descricao = request.POST.get('descricao')
+        tipo = request.POST.get('tipo')
+        valor = Decimal(request.POST.get('valor') or 0)
+        MovimentacaoBancaria.objects.create(conta=conta, descricao=descricao, tipo=tipo, valor=valor)
+        return redirect('movimentacoes', conta_id=conta.id)
+
+    context = {
+        'conta': conta,
+        'movimentacoes': movimentacoes,
+        'saldo_total': saldo_total,
+        'total_entradas_mes': total_entradas_mes,
+        'total_saidas_mes': total_saidas_mes,
+    }
+    return render(request, 'movimentacao.html', context)

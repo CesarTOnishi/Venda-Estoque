@@ -375,7 +375,6 @@ def notacompra(request, item_id):
     }
     html = template.render(context)
 
-    # Cria um buffer para armazenar o PDF gerado
     result = BytesIO()
     pdf = pisa.CreatePDF(html, dest=result)
 

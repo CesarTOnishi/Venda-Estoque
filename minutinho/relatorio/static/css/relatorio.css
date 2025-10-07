@@ -83,3 +83,26 @@ input[type="text"], input[type="date"] {
 .btn:hover {
   background: var(--differential-color);
 }
+
+
+
+
+.dropdown-suggestions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    background-color: white;
+    width: 200px;
+    z-index: 1000;
+}
+.dropdown-suggestions li {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.dropdown-suggestions li:hover {
+    background-color: #f2f2f2;
+}

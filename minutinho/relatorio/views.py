@@ -8,6 +8,7 @@ from estoque.models import Produto
 from cliente.models import Cliente
 from funcionario.models import Funcionarios
 from venda.models import Pedido
+from compras.models import PedidoCompra, PedidoProduto
 from fornecedor.models import Fornecedor
 from financeiro.models import ContaPagar, ContaReceber, Extrato
 from django.utils.dateparse import parse_date
@@ -81,6 +82,45 @@ def relatorioclientes(request):
         return HttpResponse("Erro ao gerar o PDF", status=500)
 
     return response
+
+def relatoriovendacliente(request):
+    cliente_nome = request.GET.get("cliente")
+    clientes = Cliente.objects.all().order_by("nome")
+
+    vendas = []
+    cliente_selecionado = None
+
+    if cliente_nome:
+        cliente_selecionado = Cliente.objects.filter(nome=cliente_nome).first()
+        if cliente_selecionado:
+            vendas = View_Pedido.objects.filter(cliente_nome=cliente_selecionado.nome).order_by("data_pedido")
+
+    context = {
+        "clientes": clientes,
+        "vendas": vendas,
+        "cliente_selecionado": cliente_selecionado,
+    }
+
+    template_path = "vendaporcliente.html"
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="relatorio_vendas_cliente.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    return response
+
+
+# Endpoint para enviar os clientes como JSON
+def clientes_json(request):
+    clientes = list(Cliente.objects.values('id', 'nome').order_by('nome'))
+    return JsonResponse(clientes, safe=False)
+    
 
 def relatoriofuncionarios(request):
     funcionarios = Funcionarios.objects.all()
@@ -254,6 +294,42 @@ def relatoriovendas(request):
 
     pisa_status = pisa.CreatePDF(html, dest=response)
 
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    return response
+
+def relatoriocompras(request):
+    inicio = request.GET.get("inicio")
+    fim = request.GET.get("fim")
+
+    compras = PedidoCompra.objects.all().order_by("data_pedido")
+
+    if inicio and fim:
+        inicio_date = parse_date(inicio)
+        fim_date = parse_date(fim)
+        compras = compras.filter(data_pedido__range=[inicio_date, fim_date])
+
+    total_geral = sum(c.total for c in compras)
+
+    for compra in compras:
+        compra.qtd_produtos = PedidoProduto.objects.filter(pedido=compra).count()
+
+    context = {
+        "compras": compras,
+        "total_geral": total_geral,
+        "inicio": inicio,
+        "fim": fim,
+    }
+
+    template_path = "relatoriocompra.html"
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="relatorio_compras.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
     if pisa_status.err:
         return HttpResponse("Erro ao gerar o PDF", status=500)
 

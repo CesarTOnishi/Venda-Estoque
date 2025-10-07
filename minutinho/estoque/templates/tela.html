@@ -30,7 +30,6 @@
           <a href="{% url 'inicial' %}" class="nav-link">
             <i class="bx bx-home-alt"></i>
             <span class="link-text">Dashboard</span>
-            <div class="link-badge">3</div>
           </a>
         </li>
         
@@ -136,8 +135,14 @@
           </div>
           <ul class="group-content">
             <li>
-              <a href="{% url 'financeiro' %}" class="sub-link">
+              <a href="{% url 'contaBancaria' %}" class="sub-link">
                 <i class="bx bxs-bank"></i>
+                <span>Conta Bancaria</span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'financeiro' %}" class="sub-link">
+                <i class="bx bxs-wallet"></i>
                 <span>Extrato</span>
               </a>
             </li>
@@ -193,8 +198,22 @@
           <i class='bx bxs-user-circle'></i>
         </div>
         <div class="user-details">
-          <div class="user-name">Usuário</div>
-          <div class="user-role">Administrador</div>
+          <div class="user-name">
+            {% if request.user.is_authenticated %}
+              {{ request.user.get_full_name|default:request.user.username }}
+            {% else %}
+              Visitante
+            {% endif %}
+          </div>
+          <div class="user-role">
+            {% if request.user.is_superuser %}
+              Administrador
+            {% elif request.user.is_staff %}
+              Funcionário
+            {% else %}
+              Usuário Comum
+            {% endif %}
+          </div>
         </div>
       </div>
       <a href="{% url 'logout' %}" class="logout-btn">

@@ -1,0 +1,124 @@
+{% load relatorio_filters %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Vendas por Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #fff;
+            color: #000;
+        }
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            text-align: left;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th, td {
+            padding: 6px;
+            text-align: center;
+            font-size: 12px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .empresa-info p {
+            margin: 1px 0;
+            font-size: 10px;
+        }
+        .empresa-info h2 {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .header .logo img {
+            max-width: 150px;
+            height: 100px;
+        }
+        .header .empresa-info {
+            text-align: left;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho da empresa -->
+    <div class="header">
+        <table width="100%">
+            <tr>
+                <td class="logo" width="30%">
+                    <img src="https://newlifenet.com.br/wp-content/uploads/2023/01/LOGO.png" alt="Logo da Empresa">
+                </td>
+                <td class="empresa-info" width="70%">
+                    <h2>Mercado NewLife</h2>
+                    <p><strong>Endereço:</strong> Rua Reinaldo Nassi, 546</p>
+                    <p><strong>Cidade:</strong> Diamante do Norte</p>
+                    <p><strong>CEP:</strong> 87990-000</p>
+                    <p><strong>Email:</strong> exemplo@empresa.com.br</p>
+                    <p><strong>Telefone:</strong> (44) 99999-9999</p>
+                    <p><strong>CNPJ:</strong> 99.999.999/0001-99</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Título -->
+    <h1>Relatório de Vendas por Cliente</h1>
+
+    <!-- Cliente Selecionado -->
+    {% if cliente_selecionado %}
+        <h2>Cliente: {{ cliente_selecionado.nome }}</h2>
+    {% endif %}
+
+    <!-- Tabela de Vendas -->
+    <table>
+        <thead>
+            <tr>
+                <th>Pedido</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Valor Unit.</th>
+                <th>Valor Total</th>
+                <th>Método Pagamento</th>
+                <th>Parcelas</th>
+                <th>Data Pedido</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venda in vendas %}
+            <tr>
+                <td>{{ venda.nr_pedido }}</td>
+                <td>{{ venda.nome }}</td>
+                <td>{{ venda.quantidade }}</td>
+                <td>R$ {{ venda.valor_unitario }}</td>
+                <td>R$ {{ venda.valor_total }}</td>
+                <td>{{ venda.metodo_pagamento|pagamento_legivel|default:"Não informado" }}</td>
+                <td>{{ venda.parcelas }}</td>
+                <td>{{ venda.data_pedido|date:"d/m/Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">Nenhuma venda encontrada para este cliente.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
