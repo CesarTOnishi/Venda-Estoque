@@ -26,6 +26,7 @@ def contasReceber(request):
     extratos_pagos = Extrato.objects.filter(status='pago')
     pagamentos = CondicaoPagamento.objects.all().order_by('-id')
     tipos_pagamento = dict(CondicaoPagamento.TIPO_PAGAMENTO_CHOICES)
+    contas_bancarias = ContaBancaria.objects.all().order_by('nome')
     hoje = date.today()
 
     search_query = request.GET.get('search', '')
@@ -50,20 +51,14 @@ def contasReceber(request):
             contas_receber = contas_receber.filter(descricao__icontains=search_query)
 
     if data_inicio and data_fim:
-        contas_receber = contas_receber.filter(
-            criado_em__date__gte=data_inicio,
-            criado_em__date__lte=data_fim
-        )
+        contas_receber = contas_receber.filter(criado_em__date__gte=data_inicio, criado_em__date__lte=data_fim)
     elif data_inicio:
         contas_receber = contas_receber.filter(criado_em__date__gte=data_inicio)
     elif data_fim:
         contas_receber = contas_receber.filter(criado_em__date__lte=data_fim)
 
     if vencimento_inicio and vencimento_fim:
-        contas_receber = contas_receber.filter(
-            data_vencimento__gte=vencimento_inicio,
-            data_vencimento__lte=vencimento_fim
-        )
+        contas_receber = contas_receber.filter(data_vencimento__gte=vencimento_inicio, data_vencimento__lte=vencimento_fim)
     elif vencimento_inicio:
         contas_receber = contas_receber.filter(data_vencimento__gte=vencimento_inicio)
     elif vencimento_fim:
@@ -74,7 +69,6 @@ def contasReceber(request):
     elif status == 'pendente':
         contas_receber = contas_receber.filter(recebido=False)
     elif status == 'vencido':
-        hoje = date.today()
         contas_receber = contas_receber.filter(data_vencimento__lt=hoje, recebido=False)
 
     if metodo:
@@ -82,63 +76,21 @@ def contasReceber(request):
 
     if valor_min:
         contas_receber = contas_receber.filter(valor__gte=float(valor_min))
-    
     if valor_max:
         contas_receber = contas_receber.filter(valor__lte=float(valor_max))
 
-    saldo_total = sum(
-        extrato.valor if extrato.tipo == 'entrada' else -extrato.valor
-        for extrato in extratos_pagos
-    )
-    
-    paginator = Paginator(contas_receber, 10)  # 10 itens por página
+    saldo_total = sum(extrato.valor if extrato.tipo == 'entrada' else -extrato.valor for extrato in extratos_pagos)
+
+    paginator = Paginator(contas_receber, 7)
     page_number = request.GET.get('page')
     contas_paginadas = paginator.get_page(page_number)
 
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        contas_list = []
-        for conta in contas_paginadas:
-            vencida = conta.data_vencimento < hoje and not conta.recebido
-            contas_list.append({
-                'id': conta.id,
-                'descricao': conta.descricao,
-                'valor': str(conta.valor),
-                'metodo_pagamento': conta.get_metodo_pagamento_display(),
-                'vencimento': conta.data_vencimento.strftime('%d/%m/%Y'),
-                'criado_em': conta.criado_em.strftime('%d/%m/%Y %H:%M'),  # Adicionado
-                'status': 'Pago' if conta.recebido else 'Pendente',
-                'editavel': conta.editavel,
-                'vencida': vencida,  # Adicionado
-                'recebido': conta.recebido  # Adicionado para o select
-            })
-        
-        return JsonResponse({
-            'contas': contas_list,
-            'paginator': {
-                'num_pages': contas_paginadas.paginator.num_pages,
-                'number': contas_paginadas.number,
-                'has_previous': contas_paginadas.has_previous(),
-                'has_next': contas_paginadas.has_next(),
-                'previous_page_number': contas_paginadas.previous_page_number() if contas_paginadas.has_previous() else None,
-                'next_page_number': contas_paginadas.next_page_number() if contas_paginadas.has_next() else None,
-            },
-            'saldo_total': saldo_total  # Adicionado para atualizar o saldo
-        })
-
     if request.method == "POST":
-        pagamento_id = request.POST.get('pagamento_id') 
+        pagamento_id = request.POST.get('pagamento_id')
         metodo_pagamento = request.POST.get('tipo_pagamento')
         descricao = request.POST.get('descricao')
         vencimento = request.POST.get('vencimento')
         valor = request.POST.get('valor')
-
-        form_data = {
-            'tipo_pagamento': metodo_pagamento,
-            'descricao': descricao,
-            'vencimento': vencimento,
-            'valor': valor
-        }
-
         errors = []
 
         if not descricao or not metodo_pagamento or not vencimento or not valor:
@@ -146,10 +98,8 @@ def contasReceber(request):
         else:
             try:
                 valor_float = float(valor)
-
                 if pagamento_id:
                     conta = get_object_or_404(ContaReceber, id=pagamento_id)
-
                     if not conta.editavel:
                         errors.append("Esta conta não pode ser editada.")
                     else:
@@ -172,9 +122,6 @@ def contasReceber(request):
                     )
                     messages.success(request, "Conta a receber adicionada com sucesso.")
                     return redirect('contasReceber')
-
-            except CondicaoPagamento.DoesNotExist:
-                errors.append("Forma de pagamento inválida.")
             except Exception as e:
                 errors.append(f"Ocorreu um erro ao salvar: {str(e)}")
 
@@ -182,9 +129,15 @@ def contasReceber(request):
             'contas': contas_paginadas,
             'saldo_total': saldo_total,
             'errors': errors,
-            'form_data': form_data,
+            'form_data': {
+                'tipo_pagamento': metodo_pagamento,
+                'descricao': descricao,
+                'vencimento': vencimento,
+                'valor': valor,
+            },
             'tipos_pagamento': tipos_pagamento,
             'pagamentos': pagamentos,
+            'contas_bancarias': contas_bancarias,
             'total_contas': total_contas,
             'contas_pendentes': contas_pendentes,
             'contas_recebidas': contas_recebidas,
@@ -197,12 +150,14 @@ def contasReceber(request):
         'saldo_total': saldo_total,
         'pagamentos': pagamentos,
         'tipos_pagamento': tipos_pagamento,
+        'contas_bancarias': contas_bancarias,
         'total_contas': total_contas,
         'contas_pendentes': contas_pendentes,
         'contas_recebidas': contas_recebidas,
         'contas_vencidas': contas_vencidas,
     }
     return render(request, 'contareceber.html', context)
+
 
 @login_required(login_url="/login/")
 def contasPagar(request):
@@ -211,12 +166,14 @@ def contasPagar(request):
     extratos_pagos = Extrato.objects.filter(status='pago')
     pagamentos = CondicaoPagamento.objects.all().order_by('-id')
     tipos_pagamento = dict(CondicaoPagamento.TIPO_PAGAMENTO_CHOICES)
+    contas_bancarias = ContaBancaria.objects.all()
     hoje = date.today()
 
     total_contas = todas_contas.count()
     contas_pendentes = todas_contas.filter(pago=False).count()
     contas_pagas = todas_contas.filter(pago=True).count()
     contas_vencidas = todas_contas.filter(data_vencimento__lt=hoje, pago=False).count()
+
     search_query = request.GET.get('search', '')
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
@@ -234,20 +191,14 @@ def contasPagar(request):
             contas_pagar = contas_pagar.filter(descricao__icontains=search_query)
 
     if data_inicio and data_fim:
-        contas_pagar = contas_pagar.filter(
-            criacao__date__gte=data_inicio,
-            criacao__date__lte=data_fim
-        )
+        contas_pagar = contas_pagar.filter(criacao__date__gte=data_inicio, criacao__date__lte=data_fim)
     elif data_inicio:
         contas_pagar = contas_pagar.filter(criacao__date__gte=data_inicio)
     elif data_fim:
         contas_pagar = contas_pagar.filter(criacao__date__lte=data_fim)
 
     if vencimento_inicio and vencimento_fim:
-        contas_pagar = contas_pagar.filter(
-            data_vencimento__gte=vencimento_inicio,
-            data_vencimento__lte=vencimento_fim
-        )
+        contas_pagar = contas_pagar.filter(data_vencimento__gte=vencimento_inicio, data_vencimento__lte=vencimento_fim)
     elif vencimento_inicio:
         contas_pagar = contas_pagar.filter(data_vencimento__gte=vencimento_inicio)
     elif vencimento_fim:
@@ -265,37 +216,33 @@ def contasPagar(request):
 
     if valor_min:
         contas_pagar = contas_pagar.filter(valor__gte=float(valor_min))
-    
     if valor_max:
         contas_pagar = contas_pagar.filter(valor__lte=float(valor_max))
 
-    saldo_total = sum(
-        extrato.valor if extrato.tipo == 'entrada' else -extrato.valor
-        for extrato in extratos_pagos
-    )
-    
-    # Paginação
-    paginator = Paginator(contas_pagar, 10)  # 10 itens por página
+    saldo_total = sum(extrato.valor if extrato.tipo == 'entrada' else -extrato.valor for extrato in extratos_pagos)
+
+    paginator = Paginator(contas_pagar, 7)
     page_number = request.GET.get('page')
     contas_paginadas = paginator.get_page(page_number)
+
+    for conta in contas_paginadas:
+        conta.vencido = conta.data_vencimento < hoje and not conta.pago
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         contas_list = []
         for conta in contas_paginadas:
-            vencida = conta.data_vencimento < hoje and not conta.pago
             contas_list.append({
                 'id': conta.id,
                 'descricao': conta.descricao,
                 'valor': str(conta.valor),
                 'metodo_pagamento': conta.get_metodo_pagamento_display(),
                 'vencimento': conta.data_vencimento.strftime('%d/%m/%Y'),
-                'criado_em': conta.criacao.strftime('%d/%m/%Y %H:%M'),  # Adicionado
+                'criado_em': conta.criacao.strftime('%d/%m/%Y %H:%M'),
                 'status': 'Pago' if conta.pago else 'Pendente',
                 'editavel': conta.editavel,
-                'vencida': vencida,  # Adicionado
-                'pago': conta.pago  # Adicionado para o select
+                'vencida': conta.vencido,
+                'pago': conta.pago
             })
-        
         return JsonResponse({
             'contas': contas_list,
             'paginator': {
@@ -306,25 +253,23 @@ def contasPagar(request):
                 'previous_page_number': contas_paginadas.previous_page_number() if contas_paginadas.has_previous() else None,
                 'next_page_number': contas_paginadas.next_page_number() if contas_paginadas.has_next() else None,
             },
-            'saldo_total': saldo_total  # Adicionado para atualizar o saldo
+            'saldo_total': saldo_total
         })
 
     if request.method == "POST":
         pagamento_id = request.POST.get('pagamento_id')
         if pagamento_id:
             conta = get_object_or_404(ContaPagar, id=pagamento_id)
-            
             if not conta.editavel:
                 messages.error(request, "Esta conta não pode ser editada.")
                 return redirect('contasPagar')
 
-            metodo_pagamento = request.POST.get('tipo_pagamento')  
-            descricao = request.POST.get('descricao') 
+            metodo_pagamento = request.POST.get('tipo_pagamento')
+            descricao = request.POST.get('descricao')
             vencimento = request.POST.get('vencimento')
             valor = request.POST.get('valor')
-            
             errors = []
-            
+
             if not descricao or not metodo_pagamento or not vencimento or not valor:
                 errors.append("Todos os campos são obrigatórios.")
             else:
@@ -339,7 +284,7 @@ def contasPagar(request):
                     return redirect('contasPagar')
                 except Exception as e:
                     errors.append(f"Ocorreu um erro ao salvar: {str(e)}")
-            
+
             context = {
                 'contas': contas_paginadas,
                 'saldo_total': saldo_total,
@@ -353,26 +298,26 @@ def contasPagar(request):
                 },
                 'tipos_pagamento': tipos_pagamento,
                 'pagamentos': pagamentos,
+                'contas_bancarias': contas_bancarias,
                 'total_contas': total_contas,
                 'contas_pendentes': contas_pendentes,
                 'contas_pagas': contas_pagas,
                 'contas_vencidas': contas_vencidas,
             }
             return render(request, 'contapagar.html', context)
-        
-        # Se não for edição, cria nova conta
-        metodo_pagamento = request.POST.get('tipo_pagamento')  
-        descricao = request.POST.get('descricao') 
+
+        metodo_pagamento = request.POST.get('tipo_pagamento')
+        descricao = request.POST.get('descricao')
         vencimento = request.POST.get('vencimento')
         valor = request.POST.get('valor')
-        
+
         form_data = {
-            'tipo_pagamento': metodo_pagamento, 
+            'tipo_pagamento': metodo_pagamento,
             'descricao': descricao,
             'vencimento': vencimento,
             'valor': valor
         }
-        
+
         errors = []
 
         if not descricao or not metodo_pagamento or not vencimento or not valor:
@@ -380,7 +325,6 @@ def contasPagar(request):
         else:
             try:
                 valor = float(valor)
-
                 ContaPagar.objects.create(
                     descricao=descricao,
                     valor=valor,
@@ -392,7 +336,6 @@ def contasPagar(request):
                 )
                 messages.success(request, "Conta a pagar adicionada com sucesso.")
                 return redirect('contasPagar')
-            
             except CondicaoPagamento.DoesNotExist:
                 errors.append("Forma de pagamento inválida.")
             except Exception as e:
@@ -405,18 +348,20 @@ def contasPagar(request):
             'form_data': form_data,
             'tipos_pagamento': tipos_pagamento,
             'pagamentos': pagamentos,
+            'contas_bancarias': contas_bancarias,
             'total_contas': total_contas,
             'contas_pendentes': contas_pendentes,
             'contas_pagas': contas_pagas,
             'contas_vencidas': contas_vencidas,
         }
         return render(request, 'contapagar.html', context)
-    
+
     context = {
         'contas': contas_paginadas,
         'saldo_total': saldo_total,
         'pagamentos': pagamentos,
         'tipos_pagamento': tipos_pagamento,
+        'contas_bancarias': contas_bancarias,
         'total_contas': total_contas,
         'contas_pendentes': contas_pendentes,
         'contas_pagas': contas_pagas,
@@ -424,13 +369,13 @@ def contasPagar(request):
     }
     return render(request, 'contapagar.html', context)
 
+
 @login_required(login_url="/login/")
 def financeiro(request):
     extratos = Extrato.objects.filter(status='pago').select_related(
         'conta_receber', 'conta_pagar'
     ).order_by('-data_transacao')
 
-    # Filtros
     search_query = request.GET.get('search', '')
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
@@ -481,8 +426,8 @@ def financeiro(request):
                                       .distinct()
 
     saldo_total = sum(
-        extrato.valor if extrato.tipo == 'entrada' else -extrato.valor
-        for extrato in extratos
+    e.valor if e.tipo == 'entrada' else -e.valor
+    for e in Extrato.objects.filter(status='pago')
     )
 
     paginator = Paginator(extratos, 10) 
@@ -502,6 +447,7 @@ def financeiro(request):
                     'tipo': 'receber' if extrato.conta_receber else 'pagar' if extrato.conta_pagar else None
                 },
                 'metodo_pagamento': extrato.metodo_pagamento or '-',
+                'conta_bancaria': extrato.conta_bancaria.nome if extrato.conta_bancaria else '-',
                 'valor': str(extrato.valor),
                 'tipo': extrato.tipo,
                 'status': extrato.get_status_display(),
@@ -537,43 +483,46 @@ def financeiro(request):
 def atualizarPagamento(request, conta_id):
     conta = get_object_or_404(ContaReceber, id=conta_id)
     novo_status = request.POST.get('status')
+    conta_banco_id = request.POST.get('conta_banco')
     errors = []
 
-    conta.recebido = novo_status == 'pago'
-    conta.data_recebimento = timezone.now() if conta.recebido else None
-    conta.save()
+    if novo_status == 'pago':
+        if not conta_banco_id:
+            return JsonResponse({'success': False, 'errors': ['Conta bancária não selecionada.']})
 
-    descricao_extrato = f"Recebimento: {conta.descricao} (Parcela {conta.numero_parcela})"
+        try:
+            conta_banco = ContaBancaria.objects.get(id=conta_banco_id)
+        except ContaBancaria.DoesNotExist:
+            return JsonResponse({'success': False, 'errors': ['Conta bancária inválida.']})
 
-    if conta.recebido:
-        try:
-            Extrato.objects.get_or_create(
-                descricao=descricao_extrato,
-                valor=conta.valor,
-                metodo_pagamento=conta.metodo_pagamento,
-                tipo='entrada',
-                status='pago',
-                data_transacao=timezone.now(),
-                conta_receber=conta
-            )
-        except Exception as e:
-            errors.append(f'Erro ao criar o registro no extrato')
-            return JsonResponse({
-                'success': False,
-                'errors': errors,
-            })
-    else:
-        try:
-            Extrato.objects.filter(
-                conta_receber=conta,
-                status='pago'
-            ).delete()
-        except Exception as e:
-            errors.append(f'Erro ao remover o registro do extrato')
-            return JsonResponse({
-                'success': False,
-                'errors': errors,
-            })
+        conta.recebido = True
+        conta.data_recebimento = timezone.now()
+        conta.conta_bancaria = conta_banco
+        conta.save()
+
+        descricao_extrato = f"Recebimento: {conta.descricao} (Parcela {conta.numero_parcela})"
+
+        Extrato.objects.create(
+            descricao=descricao_extrato,
+            valor=conta.valor,
+            metodo_pagamento=conta.metodo_pagamento,
+            tipo='entrada',
+            status='pago',
+            data_transacao=timezone.now(),
+            conta_receber=conta,
+            conta_bancaria=conta_banco,
+        )
+
+        MovimentacaoBancaria.objects.create(
+            conta=conta_banco,
+            descricao=descricao_extrato,
+            tipo='entrada',
+            valor=conta.valor,
+            data=timezone.now()
+        )
+
+        conta_banco.saldo_inicial = (conta_banco.saldo_inicial or 0) + conta.valor
+        conta_banco.save(update_fields=['saldo_inicial'])
 
     saldo_total = sum(
         extrato.valor if extrato.tipo == 'entrada' else -extrato.valor
@@ -585,7 +534,6 @@ def atualizarPagamento(request, conta_id):
         'novo_status': 'pago' if conta.recebido else 'pendente',
         'saldo_total': saldo_total,
     })
-
 
 @login_required(login_url="/login/")
 @require_POST
@@ -634,52 +582,70 @@ def atualizarSaldo(request, conta_id):
 def atualizarPagamentoPagar(request, conta_id):
     conta = get_object_or_404(ContaPagar, id=conta_id)
     novo_status = request.POST.get('status')
-
+    conta_bancaria_id = request.POST.get('conta_bancaria')
     errors = []
-    conta.pago = novo_status == 'pago'
-    conta.data_pagamento = timezone.now() if conta.pago else None
-    conta.save()
 
-    if conta.pago:
-        try:
+    try:
+        if novo_status == 'pago':
+            if not conta_bancaria_id:
+                return JsonResponse({'success': False, 'errors': ['Selecione uma conta bancária.']})
+
+            conta_bancaria = get_object_or_404(ContaBancaria, id=conta_bancaria_id)
+
+            conta.pago = True
+            conta.data_pagamento = timezone.now()
+            conta.conta_bancaria = conta_bancaria
+            conta.save()
+
+            descricao_extrato = f"Pagamento: {conta.descricao} (Parcela {conta.numero_parcela})"
+
             Extrato.objects.get_or_create(
-                conta_pagar=conta,
-                descricao=f"Pagamento: {conta.descricao} (Parcela {conta.numero_parcela})",
+                descricao=descricao_extrato,
                 valor=conta.valor,
                 metodo_pagamento=conta.metodo_pagamento,
                 tipo='saida',
                 status='pago',
-                data_transacao=timezone.now()
-            )
-        except Exception as e:
-            errors.append('Erro ao criar o registro no extrato')
-            return JsonResponse({
-                'success': False,
-                'errors': errors,
-            })
-    else:
-        try:
-            Extrato.objects.filter(
+                data_transacao=timezone.now(),
                 conta_pagar=conta,
-                status='pago'
-            ).delete()
-        except Exception as e:
-            errors.append('Erro ao remover o registro do extrato')
-            return JsonResponse({
-                'success': False,
-                'errors': errors,
-            })
+                conta_bancaria=conta_bancaria,
+            )
 
-    saldo_total = sum(
-        extrato.valor if extrato.tipo == 'entrada' else -extrato.valor
-        for extrato in Extrato.objects.filter(status='pago')
-    )
+            MovimentacaoBancaria.objects.create(
+                conta=conta_bancaria,
+                descricao=f"Pagamento: {conta.descricao}",
+                tipo='saida',
+                valor=conta.valor,
+                data=timezone.now()
+            )
 
-    return JsonResponse({
-        'success': True,
-        'novo_status': 'pago' if conta.pago else 'pendente',
-        'saldo_total': saldo_total,
-    })
+            conta_bancaria.saldo_inicial = (conta_bancaria.saldo_inicial or 0) - conta.valor
+            conta_bancaria.save(update_fields=['saldo_inicial'])
+
+        elif novo_status == 'pendente':
+            Extrato.objects.filter(conta_pagar=conta, status='pago').delete()
+            conta.pago = False
+            conta.data_pagamento = None
+            conta.conta_bancaria = None
+            conta.save()
+
+            if conta_bancaria_id:
+                conta_bancaria = get_object_or_404(ContaBancaria, id=conta_bancaria_id)
+                conta_bancaria.saldo_inicial = (conta_bancaria.saldo_inicial or 0) + conta.valor
+                conta_bancaria.save(update_fields=['saldo_inicial'])
+
+        saldo_total = sum(
+            extrato.valor if extrato.tipo == 'entrada' else -extrato.valor
+            for extrato in Extrato.objects.filter(status='pago')
+        )
+
+        return JsonResponse({
+            'success': True,
+            'novo_status': 'pago' if conta.pago else 'pendente',
+            'saldo_total': saldo_total,
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'errors': [str(e)]})
 
 @login_required
 @require_GET
@@ -697,6 +663,7 @@ def detalhes_conta(request, tipo_conta, conta_id):
             'status': 'Recebido' if conta.recebido else 'Pendente',
             'pedido': f"Pedido #{conta.pedido.id}" if conta.pedido else None,
             'data_criacao': conta.criado_em.strftime('%d/%m/%Y %H:%M'),
+            'conta_bancaria': conta.conta_bancaria.nome if getattr(conta, 'conta_bancaria', None) else '-',
         }
     elif tipo_conta == 'pagar':
         conta = get_object_or_404(ContaPagar, id=conta_id)
@@ -709,6 +676,7 @@ def detalhes_conta(request, tipo_conta, conta_id):
             'status': 'Pago' if conta.pago else 'Pendente',
             'pedido': f"Pedido Compra #{conta.pedido.id}" if conta.pedido else None,
             'data_criacao': conta.criacao.strftime('%d/%m/%Y %H:%M'),
+            'conta_bancaria': conta.conta_bancaria.nome if getattr(conta, 'conta_bancaria', None) else '-',
         }
     else:
         data = {'success': False, 'error': 'Tipo de conta inválido'}
@@ -788,13 +756,23 @@ def movimentacoes(request, conta_id):
         descricao = request.POST.get('descricao')
         tipo = request.POST.get('tipo')
         valor = Decimal(request.POST.get('valor') or 0)
-        MovimentacaoBancaria.objects.create(conta=conta, descricao=descricao, tipo=tipo, valor=valor)
+
+        movimentacao = MovimentacaoBancaria.objects.create(
+            conta=conta,
+            descricao=descricao,
+            tipo=tipo,
+            valor=valor
+        )
+
+        conta.saldo_inicial = movimentacao.saldo_apos
+        conta.save()
+
         return redirect('movimentacoes', conta_id=conta.id)
 
     context = {
         'conta': conta,
         'movimentacoes': movimentacoes,
-        'saldo_total': saldo_total,
+        'saldo_total': conta.saldo_inicial,
         'total_entradas_mes': total_entradas_mes,
         'total_saidas_mes': total_saidas_mes,
     }

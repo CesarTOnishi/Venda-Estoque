@@ -3,370 +3,277 @@
 {% load pagamento_tags %}
 
 {% block 'head' %}
-    <link rel="stylesheet" href="{% static 'css/extrato.css' %}">
-    <link rel="stylesheet" href="{% static 'css/financeiro.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-    <title>Contas a Pagar</title>
+<link rel="stylesheet" href="{% static 'css/financeiro.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<title>Contas a Pagar</title>
 {% endblock %}
 
 {% block 'dashboard' %}
-<body>
-    <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
-        <span id="notification-message">
-            {% if errors %}
-                {% for error in errors %}
-                    {{ error }}<br>
-                {% endfor %}
-            {% endif %}
-        </span>
-        <span class="close" onclick="closeNotification()">&times;</span>
-    </div>
-    
-    <div class="container">
+<div class="container">
+    <header class="page-header">
         <nav class="menu">
-            <a class="nav-button" href="{% url 'financeiro' %}">Extrato</a>
-            <a class="nav-button active" href="{% url 'contasPagar' %}">Contas a Pagar</a>
-            <a class="nav-button" href="{% url 'contasReceber' %}">Contas a Receber</a>
+            <a class="nav-button" href="{% url 'financeiro' %}"><i class="fas fa-chart-line"></i> Extrato</a>
+            <a class="nav-button active" href="{% url 'contasPagar' %}"><i class="fas fa-arrow-up-from-bracket"></i> Contas a Pagar</a>
+            <a class="nav-button" href="{% url 'contasReceber' %}"><i class="fas fa-arrow-down-to-bracket"></i> Contas a Receber</a>
         </nav>
-
-        <div class="saldo">
-            <h3>Saldo Atual:</h3>
+        <div class="saldo-card">
+            <h3>SALDO TOTAL</h3>
             <p class="{% if saldo_total >= 0 %}saldo-positivo{% else %}saldo-negativo{% endif %}">
                 R$ {{ saldo_total|floatformat:2 }}
             </p>
         </div>
+    </header>
 
-        <!-- Modal para adicionar/editar contas -->
-        <div class="modal-container" id="modal_container">
-            <div class="modal-content">
-                <button type="button" class="modal-button" id="close_modal_button">Fechar</button>
-                <h1 id="modal-title">Adicionar Conta a Pagar</h1>
-                <form method="POST" action="{% url 'contasPagar' %}">
-                    {% csrf_token %}
-                    <input type="hidden" id="pagamento_id" name="pagamento_id">
-
-                    <label for="tipo_pagamento">Tipo de Pagamento:</label>
-                    <select id="tipo_pagamento" name="tipo_pagamento" required>
-                        <option value="" disabled selected>Selecione um tipo</option>
-                        {% for key, value in tipos_pagamento.items %}
-                            <option value="{{ key }}" {% if form_data.tipo_pagamento == key %}selected{% endif %}>{{ value }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label for="descricao">Descrição:</label>
-                    <input type="text" id="descricao" name="descricao" value="{{ form_data.descricao }}" required>
-
-                    <label for="vencimento">Vencimento:</label>
-                    <input type="date" id="vencimento" name="vencimento" value="{{ form_data.vencimento }}" required>
-
-                    <label for="valor">Valor:</label>
-                    <input type="number" id="valor" name="valor" step="0.01" min="0" value="{{ form_data.valor }}" required>
-
-                    <button type="submit" class="modal-button">Salvar</button>
-                </form>
-            </div>
+    <div class="actions-toolbar">
+        <div class="status-buttons">
+            <a href="?{% param_replace status='' %}" class="status-btn {% if not request.GET.status %}active{% endif %}">
+                <i class="fas fa-globe"></i> Todos ({{ total_contas }})
+            </a>
+            <a href="?{% param_replace status='pendente' %}" class="status-btn {% if request.GET.status == 'pendente' %}active{% endif %}">
+                <i class="fas fa-hourglass-half"></i> Pendentes ({{ contas_pendentes }})
+            </a>
+            <a href="?{% param_replace status='pago' %}" class="status-btn {% if request.GET.status == 'pago' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> Pagas ({{ contas_pagas }})
+            </a>
+            <a href="?{% param_replace status='vencido' %}" class="status-btn {% if request.GET.status == 'vencido' %}active{% endif %}">
+                <i class="fas fa-exclamation-triangle"></i> Vencidas ({{ contas_vencidas }})
+            </a>
         </div>
-
-        <!-- Seção de Filtros Avançados para Contas a Pagar -->
-        <div class="filtros-container">
-            <button id="toggle-filtros" class="btn-filtros">
-                <i class="fas fa-sliders-h"></i> Filtros Avançados
-            </button>
-            
-            <form method="GET" action="{% url 'contasPagar' %}" id="form-filtros" class="filtros-form">
-                <div class="filtro-group">
-                    <label for="data_inicio"><i class="far fa-calendar-alt"></i> Período:</label>
-                    <div class="date-range">
-                        <input type="date" id="data_inicio" name="data_inicio" value="{{ request.GET.data_inicio }}">
-                        <span>até</span>
-                        <input type="date" id="data_fim" name="data_fim" value="{{ request.GET.data_fim }}">
-                    </div>
-                </div>
-
-                <div class="filtro-group">
-                    <label for="vencimento_inicio"><i class="fas fa-calendar-times"></i> Vencimento:</label>
-                    <div class="date-range">
-                        <input type="date" id="vencimento_inicio" name="vencimento_inicio" value="{{ request.GET.vencimento_inicio }}">
-                        <span>até</span>
-                        <input type="date" id="vencimento_fim" name="vencimento_fim" value="{{ request.GET.vencimento_fim }}">
-                    </div>
-                </div>
-
-                <div class="filtro-group">
-                    <label for="metodo"><i class="fas fa-credit-card"></i> Método Pagamento:</label>
-                    <select id="metodo" name="metodo">
-                        <option value="">Todos</option>
-                        {% for key, value in tipos_pagamento.items %}
-                            <option value="{{ key }}" {% if request.GET.metodo == key %}selected{% endif %}>{{ value }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filtro-group">
-                    <label for="valor_min"><i class="fas fa-money-bill-wave"></i> Valor:</label>
-                    <div class="valor-range">
-                        <input type="number" id="valor_min" name="valor_min" placeholder="Mínimo" step="0.01" value="{{ request.GET.valor_min }}">
-                        <span>-</span>
-                        <input type="number" id="valor_max" name="valor_max" placeholder="Máximo" step="0.01" value="{{ request.GET.valor_max }}">
-                    </div>
-                </div>
-
-                <div class="filtro-group">
-                    <label for="search"><i class="fas fa-search"></i> Busca:</label>
-                    <input type="text" id="search" name="search" 
-                        placeholder="Descrição ou ID" 
-                        value="{{ request.GET.search }}">
-                </div>
-
-                <div class="filtro-actions">
-                    <button type="submit" class="btn-filtrar">
-                        <i class="fas fa-filter"></i> Aplicar Filtros
-                    </button>
-                    <a href="{% url 'contasPagar' %}" class="btn-limpar">
-                        <i class="fas fa-broom"></i> Limpar Filtros
-                    </a>
-                </div>
-            </form>
-        </div>
-
-        <button id="open_modal_button" class="modal-button">Adicionar Conta a Pagar</button>
-
-        <section id="contas-pagar" class="section active">
-            <div class="header-extrato">
-                <h2>Contas a Pagar</h2>
-                <div class="info-filtros">
-                    {% if request.GET %}
-                        <small>Filtros aplicados: 
-                        {% for key, value in request.GET.items %}
-                            {% if value and key != 'page' %}{{ key }}: {{ value }}{% if not forloop.last %}, {% endif %}{% endif %}
-                        {% endfor %}
-                        </small>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Botões de Status -->
-            <div class="status-buttons">
-                <a href="?{% param_replace status='' %}" class="status-btn {% if not request.GET.status %}active{% endif %}">
-                    Todos ({{ total_contas }})
-                </a>
-                <a href="?{% param_replace status='pendente' %}" class="status-btn {% if request.GET.status == 'pendente' %}active{% endif %}">
-                    Pendentes ({{ contas_pendentes }})
-                </a>
-                <a href="?{% param_replace status='pago' %}" class="status-btn {% if request.GET.status == 'pago' %}active{% endif %}">
-                    Pagos ({{ contas_pagas }})
-                </a>
-                <a href="?{% param_replace status='vencido' %}" class="status-btn {% if request.GET.status == 'vencido' %}active{% endif %}">
-                    Vencidos ({{ contas_vencidas }})
-                </a>
-            </div>
-            
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Edição</th>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                            <th>Valor</th>
-                            <th>Método Pagamento</th>
-                            <th>Vencimento</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for conta in contas %}
-                            <tr class="{% if conta.vencida %}conta-vencida{% endif %}">
-                                <td>
-                                    {% if conta.editavel %}
-                                        <button class="editar-btn" 
-                                                data-metodo="{{ conta.metodo_pagamento }}"
-                                                data-id="{{ conta.id }}"
-                                                data-descricao="{{ conta.descricao }}"
-                                                data-valor="{{ conta.valor|floatformat:2 }}"
-                                                data-vencimento="{{ conta.data_vencimento|date:'Y-m-d' }}">
-                                            Editar
-                                        </button>
-                                    {% else %}
-                                        <span class="nao-editavel">Não editável</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ conta.criacao|date:"d/m/Y H:i" }}</td>
-                                <td>{{ conta.descricao }}</td>
-                                <td class="valor-negativo">R$ {{ conta.valor|floatformat:2 }}</td>
-                                <td>{{ conta.metodo_pagamento|metodo_pagamento_label }}</td>
-                                <td class="{% if conta.vencida %}data-vencida{% endif %}">
-                                    {{ conta.data_vencimento|date:"d/m/Y" }}
-                                    {% if conta.vencida %}<i class="fas fa-exclamation-triangle"></i>{% endif %}
-                                </td>
-                                <td>
-                                    <select class="acao" data-conta-id="{{ conta.id }}">
-                                        <option value="pendente" {% if not conta.pago %}selected{% endif %}>Pendente</option>
-                                        <option value="pago" {% if conta.pago %}selected{% endif %}>Pago</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="7">Nenhuma conta a pagar encontrada com os filtros aplicados.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <div class="paginacao">
-                    <span class="step-links">
-                        {% if contas.has_previous %}
-                            <a href="?{% param_replace page=1 %}">&laquo; Primeira</a>
-                            <a href="?{% param_replace page=contas.previous_page_number %}">Anterior</a>
-                        {% endif %}
-
-                        <span class="current">
-                            Página {{ contas.number }} de {{ contas.paginator.num_pages }}.
-                        </span>
-
-                        {% if contas.has_next %}
-                            <a href="?{% param_replace page=contas.next_page_number %}">Próxima</a>
-                            <a href="?{% param_replace page=contas.paginator.num_pages %}">Ultima &raquo;</a>
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
-        </section>
+        <button id="open_modal_button" class="add-button">
+            <i class="fas fa-plus-circle"></i> Adicionar Conta
+        </button>
     </div>
 
-    <script src="{% static 'js/contasreceber.js' %}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('modal_container');
+    <div class="table-wrapper">
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conta in contas %}
+                <tr>
+                    <td data-label="Data">{{ conta.criacao|date:"d/m/Y" }}</td>
+                    <td data-label="Descrição">{{ conta.descricao }}</td>
+                    <td data-label="Valor" class="valor-negativo">R$ {{ conta.valor|floatformat:2 }}</td>
+                    <td data-label="Vencimento">{{ conta.data_vencimento|date:"d/m/Y" }}</td>
+                    <td data-label="Status">
+                        {% if conta.pago %}
+                            <span class="status status-pago"><i class="fas fa-check"></i> Pago</span>
+                        {% elif conta.vencido %}
+                            <span class="status status-vencido"><i class="fas fa-exclamation-circle"></i> Vencido</span>
+                        {% else %}
+                            <span class="status status-pendente"><i class="fas fa-hourglass-start"></i> Pendente</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Ações" class="actions-cell">
+                        {% if not conta.pago %}
+                            <button class="action-btn pagar-btn" title="Pagar Conta" data-id="{{ conta.id }}">
+                                <i class="fas fa-dollar-sign"></i>
+                            </button>
+                            <button class="action-btn editar-btn" title="Editar Conta"
+                                    data-id="{{ conta.id }}"
+                                    data-metodo="{{ conta.metodo_pagamento }}"
+                                    data-descricao="{{ conta.descricao }}"
+                                    data-vencimento="{{ conta.data_vencimento|date:'Y-m-d' }}"
+                                    data-valor="{{ conta.valor|floatformat:2 }}">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        {% else %}
+                            <span class="pago-text">Finalizado</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-cell">Nenhuma conta a pagar encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-            // Controle do modal
-            document.getElementById('open_modal_button').addEventListener('click', function() {
-                modal.style.display = 'flex';
-                document.getElementById('modal-title').textContent = 'Adicionar Conta a Pagar';
-                document.getElementById('pagamento_id').value = '';
-                document.getElementById('descricao').value = '';
-                document.getElementById('vencimento').value = '';
-                document.getElementById('valor').value = '';
-                document.getElementById('tipo_pagamento').value = '';
-            });
+    {% if contas.has_other_pages %}
+    <div class="pagination">
+        {% if contas.has_previous %}
+            <a href="?{% param_replace page=contas.previous_page_number %}" class="pagination-arrow" title="Anterior">&laquo;</a>
+        {% else %}
+            <span class="pagination-arrow disabled">&laquo;</span>
+        {% endif %}
 
-            document.getElementById('close_modal_button').addEventListener('click', function() {
-                modal.style.display = 'none';
-            });
+        {% for i in contas.paginator.page_range %}
+            {% if contas.number == i %}
+                <span class="pagination-link current">{{ i }}</span>
+            {% elif i > contas.number|add:'-3' and i < contas.number|add:'3' %}
+                <a href="?{% param_replace page=i %}" class="pagination-link">{{ i }}</a>
+            {% elif i == contas.number|add:'-3' or i == contas.number|add:'3' %}
+                 <span class="pagination-link">...</span>
+            {% endif %}
+        {% endfor %}
 
-            // Edição de contas
-            document.querySelectorAll('.editar-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    modal.style.display = 'flex';
-                    document.getElementById('modal-title').textContent = 'Editar Conta a Pagar';
-                    document.getElementById('pagamento_id').value = this.dataset.id;
-                    document.getElementById('descricao').value = this.dataset.descricao;
-                    document.getElementById('vencimento').value = this.dataset.vencimento;
-                    
-                    let valor = this.dataset.valor || '';
-                    valor = valor.toString().replace(',', '.'); 
-                    document.getElementById('valor').value = valor;
-                    
-                    document.getElementById('tipo_pagamento').value = this.dataset.metodo;
-                });
-            });
+        {% if contas.has_next %}
+            <a href="?{% param_replace page=contas.next_page_number %}" class="pagination-arrow" title="Próxima">&raquo;</a>
+        {% else %}
+            <span class="pagination-arrow disabled">&raquo;</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
 
-            // Controle dos filtros
-            document.getElementById('toggle-filtros').addEventListener('click', function() {
-                const form = document.getElementById('form-filtros');
-                form.style.display = form.style.display === 'none' || form.style.display === '' ? 'grid' : 'none';
-                this.querySelector('i').classList.toggle('fa-chevron-down');
-                this.querySelector('i').classList.toggle('fa-chevron-up');
-            });
+<div class="modal-container" id="modal_container">
+    <div class="modal-content">
+        <h1 id="modal-title">Adicionar Conta a Pagar</h1>
+        <form method="POST" action="{% url 'contasPagar' %}">
+            {% csrf_token %}
+            <input type="hidden" id="pagamento_id" name="pagamento_id">
+            <label for="tipo_pagamento_modal">Tipo de Pagamento:</label>
+            <select id="tipo_pagamento_modal" name="tipo_pagamento" required>
+                <option value="" disabled selected>Selecione um tipo</option>
+                {% for key, value in tipos_pagamento.items %}
+                    <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+            </select>
 
-            // Garante que os filtros começam fechados quando a página carrega
-            document.getElementById('form-filtros').style.display = 'none';
+            <label for="descricao_modal">Descrição:</label>
+            <input type="text" id="descricao_modal" name="descricao" required>
 
-            // Validação de datas
-            const dataInicio = document.getElementById('data_inicio');
-            const dataFim = document.getElementById('data_fim');
-            const vencimentoInicio = document.getElementById('vencimento_inicio');
-            const vencimentoFim = document.getElementById('vencimento_fim');
+            <label for="vencimento_modal">Vencimento:</label>
+            <input type="date" id="vencimento_modal" name="vencimento" required>
+
+            <label for="valor_modal">Valor:</label>
+            <input type="number" id="valor_modal" name="valor" step="0.01" min="0" required>
             
-            if (dataInicio && dataFim) {
-                dataInicio.addEventListener('change', function() {
-                    dataFim.min = this.value;
-                });
-                
-                dataFim.addEventListener('change', function() {
-                    dataInicio.max = this.value;
-                });
-            }
+            <div class="modal-actions">
+                <button type="button" class="form-button secondary" id="close_modal_button">Cancelar</button>
+                <button type="submit" class="form-button">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-            if (vencimentoInicio && vencimentoFim) {
-                vencimentoInicio.addEventListener('change', function() {
-                    vencimentoFim.min = this.value;
-                });
-                
-                vencimentoFim.addEventListener('change', function() {
-                    vencimentoInicio.max = this.value;
-                });
-            }
+<div class="modal-container" id="modal_pagamento">
+    <div class="modal-content">
+        <h1>Confirmar Pagamento</h1>
+        <form id="form-pagamento">
+            {% csrf_token %}
+            <input type="hidden" id="conta_pagar_id" name="conta_pagar_id">
+            <label for="conta_banco">De qual conta o dinheiro sairá?</label>
+            <select id="conta_banco" name="conta_banco" required>
+                <option value="" disabled selected>Selecione uma conta bancária</option>
+                {% for conta in contas_bancarias %}
+                    <option value="{{ conta.id }}">{{ conta.banco }} - Saldo: R$ {{ conta.saldo_inicial|floatformat:2 }}</option>
+                {% endfor %}
+            </select>
 
-            // Máscara para valores monetários
-            if (typeof $ !== 'undefined') {
-                $('.valor-range input').mask('#.##0,00', {reverse: true});
-            }
+            <div class="error-message" id="pagamento_error_message"></div>
+
+            <div class="modal-actions">
+                <button type="button" class="form-button secondary" id="cancelar_pagamento">Cancelar</button>
+                <button type="submit" class="form-button">
+                    <span class="btn-text">Confirmar Pagamento</span>
+                    <i class="fas fa-spinner btn-loader"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalContainer = document.getElementById('modal_container');
+    const openModalBtn = document.getElementById('open_modal_button');
+    const closeModalBtn = document.getElementById('close_modal_button');
+    
+    const modalPagamento = document.getElementById('modal_pagamento');
+    const cancelarPagamento = document.getElementById('cancelar_pagamento');
+    const formPagamento = document.getElementById('form-pagamento');
+    const submitPagamentoBtn = formPagamento.querySelector('button[type="submit"]');
+    const errorMessageDiv = document.getElementById('pagamento_error_message');
+
+    const openModal = (modal) => modal.classList.add('show');
+    const closeModal = (modal) => modal.classList.remove('show');
+
+    openModalBtn.addEventListener('click', () => {
+        document.getElementById('pagamento_id').value = '';
+        modalContainer.querySelector('form').reset();
+        document.getElementById('modal-title').innerText = 'Adicionar Conta a Pagar';
+        openModal(modalContainer);
+    });
+
+    closeModalBtn.addEventListener('click', () => closeModal(modalContainer));
+    modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) closeModal(modalContainer);
+    });
+
+    document.querySelectorAll('.editar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('pagamento_id').value = this.dataset.id;
+            document.getElementById('tipo_pagamento_modal').value = this.dataset.metodo;
+            document.getElementById('descricao_modal').value = this.dataset.descricao;
+            document.getElementById('vencimento_modal').value = this.dataset.vencimento;
+            document.getElementById('valor_modal').value = parseFloat(this.dataset.valor.replace(',', '.')).toFixed(2);
+            document.getElementById('modal-title').innerText = 'Editar Conta a Pagar';
+            openModal(modalContainer);
         });
+    });
 
-        function toggleStatus(element, contaId) {
-            const currentStatus = element.textContent.trim();
-            let newStatus;
-            
-            if (currentStatus === 'Pendente') {
-                newStatus = 'pago';
-            } else if (currentStatus === 'Pago') {
-                newStatus = 'pendente';
-            } else { // Vencido
-                newStatus = 'pago';
+    document.querySelectorAll('.pagar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('conta_pagar_id').value = this.dataset.id;
+            errorMessageDiv.style.display = 'none';
+            openModal(modalPagamento);
+        });
+    });
+
+    cancelarPagamento.addEventListener('click', () => closeModal(modalPagamento));
+    modalPagamento.addEventListener('click', (e) => {
+        if (e.target === modalPagamento) closeModal(modalPagamento);
+    });
+
+    formPagamento.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const contaId = document.getElementById('conta_pagar_id').value;
+        const contaBanco = document.getElementById('conta_banco').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        submitPagamentoBtn.disabled = true;
+        submitPagamentoBtn.classList.add('loading');
+        errorMessageDiv.style.display = 'none';
+
+        fetch(`/financeiro/atualizarPagamentoPagar/${contaId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: `status=pago&conta_bancaria=${contaBanco}`
+        })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+            if (ok && data.success) {
+                closeModal(modalPagamento);
+                window.location.reload();
+            } else {
+                errorMessageDiv.innerText = data.error || 'Ocorreu um erro desconhecido.';
+                errorMessageDiv.style.display = 'block';
             }
-            
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-            fetch(`/financeiro/atualizarPagamentoPagar/${contaId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken
-                },
-                body: `status=${newStatus}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Atualiza o botão visualmente
-                    element.classList.remove('pendente', 'pago', 'vencido');
-                    element.classList.add(newStatus);
-                    
-                    if (newStatus === 'pago') {
-                        element.textContent = 'Pago';
-                    } else {
-                        element.textContent = 'Pendente';
-                    }
-                    
-                    // Recarrega a página para atualizar os contadores
-                    window.location.reload();
-                } else {
-                    alert('Erro ao atualizar status');
-                }
-            })
-            .catch(() => {
-                alert('Erro na conexão');
-            });
-        }
-
-        function closeNotification() {
-            const notification = document.getElementById('notification');
-            notification.classList.remove('visible');
-            notification.classList.add('hidden');
-        }
-    </script>
-</body>
+        })
+        .catch(() => {
+            errorMessageDiv.innerText = 'Erro de comunicação. Verifique sua conexão.';
+            errorMessageDiv.style.display = 'block';
+        })
+        .finally(() => {
+            submitPagamentoBtn.disabled = false;
+            submitPagamentoBtn.classList.remove('loading');
+        });
+    });
+});
+</script>
 {% endblock %}
+

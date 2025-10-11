@@ -1,3 +1,15 @@
+:root {
+    --main-color: #d7c8aa;
+    --dark-color: #3d405b;
+    --light-color: #f8f9fa;
+    --contrast-color: #f88863;
+    --differential-color: #3b6790;
+    --success-color: #81b29a;
+    --inactive-color: #f2cc8f;
+    --white-color: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
 .mov-container {
     padding: 20px;
 }
@@ -59,6 +71,7 @@
 .tabela_mov {
     width: 100%;
     border-collapse: collapse;
+    background-color: var(--light-color);
 }
 
 .tabela_mov th, .tabela_mov td {
@@ -68,7 +81,7 @@
 }
 
 .tabela_mov thead {
-    background-color: #007bff;
+    background-color: var(--dark-color);
     color: white;
 }
 

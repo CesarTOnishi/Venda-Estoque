@@ -3,376 +3,234 @@
 {% load pagamento_tags %}
 
 {% block 'head' %}
-<link rel="stylesheet" href="{% static 'css/financeiro.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/extrato.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <title>Extrato Financeiro</title>
 {% endblock %}
 
 {% block 'dashboard' %}
 <div class="container">
-    <!-- Modal para detalhes da conta -->
-    <div id="contaModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h3 id="modalTitle">Detalhes da Conta</h3>
-            <div id="modalContent">
-                <!-- Os detalhes serão carregados aqui via JavaScript -->
-            </div>
+    <header class="page-header">
+        <nav class="menu">
+            <a class="nav-button active" href="{% url 'financeiro' %}"><i class="fas fa-chart-line"></i> Extrato</a>
+            <a class="nav-button" href="{% url 'contasPagar' %}"><i class="fas fa-arrow-up-from-bracket"></i> Contas a Pagar</a>
+            <a class="nav-button" href="{% url 'contasReceber' %}"><i class="fas fa-arrow-down-to-bracket"></i> Contas a Receber</a>
+        </nav>
+        <div class="saldo-card">
+            <h3>SALDO TOTAL</h3>
+            <p class="{% if saldo_total >= 0 %}saldo-positivo{% else %}saldo-negativo{% endif %}">
+                R$ {{ saldo_total|floatformat:2 }}
+            </p>
         </div>
-    </div>
+    </header>
 
-    <nav class="menu">
-        <a class="nav-button active" href="{% url 'financeiro' %}">Extrato</a>
-        <a class="nav-button" href="{% url 'contasPagar' %}">Contas a Pagar</a>
-        <a class="nav-button" href="{% url 'contasReceber' %}">Contas a Receber</a>
-    </nav>
-
-    <div class="saldo">
-        <h3>Saldo Atual:</h3>
-        <p class="{% if saldo_total >= 0 %}saldo-positivo{% else %}saldo-negativo{% endif %}">
-            R$ {{ saldo_total|floatformat:2 }}
-        </p>
-    </div>
-
-    <!-- Seção de Filtros Avançados -->
-    <div class="filtros-container">
-        <button id="toggle-filtros" class="btn-filtros">
+    <div class="actions-toolbar">
+        <div class="status-buttons">
+            <a href="?{% param_replace tipo='' %}" class="status-btn {% if not request.GET.tipo %}active{% endif %}">
+                <i class="fas fa-globe"></i> Todos
+            </a>
+            <a href="?{% param_replace tipo='entrada' %}" class="status-btn {% if request.GET.tipo == 'entrada' %}active{% endif %}">
+                <i class="fas fa-arrow-down"></i> Entradas
+            </a>
+            <a href="?{% param_replace tipo='saida' %}" class="status-btn {% if request.GET.tipo == 'saida' %}active{% endif %}">
+                <i class="fas fa-arrow-up"></i> Saídas
+            </a>
+        </div>
+        <button id="toggle-filtros" class="add-button">
             <i class="fas fa-sliders-h"></i> Filtros Avançados
         </button>
-        
-        <form method="GET" action="{% url 'financeiro' %}" id="form-filtros" class="filtros-form">
+    </div>
+
+    <div id="form-filtros" class="filtros-avancados-wrapper">
+        <form method="GET" action="{% url 'financeiro' %}" class="filtros-form">
             <div class="filtro-group">
-                <label for="data_inicio"><i class="far fa-calendar-alt"></i> Período:</label>
+                <label for="data_inicio">Período:</label>
                 <div class="date-range">
                     <input type="date" id="data_inicio" name="data_inicio" value="{{ request.GET.data_inicio }}">
                     <span>até</span>
                     <input type="date" id="data_fim" name="data_fim" value="{{ request.GET.data_fim }}">
                 </div>
             </div>
-
             <div class="filtro-group">
-                <label for="tipo"><i class="fas fa-exchange-alt"></i> Tipo:</label>
-                <select id="tipo" name="tipo">
-                    <option value="">Todos</option>
-                    <option value="entrada" {% if request.GET.tipo == 'entrada' %}selected{% endif %}>Entradas</option>
-                    <option value="saida" {% if request.GET.tipo == 'saida' %}selected{% endif %}>Saídas</option>
-                </select>
-            </div>
-
-            <div class="filtro-group">
-                <label for="status"><i class="fas fa-check-circle"></i> Status:</label>
+                <label for="status">Status:</label>
                 <select id="status" name="status">
                     <option value="">Todos</option>
-                    <option value="pago" {% if request.GET.status == 'pago' %}selected{% endif %}>Pagos</option>
-                    <option value="pendente" {% if request.GET.status == 'pendente' %}selected{% endif %}>Pendentes</option>
+                    <option value="pago" {% if request.GET.status == 'pago' %}selected{% endif %}>Pago</option>
+                    <option value="pendente" {% if request.GET.status == 'pendente' %}selected{% endif %}>Pendente</option>
                 </select>
             </div>
-
             <div class="filtro-group">
-                <label for="metodo"><i class="fas fa-credit-card"></i> Método:</label>
-                <select id="metodo" name="metodo">
-                    <option value="">Todos</option>
-                    {% for metodo in metodos_pagamento %}
-                        <option value="{{ metodo }}" {% if request.GET.metodo == metodo %}selected{% endif %}>{{ metodo }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="filtro-group">
-                <label for="valor_min"><i class="fas fa-money-bill-wave"></i> Valor:</label>
+                <label for="valor_min">Valor (R$):</label>
                 <div class="valor-range">
                     <input type="number" id="valor_min" name="valor_min" placeholder="Mínimo" step="0.01" value="{{ request.GET.valor_min }}">
                     <span>-</span>
                     <input type="number" id="valor_max" name="valor_max" placeholder="Máximo" step="0.01" value="{{ request.GET.valor_max }}">
                 </div>
             </div>
-
             <div class="filtro-group">
-                <label for="search"><i class="fas fa-search"></i> Busca:</label>
-                <input type="text" id="search" name="search" 
-                    placeholder="Descrição, ID ou Nº Pedido" 
-                    value="{{ request.GET.search }}">
+                <label for="search">Busca:</label>
+                <input type="text" id="search" name="search" placeholder="Descrição, ID, etc." value="{{ request.GET.search }}">
             </div>
-
+            
             <div class="filtro-actions">
-                <button type="submit" class="btn-filtrar">
-                    <i class="fas fa-filter"></i> Aplicar Filtros
-                </button>
-                <a href="{% url 'financeiro' %}" class="btn-limpar">
-                    <i class="fas fa-broom"></i> Limpar Filtros
-                </a>
+                <a href="{% url 'financeiro' %}" class="form-button secondary">Limpar Filtros</a>
+                <button type="submit" class="form-button">Aplicar</button>
             </div>
         </form>
     </div>
 
-    <section id="extrato">
-        <div class="header-extrato">
-            <h2>Extrato Financeiro</h2>
-            <div class="info-filtros">
-                {% if request.GET %}
-                    <small>Filtros aplicados: 
-                    {% for key, value in request.GET.items %}
-                        {% if value and key != 'page' %}{{ key }}: {{ value }}{% if not forloop.last %}, {% endif %}{% endif %}
-                    {% endfor %}
-                    </small>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table>
-                <thead>
+    <div class="table-wrapper">
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Conta Relacionada</th>
+                    <th>Valor</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for extrato in extratos %}
                     <tr>
-                        <th>Data <i class="fas fa-sort"></i></th>
-                        <th>Descrição</th>
-                        <th>Conta Relacionada</th>
-                        <th>Método Pagamento</th>
-                        <th>Valor</th>
-                        <th>Tipo</th>
-                        <th>Status</th>
+                        <td data-label="Data">{{ extrato.data_transacao|date:"d/m/Y H:i" }}</td>
+                        <td data-label="Descrição">{{ extrato.descricao }}</td>
+                        <td data-label="Conta Relacionada">
+                            {% if extrato.conta_receber or extrato.conta_pagar %}
+                                <a href="#" class="conta-relacionada-link" 
+                                   data-conta-id="{% if extrato.conta_receber %}{{ extrato.conta_receber.id }}{% else %}{{ extrato.conta_pagar.id }}{% endif %}"
+                                   data-tipo="{% if extrato.conta_receber %}receber{% else %}pagar{% endif %}">
+                                    Ver Detalhes <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td data-label="Valor" class="{% if extrato.tipo == 'entrada' %}valor-positivo{% else %}valor-negativo{% endif %}">
+                           R$ {{ extrato.valor|floatformat:2 }}
+                        </td>
+                        <td data-label="Tipo">
+                            {% if extrato.tipo == 'entrada' %}
+                                <span class="status status-entrada"><i class="fas fa-arrow-down"></i> Entrada</span>
+                            {% else %}
+                                <span class="status status-saida"><i class="fas fa-arrow-up"></i> Saída</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Status">
+                           <span class="status {% if extrato.status == 'pago' %}status-pago{% else %}status-pendente{% endif %}">
+                                {{ extrato.get_status_display }}
+                           </span>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for extrato in extratos %}
-                        <tr>
-                            <td>{{ extrato.data_transacao|date:"d/m/Y H:i" }}</td>
-                            <td>{{ extrato.descricao }}</td>
-                            <td>
-                                {% if extrato.conta_receber %}
-                                    <a href="#" class="conta-relacionada" 
-                                       data-conta-id="{{ extrato.conta_receber.id }}"
-                                       data-tipo="receber"
-                                       onclick="mostrarDetalhesConta(this); return false;">
-                                        {{ extrato.conta_receber.descricao|truncatechars:30 }}
-                                        <span class="conta-id">(ID: {{ extrato.conta_receber.id }})</span>
-                                    </a>
-                                {% elif extrato.conta_pagar %}
-                                    <a href="#" class="conta-relacionada" 
-                                       data-conta-id="{{ extrato.conta_pagar.id }}"
-                                       data-tipo="pagar"
-                                       onclick="mostrarDetalhesConta(this); return false;">
-                                        {{ extrato.conta_pagar.descricao|truncatechars:30 }}
-                                        <span class="conta-id">(ID: {{ extrato.conta_pagar.id }})</span>
-                                    </a>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>{{ extrato.metodo_pagamento|default:"-" }}</td>
-                            <td class="{% if extrato.tipo == 'entrada' %}valor-positivo{% else %}valor-negativo{% endif %}">
-                                {% if extrato.tipo == 'entrada' %}
-                                    + R$ {{ extrato.valor|floatformat:2 }}
-                                {% else %}
-                                    - R$ {{ extrato.valor|floatformat:2 }}
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge-{{ extrato.tipo }}">
-                                    {% if extrato.tipo == 'entrada' %}
-                                        Entrada
-                                    {% else %}
-                                        Saída
-                                    {% endif %}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="status-{{ extrato.status }}">
-                                    {{ extrato.get_status_display }}
-                                </span>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center">Nenhuma transação encontrada com os filtros aplicados.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-                    <div class="paginacao">
-                        <span class="step-links">
-                            {% if extratos.has_previous %}
-                                <a href="?{% param_replace page=1 %}">&laquo; Primeira</a>
-                                <a href="?{% param_replace page=extratos.previous_page_number %}">Anterior</a>
-                            {% endif %}
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-cell">Nenhuma transação encontrada.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-                            <span class="current">
-                                Página {{ extratos.number }} de {{ extratos.paginator.num_pages }}.
-                            </span>
+    {% if extratos.has_other_pages %}
+    <div class="pagination">
+        {% if extratos.has_previous %}
+            <a href="?{% param_replace page=extratos.previous_page_number %}" class="pagination-arrow" title="Anterior">&laquo;</a>
+        {% else %}
+            <span class="pagination-arrow disabled">&laquo;</span>
+        {% endif %}
 
-                            {% if extratos.has_next %}
-                                <a href="?{% param_replace page=extratos.next_page_number %}">Próxima</a>
-                                <a href="?{% param_replace page=extratos.paginator.num_pages %}">Ultima &raquo;</a>
-                            {% endif %}
-                        </span>
-                    </div>
-        </div>
-    </section>
+        {% for i in extratos.paginator.page_range %}
+            {% if extratos.number == i %}
+                <span class="pagination-link current">{{ i }}</span>
+            {% elif i > extratos.number|add:'-3' and i < extratos.number|add:'3' %}
+                <a href="?{% param_replace page=i %}" class="pagination-link">{{ i }}</a>
+            {% elif i == extratos.number|add:'-3' or i == extratos.number|add:'3' %}
+                 <span class="pagination-link">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if extratos.has_next %}
+            <a href="?{% param_replace page=extratos.next_page_number %}" class="pagination-arrow" title="Próxima">&raquo;</a>
+        {% else %}
+            <span class="pagination-arrow disabled">&raquo;</span>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
-<script src="{% static 'js/extrato.js' %}"></script>
+<div class="modal-container" id="contaModal">
+    <div class="modal-content">
+        <div id="modalContent">
+            </div>
+        <div class="modal-actions">
+            <button type="button" class="form-button secondary" id="closeModalBtn">Fechar</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Elementos do DOM
-    const formFiltros = document.getElementById('form-filtros');
+document.addEventListener('DOMContentLoaded', function() {
+    // --- CONTROLE DOS FILTROS AVANÇADOS ---
     const toggleBtn = document.getElementById('toggle-filtros');
-    const icon = toggleBtn.querySelector('i');
+    const formFiltros = document.getElementById('form-filtros');
     
-    // 1. Inicialização - Filtros começam fechados
+    // Inicia fechado por padrão
     formFiltros.style.display = 'none';
-    icon.classList.add('fa-sliders-h');
-    
-    if (hasFilters) {
-        formFiltros.style.display = 'grid';
-        icon.classList.replace('fa-sliders-h', 'fa-chevron-up');
-    }
-    
-    // 4. Toggle dos filtros
+
     toggleBtn.addEventListener('click', function() {
         const isHidden = formFiltros.style.display === 'none';
-        formFiltros.style.display = isHidden ? 'grid' : 'none';
-        icon.classList.toggle('fa-sliders-h', !isHidden);
-        icon.classList.toggle('fa-chevron-up', isHidden);
+        formFiltros.style.display = isHidden ? 'block' : 'none';
     });
-    
-    // 5. Fecha ao limpar filtros
-    document.querySelector('.btn-limpar').addEventListener('click', function() {
-        setTimeout(() => {
-            formFiltros.style.display = 'none';
-            icon.classList.replace('fa-chevron-up', 'fa-sliders-h');
-        }, 100);
-    });
-});
-</script>
-<script>
-// Função para mostrar detalhes da conta
-function mostrarDetalhesConta(element) {
-    const contaId = element.getAttribute('data-conta-id');
-    const tipoConta = element.getAttribute('data-tipo');
+
+    // --- CONTROLE DO MODAL DE DETALHES ---
     const modal = document.getElementById('contaModal');
     const modalContent = document.getElementById('modalContent');
-    
-    // Mostra o modal com um loader animado
-    modal.style.display = 'block';
-    modalContent.innerHTML = `
-        <div class="modal-header">
-            <h3>Carregando...</h3>
-        </div>
-        <div style="text-align: center; padding: 30px;">
-            <div class="loader"></div>
-        </div>
-    `;
-    
-    // Faz a requisição AJAX
-    fetch(`/financeiro/detalhes-conta/${tipoConta}/${contaId}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Preenche o modal com os detalhes formatados
-                modalContent.innerHTML = `
-                    <div class="modal-header">
-                        <h3>Detalhes da Conta</h3>
-                    </div>
-                    <div class="detalhes-conta">
-                        <div class="detalhes-item">
-                            <strong>Descrição</strong>
-                            <p>${data.descricao}</p>
-                        </div>
-                        <div class="detalhes-item">
-                            <strong>Valor</strong>
-                            <p class="valor-destaque">R$ ${data.valor}</p>
-                        </div>
-                        <div class="detalhes-item">
-                            <strong>Método Pagamento</strong>
-                            <p>${data.metodo_pagamento}</p>
-                        </div>
-                        <div class="detalhes-item">
-                            <strong>Data Vencimento</strong>
-                            <p>${data.data_vencimento}</p>
-                        </div>
-                        <div class="detalhes-item">
-                            <strong>Status</strong>
-                            <p class="${data.status === 'Recebido' || data.status === 'Pago' ? 'status-pago' : 'status-pendente'}">
-                                ${data.status}
-                            </p>
-                        </div>
-                        ${data.pedido ? `
-                        <div class="detalhes-item">
-                            <strong>Pedido Relacionado</strong>
-                            <p>${data.pedido}</p>
-                        </div>` : ''}
-                        <div class="detalhes-item">
-                            <strong>Data Criação</strong>
-                            <p>${data.data_criacao}</p>
-                        </div>
-                    </div>
-                `;
-            } else {
-                modalContent.innerHTML = `
-                    <div class="modal-header">
-                        <h3>Erro</h3>
-                    </div>
-                    <div class="detalhes-conta">
-                        <p>Não foi possível carregar os detalhes desta conta.</p>
-                        ${data.error ? `<p>${data.error}</p>` : ''}
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            modalContent.innerHTML = `
-                <div class="modal-header">
-                    <h3>Erro de Conexão</h3>
-                </div>
-                <div class="detalhes-conta">
-                    <p>Ocorreu um erro ao conectar com o servidor.</p>
-                </div>
-            `;
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    const openModal = () => modal.classList.add('show');
+    const closeModal = () => modal.classList.remove('show');
+
+    document.querySelectorAll('.conta-relacionada-link').forEach(link => {
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+            const contaId = this.dataset.contaId;
+            const tipoConta = this.dataset.tipo;
+            
+            openModal();
+            modalContent.innerHTML = `<h1>Carregando...</h1><div class="loader"></div>`;
+
+            fetch(`/financeiro/detalhes-conta/${tipoConta}/${contaId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        modalContent.innerHTML = `
+                            <h1>Detalhes da Conta</h1>
+                            <div class="detalhes-grid">
+                                <strong>Descrição:</strong><p>${data.descricao}</p>
+                                <strong>Valor:</strong><p class="valor-destaque">R$ ${data.valor}</p>
+                                <strong>Método de Pagamento:</strong><p>${data.metodo_pagamento}</p>
+                                <strong>Vencimento:</strong><p>${data.data_vencimento}</p>
+                                <strong>Status:</strong><p>${data.status}</p>
+                                ${data.pedido ? `<strong>Pedido:</strong><p>${data.pedido}</p>` : ''}
+                                <strong>Criação:</strong><p>${data.data_criacao}</p>
+                                <strong>Conta Bancaria:</strong><p>${data.conta_bancaria}</p>
+                            </div>
+                        `;
+                    } else {
+                        modalContent.innerHTML = `<h1>Erro</h1><p>Não foi possível carregar os detalhes.</p>`;
+                    }
+                })
+                .catch(error => {
+                    modalContent.innerHTML = `<h1>Erro</h1><p>Falha na comunicação com o servidor.</p>`;
+                });
         });
-}
-
-// Fechar o modal quando clicar no X
-document.querySelector('.close-modal').addEventListener('click', function() {
-    document.getElementById('contaModal').style.display = 'none';
-});
-
-// Fechar o modal quando clicar fora dele
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById('contaModal');
-    if (event.target == modal) {
-        modal.style.display = 'none';
-    }
-});
-
-// Controle dos filtros
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle dos filtros
-    document.getElementById('toggle-filtros').addEventListener('click', function() {
-        const form = document.getElementById('form-filtros');
-        form.style.display = form.style.display === 'none' ? 'grid' : 'none';
-        this.querySelector('i').classList.toggle('fa-chevron-down');
-        this.querySelector('i').classList.toggle('fa-chevron-up');
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('form-filtros').style.display = 'none';
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
     });
-    const dataInicio = document.getElementById('data_inicio');
-    const dataFim = document.getElementById('data_fim');
-    
-    if (dataInicio && dataFim) {
-        dataInicio.addEventListener('change', function() {
-            dataFim.min = this.value;
-        });
-        
-        dataFim.addEventListener('change', function() {
-            dataInicio.max = this.value;
-        });
-    }
-
-    // Máscara para valores monetários
-    if (typeof $ !== 'undefined') {
-        $('.valor-range input').mask('#.##0,00', {reverse: true});
-    }
 });
 </script>
 {% endblock %}

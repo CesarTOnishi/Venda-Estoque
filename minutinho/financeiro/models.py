@@ -16,6 +16,7 @@ class ContaPagar(models.Model):
     criacao = models.DateTimeField(auto_now_add=True)
     numero_parcela = models.PositiveIntegerField(null=True)
     editavel = models.BooleanField(default=False)
+    conta_bancaria = models.ForeignKey('ContaBancaria', on_delete=models.SET_NULL, null=True, blank=True, related_name='contapagar')
 
     @property
     def tipo_conta(self):
@@ -50,6 +51,7 @@ class ContaReceber(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
     numero_parcela = models.IntegerField(default=1)
     editavel = models.BooleanField(default=False)
+    conta_bancaria = models.ForeignKey('ContaBancaria', on_delete=models.SET_NULL, null=True, blank=True, related_name='contareceber')
     
     def __str__(self):
         return f"Receber: {self.descricao} - R$ {self.valor}"
@@ -93,6 +95,7 @@ class Extrato(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pendente')
     conta_pagar = models.ForeignKey(ContaPagar, on_delete=models.SET_NULL, null=True, blank=True)
     conta_receber = models.ForeignKey(ContaReceber, on_delete=models.SET_NULL, null=True, blank=True)
+    conta_bancaria = models.ForeignKey('ContaBancaria', on_delete=models.CASCADE, null=True, blank=True, related_name='extratos')
 
     def save(self, *args, **kwargs):
         ultimo_saldo = Extrato.objects.filter(data_transacao__lt=self.data_transacao).order_by('-data_transacao').first()
@@ -142,17 +145,6 @@ class MovimentacaoBancaria(models.Model):
     tipo = models.CharField(max_length=10, choices=TIPO_MOVIMENTACAO)
     valor = models.DecimalField(max_digits=12, decimal_places=2)
     data = models.DateTimeField(default=timezone.now)
-    saldo_apos = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
-
-    def save(self, *args, **kwargs):
-        if not self.pk:  
-            if self.tipo == 'entrada':
-                self.conta.saldo_inicial += self.valor
-            elif self.tipo == 'saida':
-                self.conta.saldo_inicial -= self.valor
-            self.conta.save()
-        self.saldo_apos = self.conta.saldo_inicial
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.conta.nome} - {self.tipo} R$ {self.valor:.2f}"
