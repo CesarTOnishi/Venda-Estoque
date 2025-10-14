@@ -4,8 +4,14 @@ from .models import Produto, Categoria
 from django.contrib.auth.decorators import login_required
 from estoque.functions import deletarProduto, removerCategoria
 from cliente.models import Cliente
-from venda.models import View_Pedido
-from django.db.models import Sum
+from venda.models import View_Pedido, Pedido
+from financeiro.models import ContaPagar, ContaReceber, Extrato
+from django.db.models import Sum, Count, F, Value, DecimalField
+from django.utils import timezone
+import json
+from django.db.models.functions import Coalesce
+
+
 
 @login_required(login_url="/login/")
 def estoque(request):
@@ -75,22 +81,66 @@ def tela(request):
 
 @login_required(login_url="/login/")
 def inicial(request):
-    user_id = request.user.id
-    quantidade_clientes = Cliente.objects.count()
-    quantidade_pedidos = View_Pedido.objects.values('nr_pedido').distinct().count()
-    total_vendas = View_Pedido.objects.aggregate(total_vendas=Sum('valor_total'))['total_vendas'] or 0
-    pedidos_agregados = (View_Pedido.objects.values('nr_pedido', 'cliente_nome').annotate(
-            quantidade_total=Sum('quantidade'),
-            valor_total=Sum('valor_total')
-        ).order_by('-nr_pedido')[:5]
+    hoje = timezone.now().date()
+    atual = hoje.replace(day=1)
+
+    entradas_pagas = (
+        Extrato.objects.filter(tipo='entrada', status='pago')
+        .aggregate(total=Coalesce(Sum('valor'), Value(Decimal('0.00')), output_field=DecimalField()))['total']
     )
 
+    saidas_pagas = (
+        Extrato.objects.filter(tipo='saida', status='pago')
+        .aggregate(total=Coalesce(Sum('valor'), Value(Decimal('0.00')), output_field=DecimalField()))['total']
+    )
+
+    saldo_extrato = entradas_pagas - saidas_pagas
+
+    receber = ContaReceber.objects.filter(recebido=False).aggregate(total=Sum('valor'))['total'] or 0
+    pagar = ContaPagar.objects.filter(pago=False).aggregate(total=Sum('valor'))['total'] or 0
+    clienteMes = Cliente.objects.filter(data_cadastro__gte=atual).count()
+
+    contasPagarVencidas = ContaPagar.objects.filter(pago=False, data_vencimento__lt=hoje).count()
+    contasReceberVencidas = ContaReceber.objects.filter(recebido=False, data_vencimento__lt=hoje).count()
+    contasVencidas = contasPagarVencidas + contasReceberVencidas
+    
+    estoqueBaixo = Produto.objects.filter(estoque__lte=F('estoque')).order_by('estoque')[:5]
+    
+    vendas = Pedido.objects.order_by('-data_pedido', '-id')[:5]
+
+    labels_faturamento = []
+    data_faturamento = []
+    for i in range(6):
+        mes = hoje.month - i
+        ano = hoje.year
+        if mes <= 0:
+            mes += 12
+            ano -= 1
+        
+        mes_nome = timezone.datetime(ano, mes, 1).strftime('%b')
+        labels_faturamento.insert(0, f"{mes_nome}/{ano}")
+
+        faturamento = Pedido.objects.filter(data_pedido__year=ano, data_pedido__month=mes).aggregate(total=Sum('valor_total'))['total'] or 0
+        data_faturamento.insert(0, float(faturamento))
+
+    top_produtos_query = Pedido.objects.filter(data_pedido__gte=atual, produto__isnull=False).values('produto__nome').annotate(total_vendido=Count('produto')).order_by('-total_vendido')[:5]
+    labels_top_produtos = [item['produto__nome'] for item in top_produtos_query]
+    data_top_produtos = [item['total_vendido'] for item in top_produtos_query]
+
     context = {
-        'quantidade_clientes': quantidade_clientes,
-        'quantidade_pedidos': quantidade_pedidos,
-        'total_vendas': total_vendas,
-        'pedidos': pedidos_agregados,
+        'saldo_extrato': saldo_extrato,
+        'receber': receber,
+        'pagar': pagar,
+        'clienteMes': clienteMes,
+        'contasVencidas': contasVencidas,
+        'estoqueBaixo': estoqueBaixo,
+        'vendas': vendas,
+        'labels_faturamento': json.dumps(labels_faturamento),
+        'data_faturamento': json.dumps(data_faturamento),
+        'labels_top_produtos': json.dumps(labels_top_produtos),
+        'data_top_produtos': json.dumps(data_top_produtos),
     }
+    
     return render(request, 'inicial.html', context)
 
 @login_required(login_url="/login/")

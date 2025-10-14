@@ -8,6 +8,7 @@ from django.db.models import Sum, Max, F
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from cliente.models import Cliente
+from funcionario.models import Funcionarios
 from django.utils import timezone
 from django.template.loader import get_template
 from django.http import HttpResponse, JsonResponse
@@ -126,6 +127,7 @@ def sacola(request):
     user_id = request.user.id
     tipo_pagamento = dict(CondicaoPagamento.TIPO_PAGAMENTO_CHOICES)
     results = Cliente.objects.all()
+    funcionarios = Funcionarios.objects.all()
     viewCarrinho = getViewCarrinho(user_id, request)
     valor_geral = View_Carrinho.objects.filter(user_id=user_id).aggregate(Sum('valor_total')).get('valor_total__sum') or 0.00
 
@@ -153,6 +155,7 @@ def sacola(request):
                 'user_id': user_id,
                 'valor_geral': valor_geral,
                 'clientes': results,
+                'funcionarios': funcionarios,
                 'condicoes_pagamento': condicoes_pagamento,
                 'condicao_selecionada': condicao,
                 'valor_parcela': valor_parcela,
@@ -167,6 +170,7 @@ def sacola(request):
     context = {
         'viewCarrinho': viewCarrinho,
         'user_id': user_id,
+        'funcionarios': funcionarios,
         'valor_geral': valor_geral,
         'clientes': results,
         'condicoes_pagamento': condicoes_pagamento,
@@ -216,6 +220,7 @@ def realizarPedido(request):
     if request.method == "POST":
         user_id = request.user.id
         cliente_id = request.POST.get('cliente_id')
+        funcionario_id = request.POST.get('funcionario_id')
         condicao_pagamento_id = request.POST.get('condicao_pagamento_id')
 
         errors = []
@@ -225,6 +230,8 @@ def realizarPedido(request):
 
         if not cliente_id:
             errors.append("Selecione um cliente válido.")
+        if not funcionario_id:
+            errors.append("Selecione um Funcionario válido.")
         if not condicao_pagamento_id:
             errors.append("Selecione uma condição de pagamento!")
         if not viewCarrinho:
@@ -236,20 +243,23 @@ def realizarPedido(request):
                 'viewCarrinho': viewCarrinho,
                 'condicoes_pagamento': condicoes_pagamento,
                 'valor_geral': valor_geral,
-                'clientes': Cliente.objects.all()
+                'clientes': Cliente.objects.all(),
+                'funcionarios': Funcionarios.objects.all()
             })
 
         try:
             cliente = Cliente.objects.get(id=int(cliente_id))
+            funcionarios = Funcionarios.objects.get(id=int(funcionario_id))
             condicao_pagamento = CondicaoPagamento.objects.get(id=int(condicao_pagamento_id))
-        except (Cliente.DoesNotExist, CondicaoPagamento.DoesNotExist):
+        except (Cliente.DoesNotExist, CondicaoPagamento.DoesNotExist, Funcionarios.DoesNotExist):
             errors.append("Cliente ou condição de pagamento não encontrados.")
             return render(request, 'sacola.html', {
                 'errors': errors,
                 'viewCarrinho': viewCarrinho,
                 'condicoes_pagamento': condicoes_pagamento,
                 'valor_geral': valor_geral,
-                'clientes': Cliente.objects.all()
+                'clientes': Cliente.objects.all(),
+                'funcionarios': Funcionarios.objects.all()
             })
 
         desconto = (valor_geral * condicao_pagamento.desconto / 100)
@@ -273,6 +283,7 @@ def realizarPedido(request):
                         nr_pedido=novo_nr,
                         user_id=user_id,
                         cliente=cliente,
+                        funcionario=funcionarios,
                         produto_id=car['produto_id'],
                         quantidade=car['quantidade'],
                         valor_unitario=car['valor_unitario'],
@@ -316,6 +327,7 @@ def realizarPedido(request):
                 'viewCarrinho': viewCarrinho,
                 'condicoes_pagamento': condicoes_pagamento,
                 'valor_geral': valor_geral,
+                'funcionarios': Funcionarios.objects.all(),
                 'clientes': Cliente.objects.all()
             })
 
@@ -330,7 +342,8 @@ def realizarPedido(request):
             'valor_geral': valor_geral,
             'condicoes_pagamento': condicoes_ativas,
             'tipo_pagamento': dict(metodos_disponiveis),
-            'clientes': Cliente.objects.all()
+            'clientes': Cliente.objects.all(),
+            'funcionarios': Funcionarios.objects.all()
         }
         return render(request, 'sacola.html', context)
 
@@ -341,21 +354,23 @@ def meuspedidos(request):
     viewPedidos = getViewPedidos(user_id, request)
     valor_geral = View_Pedido.objects.filter(user_id=user_id).aggregate(Sum('valor_total')).get('valor_total__sum', 0.00)
     clientes = Cliente.objects.all()
+    funcionarios = Funcionarios.objects.all()
 
-    # Filtros
     cliente_filtro = request.GET.get('cliente')
     data_inicio = request.GET.get('data_inicio')
+    funcionario_filtro = request.GET.get('funcionario') 
     data_fim = request.GET.get('data_fim')
     ordem = request.GET.get('ordem', 'antiga')
     numero_pedido = request.GET.get('numero_pedido')
     condicao_pagamento_filtro = request.GET.get('condicao_pagamento')
 
-    # Query base
     pedidos = View_Pedido.objects.filter(user_id=user_id)
 
-    # Aplicando filtros
     if cliente_filtro:
         pedidos = pedidos.filter(cliente_nome__iexact=cliente_filtro)
+
+    if funcionario_filtro:
+        pedidos = pedidos.filter(funcionario_nome__iexact=funcionario_filtro)
 
     if data_inicio:
         if data_fim:
@@ -374,7 +389,6 @@ def meuspedidos(request):
     if condicao_pagamento_filtro:
         pedidos = pedidos.filter(condicao_pagamento_nome__iexact=condicao_pagamento_filtro)
 
-    # Construindo dicionário de pedidos
     pedidos_dict = {}
 
     if pedidos.exists():
@@ -398,6 +412,7 @@ def meuspedidos(request):
                     'data_pedido': pedido.data_pedido,
                     'itens': [],
                     'cliente_nome': pedido.cliente_nome,
+                    'funcionario_nome': pedido.funcionario_nome,
                     'metodo_pagamento': pedido.metodo_pagamento,
                     'condicao_pagamento': condicao_pagamento,
                     'parcelas': parcelas,
@@ -432,9 +447,11 @@ def meuspedidos(request):
         'viewPedidos': viewPedidos,
         'valor_geral': valor_geral,
         'pedidos_dict': pedidos_dict,
+        'funcionario_filtro': funcionario_filtro,
         'cliente_filtro': cliente_filtro,
         'clientes': clientes,
         'data_inicio': data_inicio,
+        'funcionarios': funcionarios, 
         'data_fim': data_fim,
         'ordem': ordem,
         'condicoes_pagamento': condicoes_pagamento,

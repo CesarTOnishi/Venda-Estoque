@@ -1,6 +1,7 @@
 from django.db import models
 from cliente.models import Cliente
 from estoque.models import Produto
+from funcionario.models import Funcionarios
 from condicaoPagamento.models import CondicaoPagamento
 from django.utils import timezone
 from datetime import timedelta
@@ -32,6 +33,7 @@ class Pedido(models.Model):
     user_id = models.IntegerField(null=True, blank=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, null=True, blank=True, db_column='produto_id')
+    funcionario = models.ForeignKey(Funcionarios, on_delete=models.SET_NULL, null=True, blank=True) 
     quantidade = models.IntegerField(null=True, blank=True)
     valor_unitario = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
     valor_total = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
@@ -40,7 +42,6 @@ class Pedido(models.Model):
     metodo_pagamento = models.CharField(max_length=50, blank=True, null=True)
     parcelas = models.IntegerField(null=True, blank=True, default=1)
 
-    # 🔹 Condição de pagamento original (pode ser apagada depois)
     condicao_pagamento = models.ForeignKey(
         'condicaoPagamento.CondicaoPagamento',
         on_delete=models.SET_NULL,
@@ -48,7 +49,6 @@ class Pedido(models.Model):
         blank=True
     )
 
-    # 🔹 Cópia dos dados da condição (permanece mesmo se deletar)
     condicao_nome = models.CharField(max_length=100, blank=True, null=True)
     condicao_tipo = models.CharField(max_length=20, blank=True, null=True)
     condicao_parcelas = models.IntegerField(blank=True, null=True)
@@ -59,7 +59,6 @@ class Pedido(models.Model):
         db_table = 'venda_pedido'
 
     def save(self, *args, **kwargs):
-        # 🔸 Antes de salvar, copia dados da condição
         if self.condicao_pagamento:
             self.condicao_nome = self.condicao_pagamento.nome
             self.condicao_tipo = self.condicao_pagamento.tipo_pagamento
@@ -80,6 +79,7 @@ class View_Pedido(models.Model):
     valor_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     cliente_nome = models.CharField(max_length=100, null=True, blank=True)
+    funcionario_nome = models.CharField(max_length=100, null=True, blank=True)
     data_pedido = models.DateField(blank=True, null=True)
     metodo_pagamento = models.CharField(max_length=50, blank=True, null=True)
     parcelas = models.IntegerField(null=True, blank=True, default=1)

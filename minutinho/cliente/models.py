@@ -11,6 +11,7 @@ class Cliente(models.Model):
     email = models.EmailField(max_length=254, unique=True)
     telefone = models.CharField(max_length=15, blank=True, null=True)
     data_nascimento = models.DateField(blank=True, null=True)
+    data_cadastro = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         return self.nome

@@ -28,6 +28,16 @@
                 </select>
             </div>
 
+            <div class="client-selection">
+                <label for="funcionario_id">Selecione o Funcionario:</label>
+                <select name="funcionario_id" id="funcionario_id" class="inputcliente" required>
+                    <option value="">Selecione um funcionario...</option>
+                    {% for funcionario in funcionarios %}
+                        <option value="{{ funcionario.id }}">{{ funcionario.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div id="notification" class="notification {% if errors %}visible{% else %}hidden{% endif %}">
                 <span id="notification-message">
                     {% if errors %}
@@ -133,13 +143,15 @@
     <script src="{% static 'js/sacolajs.js' %}"></script>
     <script>
  $(document).ready(function() {
-    // Inicializa Select2 apenas no campo de cliente
     $('#cliente_id').select2({
         placeholder: "Selecione um cliente...",
         allowClear: true
     });
 
-    // Quando o método de pagamento for alterado
+        $('#funcionario_id').select2({
+        placeholder: "Selecione um funcionario...",
+        allowClear: true
+    });
     $('#metodo_pagamento').change(function() {
         var metodoPagamento = $(this).val();
         var valorTotal = parseFloat("{{ valor_geral|default:0 }}");

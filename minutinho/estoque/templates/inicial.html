@@ -1,52 +1,214 @@
-{% extends "tela.html" %}
+{% extends 'tela.html' %}
 {% load static %}
 
 {% block 'head' %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Gerencial</title>
     <link rel="stylesheet" href="{% static 'css/inicial.css' %}">
-    <title>Página Inicial</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block 'dashboard' %}
-    <div class="dashboard-container">
-        <h1>Bem-vindo!</h1>
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <p>Visão geral do seu negócio em tempo real.</p>
+    </div>
 
-        <div class="stats-section">
-            <div class="stat-box">
-                <h2>Vendas Totais:</h2>
-                <p>R$ {{ total_vendas|floatformat:2 }}</p>
-            </div>
-            <div class="stat-box">
-                <h2>Pedidos Realizados:</h2>
-                <p>{{ quantidade_pedidos }}</p>
-            </div>
-            <div class="stat-box">
-                <h2>Total Clientes:</h2>
-                <p>{{ quantidade_clientes }}</p>
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="card-icon icon-faturamento"><i class="fas fa-dollar-sign"></i></div>
+            <div class="card-content">
+                <p>Faturamento do Mês</p>
+                <h3>R$ {{ saldo_extrato|floatformat:2 }}</h3>
             </div>
         </div>
-
-        <div class="recent-orders">
-            <h2>Últimos 5 Pedidos</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nr. Pedido</th>
-                        <th>Cliente</th>
-                        <th>Produtos</th>
-                        <th>Valor Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for pedido in pedidos %}
-                    <tr>
-                        <td>{{ pedido.nr_pedido }}</td>
-                        <td>{{ pedido.cliente_nome }}</td>
-                        <td>{{ pedido.quantidade_total }}</td>
-                        <td>{{ pedido.valor_total|floatformat:2 }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="kpi-card">
+            <div class="card-icon icon-receber"><i class="fas fa-arrow-down"></i></div>
+            <div class="card-content">
+                <p>A Receber (Aberto)</p>
+                <h3>R$ {{ receber|floatformat:2 }}</h3>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="card-icon icon-pagar"><i class="fas fa-arrow-up"></i></div>
+            <div class="card-content">
+                <p>A Pagar (Aberto)</p>
+                <h3>R$ {{ pagar|floatformat:2 }}</h3>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="card-icon icon-clientes"><i class="fas fa-users"></i></div>
+            <div class="card-content">
+                <p>Novos Clientes (Mês)</p>
+                <h3>{{ clienteMes }}</h3>
+            </div>
         </div>
     </div>
+
+    <div class="main-grid">
+        <div class="card large">
+            <h3>Faturamento (Últimos 6 meses)</h3>
+            <div class="chart-container">
+                <canvas id="faturamentoChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card card-list">
+            <h3><i class="fas fa-exclamation-triangle alert-icon"></i> Alertas e Ações</h3>
+            <div class="list-item">
+                <p>Contas Vencidas</p>
+                <span class="badge red">{{ contasVencidas }}</span>
+            </div>
+            <h4>Estoque Baixo</h4>
+            {% for produto in estoqueBaixo %}
+            <div class="list-item">
+                <p>{{ produto.nome }}</p>
+                <span class="badge yellow">{{ produto.estoque }} un.</span>
+            </div>
+            {% empty %}
+            <p class="no-data">Nenhum produto em baixo estoque.</p>
+            {% endfor %}
+        </div>
+
+        <div class="card">
+            <h3>Top 5 Produtos (Mês)</h3>
+            <div class="chart-container">
+                <canvas id="topProdutosChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card card-list large">
+            <h3><i class="fas fa-history"></i> Pedidos Recentes</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>Data</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venda in vendas %}
+                        <tr>
+                            <td>#{{ venda.nr_pedido|default:venda.id }}</td>
+                            <td>{{ venda.cliente.nome|default:'N/A' }}</td>
+                            <td>{{ venda.data_pedido|date:"d/m/Y" }}</td>
+                            <td>R$ {{ venda.valor_total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="no-data">Nenhum pedido recente.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const faturamentoCtx = document.getElementById('faturamentoChart');
+    if (faturamentoCtx) {
+        const labelsFaturamento = JSON.parse('{{ labels_faturamento|safe }}');
+        const dataFaturamento = JSON.parse('{{ data_faturamento|safe }}');
+
+        new Chart(faturamentoCtx, {
+            type: 'line',
+            data: {
+                labels: labelsFaturamento,
+                datasets: [{
+                    label: 'Faturamento (R$)',
+                    data: dataFaturamento,
+                    borderWidth: 2,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Valor (R$)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const topProdutosCtx = document.getElementById('topProdutosChart');
+    if (topProdutosCtx) {
+        const labelsTopProdutos = JSON.parse('{{ labels_top_produtos|safe }}');
+        const dataTopProdutos = JSON.parse('{{ data_top_produtos|safe }}');
+
+        new Chart(topProdutosCtx, {
+            type: 'bar',
+            data: {
+                labels: labelsTopProdutos,
+                datasets: [{
+                    label: 'Quantidade Vendida',
+                    data: dataTopProdutos,
+                    backgroundColor: [
+                        '#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1'
+                    ],
+                    borderRadius: 5,
+                    barThickness: 'flex',
+                    maxBarThickness: 30
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#333',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Unidades Vendidas'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            autoSkip: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
