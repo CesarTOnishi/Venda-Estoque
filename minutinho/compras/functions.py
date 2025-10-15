@@ -1,6 +1,5 @@
 from django.db import connection
 from .models import PedidoCompra, PedidoProduto
-from compras.models import ParcelaPedido
 from financeiro.models import ContaPagar
 
 
@@ -15,7 +14,6 @@ def deletarCompra(item_id):
             produto.save()
         
         itens_pedido.delete()
-        ParcelaPedido.objects.filter(pedido=pedido).delete()
         ContaPagar.objects.filter(pedido=pedido).delete()
         pedido.delete()
 

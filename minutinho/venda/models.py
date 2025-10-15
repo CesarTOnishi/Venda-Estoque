@@ -88,16 +88,3 @@ class View_Pedido(models.Model):
     class Meta:
         managed = False
         db_table = 'View_Pedido'
-
-from django.db import models
-
-class ParcelaPedido(models.Model):
-    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='parcelas_pedido')
-    numero_parcela = models.IntegerField()
-    valor_parcela = models.DecimalField(max_digits=15, decimal_places=2)
-    data_vencimento = models.DateField()
-    pago = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Parcela {self.numero_parcela} - Pedido #{self.pedido.id}"
-

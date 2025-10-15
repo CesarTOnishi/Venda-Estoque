@@ -24,21 +24,6 @@ class PedidoCompra(models.Model):
             self.total = Decimal('0.00')
             return Decimal('0.00')
 
-    def salvar_parcelas(self):
-        if self.parcelas > 1:
-            valor_parcela = self.total / self.parcelas
-            data_base = self.data_pedido or timezone.now().date()
-
-            with transaction.atomic():
-                for i in range(self.parcelas):
-                    data_vencimento = data_base + timedelta(days=(i + 1) * 30)
-                    ParcelaPedido.objects.create(
-                        pedido=self,
-                        numero_parcela=i + 1,
-                        valor_parcela=valor_parcela,
-                        data_vencimento=data_vencimento
-                    )
-
     def save(self, *args, **kwargs):
         if not self.pk:
             super().save(*args, **kwargs)
@@ -63,13 +48,3 @@ class PedidoProduto(models.Model):
         def __str__(self):
             return f"{self.produto.nome} - {self.quantidade} x {self.preco_unitario}"
     
-class ParcelaPedido(models.Model):
-    pedido = models.ForeignKey(PedidoCompra, on_delete=models.CASCADE, related_name="parcelas_pedido")
-    numero_parcela = models.PositiveIntegerField() 
-    valor_parcela = models.DecimalField(max_digits=10, decimal_places=2)
-    data_vencimento = models.DateField()
-    pago = models.BooleanField(default=False)
-
-
-    def __str__(self):
-        return f"Pedido {self.pedido.id} - Parcela {self.numero_parcela}/{self.pedido.parcelas} - R$ {self.valor_parcela}"

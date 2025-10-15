@@ -4,7 +4,7 @@ from estoque.models import Produto
 from financeiro.models import ContaPagar
 from .forms import PedidoCompraForm, PedidoProdutoForm
 from django.http import JsonResponse
-from .models import PedidoCompra, PedidoProduto, ParcelaPedido
+from .models import PedidoCompra, PedidoProduto
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from .functions import deletarCompra
 import json
@@ -136,7 +136,7 @@ def criar_pedido(request):
 
                 if metodo_pagamento == 'cartao_credito':
                     pedido.parcelas = parcelamento
-                    pedido.salvar_parcelas()
+                    pedido.save()
 
                     valor_parcela = total_pedido / parcelamento
 
