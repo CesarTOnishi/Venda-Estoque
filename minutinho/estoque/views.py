@@ -16,48 +16,50 @@ from django.db.models.functions import Coalesce
 @login_required(login_url="/login/")
 def estoque(request):
     categorias = Categoria.objects.all()
+
     if request.method == "GET":
-        context= {
-            'categorias':categorias,
+        context = {
+            'categorias': categorias,
         }
         return render(request, 'addprodutos.html', context)
+
     else:
-        nome = request.POST.get('nome')
-        estoque = request.POST.get('estoque')
-        descricao = request.POST.get('descricao')
-        preco = request.POST.get('preco')
-        categoria_id = request.POST.get('categoria')
+        nome = request.POST.get('nome', '').strip()
+        estoque = request.POST.get('estoque', '').strip()
+        descricao = request.POST.get('descricao', '').strip()
+        preco = request.POST.get('preco', '').strip()
+        categoria_id = request.POST.get('categoria', '').strip()
 
         produtos = Produto.objects.all()
         errors = []
 
-        if not nome or not descricao or not preco or not categoria:
+        if not nome or not descricao or not preco or not categoria_id:
             errors.append("Todos os campos são obrigatórios.")
 
-        if estoque.strip():
-            try:
-                estoque_int = int(estoque)
-                if estoque_int < 0:
-                    errors.append('O estoque não pode ser negativo')
-            except ValueError:
-                errors.append("Estoque deve ser um número inteiro válido.")
-        else:
-            estoque_int = None
+        try:
+            estoque_int = int(estoque)
+            if estoque_int < 0:
+                errors.append("O estoque não pode ser negativo.")
+        except (ValueError, TypeError):
+            errors.append("Estoque deve ser um número inteiro válido.")
+            estoque_int = 0
 
-        if preco.strip():
-            try:
-                preco_dec = Decimal(preco.replace(",", "."))
-                if preco_dec < 0:
-                    errors.append('O preço não pode ser negativo')
-            except InvalidOperation:
-                errors.append("Preço inválido.")
-        else:
-            preco_dec = None
+        try:
+            preco_dec = Decimal(preco.replace(",", "."))
+            if preco_dec < 0:
+                errors.append("O preço não pode ser negativo.")
+        except (InvalidOperation, AttributeError):
+            errors.append("Preço inválido.")
+            preco_dec = Decimal('0.00')
 
-        
-        categoria_obj = Categoria.objects.filter(id=categoria_id).first()
+        try:
+            categoria_id_int = int(categoria_id)
+            categoria_obj = Categoria.objects.filter(id=categoria_id_int).first()
+        except (ValueError, TypeError):
+            categoria_obj = None
+
         if not categoria_obj:
-            errors.append('Categoria inválida.')
+            errors.append("Categoria inválida.")
 
         if errors:
             context = {
@@ -71,10 +73,16 @@ def estoque(request):
             }
             return render(request, 'addprodutos.html', context)
 
-        produto = Produto(nome=nome, estoque=estoque_int, descricao=descricao, preco=preco_dec, categoria_nome=categoria)
+        produto = Produto(
+            nome=nome,
+            estoque=estoque_int,
+            descricao=descricao,
+            preco=preco_dec,
+            categoria=categoria_obj  
+        )
         produto.save()
-        return redirect('lista')
 
+        return redirect('lista')
 @login_required(login_url="/login/")
 def tela(request):
     return render(request, 'tela.html')

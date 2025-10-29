@@ -40,7 +40,7 @@
                             <select name="categoria" id="categoria">
                                 <option value="">Selecione uma categoria</option>
                                 {% for categoria in categorias %}
-                                    <option value="{{ categoria.nome }}" {% if categoria.nome == produto.categoria_nome %}selected{% endif %}>
+                                    <option value="{{ categoria.id }}" {% if produto.categoria_id == categoria.id %}selected{% endif %}>
                                         {{ categoria.nome }}
                                     </option>
                                 {% endfor %}
