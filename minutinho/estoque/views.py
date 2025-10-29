@@ -152,7 +152,7 @@ def lista(request):
     if filtroCategoria:
         categoria_obj = Categoria.objects.filter(id=filtroCategoria).first()
         if categoria_obj:
-            produtos = produtos.filter(categoria_nome=categoria_obj.nome).order_by("nome")
+            produtos = produtos.filter(categoria=categoria_obj).order_by("nome")
 
     search_query = request.GET.get('search')
     if search_query:

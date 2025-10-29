@@ -14,5 +14,6 @@ urlpatterns = [
     path('contaBancaria/deletar/<int:id>/', views.deletarConta, name='deletarConta'),
     path('contaBancaria/alternar/<int:id>/', views.alternarAtivo, name='alternarAtivo'),
     path('movimento/<conta_id>', views.movimentacoes, name='movimentacoes'),
+    path('relatorio/', views.relatorioConta, name='relatorioConta'),
 
 ]

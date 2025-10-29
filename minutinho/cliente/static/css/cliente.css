@@ -5,146 +5,192 @@
     --contrast-color: #f88863;
     --differential-color: #3b6790;
     --background-color: #fff8e3;
+    --shadow-color: rgba(0, 0, 0, 0.15);
 }
 
 body {
-    color: var(--main-color);
-    font-family: 'Arial', sans-serif;
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-color);
     margin: 0;
-    padding: 0;
-}
-
-button {
-    background-color: var(--main-color);
-    border: none;
-    border-radius: 8px;
-    color: var(--dark-color);
-    padding: 10px 30px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s, transform 0.2s;
-    margin: 20px;
-}
-
-button a {
-    color: #fff;
-    text-decoration: none;
-}
-
-button:hover {
-    background-color: var(--main-color);
-    transform: scale(1.05);
-}
-
-button:active {
-    background-color: var(--main-color)
-}
-
-.tabela_cliente {
-    width: 100%;
-    max-width: 1200px;
-    border-collapse: collapse;
-    margin: 10px 0;
-    z-index: 200;
-}
-
-.tabela_cliente th, .tabela_cliente td {
-    padding: 6px;
-    text-align: left;
-    border: 1px solid var(--dark-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.tabela_cliente td {
-    background-color: var(--main-color);
-    color: var(--dark-color);
-}
-
-.tabela_cliente th {
-    background-color: var(--dark-color);
-    color: var(--light-color);
-    position: relative;
-    border: none;
-}
-
-.tabela_cliente th:first-child {
-    border-top-left-radius: 10px;
-}
-
-.tabela_cliente th:last-child {
-    border-top-right-radius: 10px;
-}
-
-.tabela_cliente tr {
-    transition: background-color 0.3s ease;
-}
-
-.tabela_cliente tr:hover {
     background-color: var(--differential-color);
 }
 
-.tabela_cliente tr:hover td {
-    background-color: var(--dark-color);
-    border: 1px solid var(--main-color);
-    color: #fff;
-}
-
-.tabela_cliente td:hover {
-    background-color: transparent;
-}
- 
-.principal {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
+.container-principal {
+    width: 95%;
+    max-width: 1600px;
+    margin: 2rem auto;
+    padding: 2rem;
     background-color: var(--main-color);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin-left: 78px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px var(--shadow-color);
 }
 
-.search-container {
-    margin: 20px;
-    text-align: center;
+.header-clientes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.search-container input {
+.header-clientes h1 {
+    margin: 0;
+    color: var(--dark-color);
+    font-size: 2rem;
+}
+
+.caixa-busca {
+    margin-bottom: 2rem;
+}
+
+#busca-cliente {
     width: 100%;
-    max-width: 600px;
-    padding: 12px;
-    border: 2px solid var(--light-color);
-    border-radius: 5px;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--dark-color);
     font-size: 1rem;
-    background-color: var(--dark-color);
-    color: #f0f0f0;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: var(--background-color);
+    color: var(--dark-color);
+    box-sizing: border-box;
 }
 
-.search-container input::placeholder {
-    color: #f0f0f0;
+#busca-cliente::placeholder {
+    color: var(--dark-color);
     opacity: 0.7;
 }
 
-.search-container input:focus {
-    border-color: var(--differential-color);
-    outline: none;
-    background-color: var(--dark-color);
+.container-tabela {
+    overflow-x: auto;
 }
 
-.botao {
-    display: inline-block;
-    padding: 12px 24px;
+#tabela-clientes {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    background-color: var(--light-color);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px var(--shadow-color);
+}
+
+#tabela-clientes th, #tabela-clientes td {
+    padding: 1rem;
+    text-align: left;
+}
+
+#tabela-clientes thead {
     background-color: var(--dark-color);
-    color: #fff;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
+    color: var(--light-color);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+#tabela-clientes tbody tr {
+    border-bottom: 1px solid var(--main-color);
+    transition: background-color 0.2s ease;
+}
+
+#tabela-clientes tbody tr:last-of-type {
+    border-bottom: none;
+}
+
+#tabela-clientes tbody tr:hover {
+    background-color: var(--background-color);
+}
+
+.coluna-acao {
     text-align: center;
 }
 
-.botao:hover {
-    background-color: var(--main-color);
+#tabela-clientes td.sem-dados {
+    text-align: center;
+    padding: 2rem;
     color: var(--dark-color);
+    opacity: 0.8;
+}
+
+.botao-principal {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.botao-principal:hover {
+    background-color: var(--differential-color);
+    transform: translateY(-2px);
+}
+
+.botao-tabela {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.botao-tabela img {
+    transition: transform 0.2s ease;
+}
+
+.botao-tabela:hover img {
+    transform: scale(1.15);
+}
+
+/* --- Media Query para Responsividade --- */
+@media screen and (max-width: 992px) {
+    .header-clientes {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #tabela-clientes thead {
+        display: none;
+    }
+
+    #tabela-clientes, #tabela-clientes tbody, #tabela-clientes tr, #tabela-clientes td {
+        display: block;
+        width: 100%;
+    }
+
+    #tabela-clientes tr {
+        margin-bottom: 1.5rem;
+        border: 2px solid var(--main-color);
+        border-radius: 8px;
+        padding: 0.5rem;
+    }
+
+    #tabela-clientes td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid var(--main-color);
+    }
+    
+    #tabela-clientes tr td:last-of-type {
+        border-bottom: none;
+    }
+
+    #tabela-clientes td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        width: 45%;
+        padding-right: 1rem;
+        text-align: left;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: var(--dark-color);
+    }
 }

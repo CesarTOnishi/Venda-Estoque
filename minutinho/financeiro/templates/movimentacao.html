@@ -2,56 +2,78 @@
 {% load static %}
 
 {% block 'head' %}
-<link rel="stylesheet" href="{% static 'css/movimentacoes.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<title>Movimentações Bancárias</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/movimentacoes.css' %}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>Movimentações de Conta</title>
 {% endblock %}
-
 {% block 'dashboard' %}
-<div class="mov-container">
-
-    <div class="mov-header">
-        <h1>Movimentações — {{ conta.nome }} ({{ conta.banco }})</h1>
-        <button id="add-movimentacao" class="btn-add"><i class="fas fa-plus-circle"></i> Nova Movimentação</button>
-    </div>
-
-    <div class="saldo-info">
-        <div class="saldo-card total">
-            <h3>Saldo Total</h3>
-            <p>R$ {{ saldo_total|floatformat:2 }}</p>
-        </div>
-        <div class="saldo-card entrada">
-            <h3>Entradas no Mês</h3>
-            <p>R$ {{ total_entradas_mes|floatformat:2 }}</p>
-        </div>
-        <div class="saldo-card saida">
-            <h3>Saídas no Mês</h3>
-            <p>R$ {{ total_saidas_mes|floatformat:2 }}</p>
+<div class="container-principal">
+    <div class="header-pagina">
+        <a href="{% url 'contaBancaria' %}" class="botao-voltar"><i class='bx bx-arrow-back'></i> Voltar</a>
+        <h1>Movimentações</h1>
+        <div class="botoes-header">
+        <a href="{% url 'relatorioConta'%}" class="botao-secundario"><i class='bx bx-printer'></i> Gerar Relatório</a>          
+        <button type="button" class="botao-principal" id="open_modal_button"><i class='bx bx-plus'></i> Nova Movimentação</button>
         </div>
     </div>
+    <p class="subtitulo-pagina">Conta: <strong>{{ conta.nome }} ({{ conta.banco }})</strong></p>
 
-    <div class="table-responsive-wrapper">
-        <table class="tabela_mov">
+    <div class="grid-saldo">
+        <div class="card-saldo saldo-total">
+            <div class="card-icon"><i class='bx bx-wallet'></i></div>
+            <div class="card-content">
+                <p>Saldo Atual</p>
+                <h3>R$ {{ saldo_total|floatformat:2 }}</h3>
+            </div>
+        </div>
+        <div class="card-saldo saldo-entradas">
+            <div class="card-icon"><i class='bx bx-trending-up'></i></div>
+            <div class="card-content">
+                <p>Entradas no Mês</p>
+                <h3>R$ {{ total_entradas_mes|floatformat:2 }}</h3>
+            </div>
+        </div>
+        <div class="card-saldo saldo-saidas">
+            <div class="card-icon"><i class='bx bx-trending-down'></i></div>
+            <div class="card-content">
+                <p>Saídas no Mês</p>
+                <h3>R$ {{ total_saidas_mes|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-tabela">
+        <table id="tabela-movimentacoes">
             <thead>
                 <tr>
                     <th>Data</th>
                     <th>Descrição</th>
                     <th>Tipo</th>
-                    <th>Valor</th>
+                    <th class="coluna-valor">Valor</th>
                 </tr>
             </thead>
             <tbody>
                 {% for mov in movimentacoes %}
                 <tr>
-                    <td>{{ mov.data|date:"d/m/Y H:i" }}</td>
-                    <td>{{ mov.descricao }}</td>
-                    <td class="{% if mov.tipo == 'entrada' %}entrada{% else %}saida{% endif %}">
-                        {{ mov.get_tipo_display }}
+                    <td data-label="Data">{{ mov.data|date:"d/m/Y H:i" }}</td>
+                    <td data-label="Descrição">{{ mov.descricao }}</td>
+                    <td data-label="Tipo">
+                        {% if mov.tipo == 'entrada' %}
+                            <span class="badge tipo-entrada">{{ mov.get_tipo_display }}</span>
+                        {% else %}
+                            <span class="badge tipo-saida">{{ mov.get_tipo_display }}</span>
+                        {% endif %}
                     </td>
-                    <td>R$ {{ mov.valor|floatformat:2 }}</td>
+                    <td data-label="Valor" class="coluna-valor {% if mov.tipo == 'entrada' %}valor-entrada{% else %}valor-saida{% endif %}">
+                        {% if mov.tipo == 'entrada' %}+{% else %}-{% endif %} R$ {{ mov.valor|floatformat:2 }}
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="sem-mov">Nenhuma movimentação encontrada.</td></tr>
+                <tr>
+                    <td colspan="4" class="sem-dados">Nenhuma movimentação registrada nesta conta.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -63,21 +85,26 @@
         <h2 id="modal-title">Nova Movimentação</h2>
         <form method="POST" action="{% url 'movimentacoes' conta.id %}">
             {% csrf_token %}
-            <label for="descricao">Descrição:</label>
-            <input type="text" id="descricao" name="descricao" required>
-
-            <label for="tipo">Tipo:</label>
-            <select id="tipo" name="tipo" required>
-                <option value="entrada">Entrada</option>
-                <option value="saida">Saída</option>
-            </select>
-
-            <label for="valor">Valor:</label>
-            <input type="number" step="0.01" id="valor" name="valor" required>
-
-            <div class="form-actions">
-                <button type="button" id="close-modal" class="modal-button secondary">Cancelar</button>
-                <button type="submit" class="modal-button">Salvar</button>
+            <div class="form-group">
+                <label for="descricao">Descrição:</label>
+                <input type="text" id="descricao" name="descricao" required>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="tipo">Tipo:</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="valor">Valor (R$):</label>
+                    <input type="number" step="0.01" id="valor" name="valor" min="0.01" required>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="botao-secundario" id="close_modal_button">Cancelar</button>
+                <button type="submit" class="botao-principal">Salvar</button>
             </div>
         </form>
     </div>
@@ -86,10 +113,14 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("modal_movimentacao");
-    const openBtn = document.getElementById("add-movimentacao");
-    const closeBtn = document.getElementById("close-modal");
+    const openBtn = document.getElementById("open_modal_button");
+    const closeBtn = document.getElementById("close_modal_button");
+    const form = modal.querySelector("form");
 
-    openBtn.addEventListener("click", () => modal.classList.add("show"));
+    openBtn.addEventListener("click", () => {
+        form.reset();
+        modal.classList.add("show");
+    });
     closeBtn.addEventListener("click", () => modal.classList.remove("show"));
     modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("show"); });
 });

@@ -2,56 +2,94 @@
 {% load static %}
 
 {% block 'head' %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/csscompra.css' %}">
-    <title>Compra</title>
+    <title>Lista de Compras</title>
 {% endblock %}
 
 {% block 'dashboard' %}
-<body> 
-    <form method="POST" action=".">
-        {% csrf_token %}
-        <div>
-            <a href="{% url 'criar_pedido' %}" class="botao">Realizar Compra</a>
-        </div>
-        <div class="search-container">
-            <input type="text" id="search" placeholder="Buscar compras...">
-        </div>
-        <div class="principal">
-            <table class="tabela_compra">
-                <thead>
-                    <tr> 
-                        <th>Gerar Nota</th>
-                        <th>Data</th> 
-                        <th>Fornecedor</th> 
-                        <th>Valor</th> 
-                        <th>Editar</th>
-                        <th>Deletar</th>
-                    </tr>
-                </thead>
-                <tbody class="corpo_tabela">
-                    {% for item in itens %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'notacompra' item.id %}" class="pdf-button">Gerar Nota</a>
-                        </td>
-                        <td>{{ item.data_pedido }}</td>
-                        <td>{{ item.fornecedor}}</td>
-                        <td>R$: {{ item.total }}</td>
-                        <td>
-                            <a href="{% url 'editar' item.id %}"> 
-                                <img width="30" height="30" src="{% static 'img/Editar.png' %}">
-                            </a>
-                        </td>
-                        <td>
-                            <a href="{% url 'removercompra' item.id %}">
-                                <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Remover Compra">
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </form>
-</body>
+<div class="container-principal">
+    <div class="header-compras">
+        <h1>Histórico de Compras</h1>
+        <a href="{% url 'criar_pedido' %}" class="botao-principal">Nova Compra</a>
+    </div>
+
+    <div class="caixa-busca">
+        <input type="text" id="busca" onkeyup="filtrarTabela()" placeholder="Buscar por data, fornecedor ou valor...">
+    </div>
+
+    <div class="container-tabela">
+        <table id="tabela-compras">
+            <thead>
+                <tr> 
+                    <th>Data</th> 
+                    <th>Fornecedor</th> 
+                    <th>Valor Total</th> 
+                    <th class="coluna-acao">Nota</th>
+                    <th class="coluna-acao">Editar</th>
+                    <th class="coluna-acao">Excluir</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td data-label="Data">{{ item.data_pedido|date:"d/m/Y" }}</td>
+                    <td data-label="Fornecedor">{{ item.fornecedor }}</td>
+                    <td data-label="Valor Total">R$ {{ item.total|floatformat:2 }}</td>
+                    <td data-label="Nota">
+                        <a href="{% url 'notacompra' item.id %}" class="botao-tabela pdf">Gerar</a>
+                    </td>
+                    <td data-label="Editar">
+                        <a href="{% url 'editar' item.id %}" class="botao-tabela editar"> 
+                            <img width="24" height="24" src="{% static 'img/Editar.png' %}" alt="Editar">
+                        </a>
+                    </td>
+                    <td data-label="Excluir">
+                        <a href="{% url 'removercompra' item.id %}" class="botao-tabela deletar">
+                            <img width="24" height="24" src="{% static 'img/Deletar.png' %}" alt="Remover">
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="sem-dados">Nenhuma compra registrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filtrarTabela() {
+    const input = document.getElementById("busca");
+    const filtro = input.value.toUpperCase();
+    const tabela = document.getElementById("tabela-compras");
+    const trs = tabela.getElementsByTagName("tr");
+
+    for (let i = 1; i < trs.length; i++) {
+        let linha = trs[i];
+        let tds = linha.getElementsByTagName("td");
+        let encontrou = false;
+
+        for (let j = 0; j < tds.length; j++) {
+            let celula = tds[j];
+            if (celula) {
+                let textoCelula = celula.textContent || celula.innerText;
+                if (textoCelula.toUpperCase().indexOf(filtro) > -1) {
+                    encontrou = true;
+                    break; 
+                }
+            }
+        }
+
+        if (encontrou) {
+            linha.style.display = "";
+        } else {
+            linha.style.display = "none";
+        }
+    }
+}
+</script>
 {% endblock %}

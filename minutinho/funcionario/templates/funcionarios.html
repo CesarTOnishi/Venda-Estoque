@@ -2,247 +2,189 @@
 {% load static %}
 
 {% block 'head' %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/funcionario.css' %}">
-    <title>Funcionários</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>Gerenciamento de Funcionários</title>
 {% endblock %}
 
 {% block 'dashboard' %}
-<div class="container">
-    <!-- Notificação -->
+<div class="container-principal">
+    <div class="header-pagina">
+        <h1>Funcionários</h1>
+        <button type="button" class="botao-principal" id="open_add_modal_button">
+            <i class='bx bx-plus'></i> Adicionar Funcionário
+        </button>
+    </div>
+
     <div id="notification" class="notification {% if errors %}visible{% endif %}">
-        <span id="notification-message">
-            {% if errors %}
-                {% for error in errors %}
-                    {{ error }}<br>
-                {% endfor %}
-            {% endif %}
-        </span>
+        <span id="notification-message">{% for error in errors %}{{ error }}<br>{% endfor %}</span>
         <span class="close" onclick="closeNotification()">&times;</span>
     </div>
 
-    <div class="search-container">
-        <button type="button" class="modal-button" id="open_modal_button">
-            Adicionar Funcionário
-        </button>
-        <input type="text" id="search" placeholder="Buscar funcionário">
+    <div class="caixa-busca">
+        <input type="text" id="busca-funcionario" onkeyup="filtrarTabela()" placeholder="Buscar por nome, CPF, cargo...">
     </div>
 
-    <!-- Modal -->
-    <div class="modal-container" id="modal_container">
+    <div class="modal-container" id="edit_modal_container">
         <div class="modal-content">
-            <button type="button" class="modal-button" id="close_modal_button">Fechar</button>
-            <h1 id="modal-title">Adicionar Funcionário</h1>
-            <form method="POST" action="{% url 'tabelaFuncionarios' %}">
+            <h2 id="modal-title">Adicionar Funcionário</h2>
+            <form id="funcionario-form" method="POST" action="{% url 'tabelaFuncionarios' %}">
                 {% csrf_token %}
                 <input type="hidden" id="funcionario_id" name="funcionario_id">
-
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" value="{{ form_data.nome|default:'' }}" required>
-
-                <label for="cpf">CPF:</label>
-                <input type="text" id="cpf" name="cpf" value="{{ form_data.cpf }}" placeholder="000.000.000-00" required>
-
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="{{ form_data.email }}" required>
-
-                <label for="cargo">Cargo:</label>
-                <input type="text" id="cargo" name="cargo" value="{{ form_data.cargo }}" required>
-
-                <label for="salario">Salário:</label>
-                <input type="number" step="0.01" id="salario" name="salario" min="0" value="{{ form_data.salario|default:'0' }}" required>
-
-                <label for="telefone">Telefone:</label>
-                <input type="number" id="telefone" name="telefone" value="{{ form_data.telefone }}" required>
-
-                <label for="endereco">Endereço:</label>
-                <input type="text" id="endereco" name="endereco" value="{{ form_data.endereco }}" required>
-
-                <label for="cidade">Cidade:</label>
-                <input type="text" id="cidade" name="cidade" value="{{ form_data.cidade }}" required>
-
-                <label for="estado">Estado:</label>
-                <input type="text" id="estado" name="estado" value="{{ form_data.estado }}" required>
-
-                <button type="submit" class="modal-button">Salvar</button>
+                <div class="form-grid">
+                    <div class="form-group span-2"><label for="nome">Nome Completo:</label><input type="text" id="nome" name="nome" required></div>
+                    <div class="form-group"><label for="cpf">CPF:</label><input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required></div>
+                    <div class="form-group"><label for="telefone">Telefone:</label><input type="text" id="telefone" name="telefone" required></div>
+                    <div class="form-group span-2"><label for="email">Email:</label><input type="email" id="email" name="email" required></div>
+                    <div class="form-group"><label for="cargo">Cargo:</label><input type="text" id="cargo" name="cargo" required></div>
+                    <div class="form-group"><label for="salario">Salário (R$):</label><input type="number" step="0.01" id="salario" name="salario" min="0" required></div>
+                    <div class="form-group span-2"><label for="endereco">Endereço:</label><input type="text" id="endereco" name="endereco" required></div>
+                    <div class="form-group"><label for="cidade">Cidade:</label><input type="text" id="cidade" name="cidade" required></div>
+                    <div class="form-group"><label for="estado">Estado:</label><input type="text" id="estado" name="estado" required></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="botao-secundario" id="close_edit_modal_button">Cancelar</button>
+                    <button type="submit" class="botao-principal">Salvar</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- Tabela -->
-    <table class="tabela_pagamento">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Email</th>
-                <th>Cargo</th>
-                <th>Salário</th>
-                <th>Telefone</th>
-                <th>Endereço</th>
-                <th>Cidade</th>
-                <th>Estado</th>
-                <th>Data Admissão</th>
-                <th>Editar</th>
-                <th>Excluir</th>
-            </tr>
-        </thead>
-        <tbody class="corpo_tabela">
-            {% for fun in funcionario %}
-            <tr>
-                <td>{{ fun.nome }}</td>
-                <td>{{ fun.cpf }}</td>
-                <td>{{ fun.email }}</td>
-                <td>{{ fun.cargo }}</td>
-                <td>{{ fun.salario }}</td>
-                <td>{{ fun.telefone }}</td>
-                <td>{{ fun.endereco }}</td>
-                <td>{{ fun.cidade }}</td>
-                <td>{{ fun.estado }}</td>
-                <td>{{ fun.data_admissao }}</td>
-                <td>
-                    <button type="button" class="edit-button"
-                        data-id="{{ fun.id }}"
-                        data-nome="{{ fun.nome }}"
-                        data-cpf="{{ fun.cpf }}"
-                        data-email="{{ fun.email }}"
-                        data-cargo="{{ fun.cargo }}"
-                        data-salario="{{ fun.salario|default:0|floatformat:2 }}"
-                        data-telefone="{{ fun.telefone }}"
-                        data-endereco="{{ fun.endereco }}"
-                        data-cidade="{{ fun.cidade }}"
-                        data-estado="{{ fun.estado }}">
-                        <img width="30" height="30" src="{% static 'img/Editar.png' %}" alt="Editar">
-                    </button>
-                </td>
-                <td>
-                    <a href="#">
-                        <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Deletar">
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="modal-container" id="view_modal_container">
+        <div class="modal-content">
+            <div class="modal-view-header">
+                <h2 id="view-nome"></h2>
+                <p id="view-cargo"></p>
+            </div>
+            <div class="modal-view-body">
+                <div class="detail-section">
+                    <h3>Informações de Contato</h3>
+                    <div class="detail-item-view"><i class='bx bxs-id-card'></i><div><strong>CPF:</strong><p id="view-cpf"></p></div></div>
+                    <div class="detail-item-view"><i class='bx bxs-phone'></i><div><strong>Telefone:</strong><p id="view-telefone"></p></div></div>
+                    <div class="detail-item-view"><i class='bx bxs-envelope'></i><div><strong>Email:</strong><p id="view-email"></p></div></div>
+                </div>
+                <div class="detail-section">
+                    <h3>Endereço</h3>
+                    <div class="detail-item-view"><i class='bx bxs-map'></i><div><strong>Logradouro:</strong><p id="view-endereco"></p></div></div>
+                    <div class="detail-item-view"><i class='bx bxs-city'></i><div><strong>Cidade/UF:</strong><p id="view-local"></p></div></div>
+                </div>
+                 <div class="detail-section">
+                    <h3>Detalhes do Contrato</h3>
+                    <div class="detail-item-view"><i class='bx bxs-wallet'></i><div><strong>Salário:</strong><p id="view-salario"></p></div></div>
+                    <div class="detail-item-view"><i class='bx bxs-calendar-check'></i><div><strong>Data de Admissão:</strong><p id="view-admissao"></p></div></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="botao-secundario" id="close_view_modal_button">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-tabela">
+        <table id="tabela-funcionarios">
+            <thead>
+                <tr>
+                    <th>Nome</th><th>CPF</th><th>Email</th><th>Cargo</th><th>Salário</th><th>Admissão</th><th class="coluna-acao">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fun in funcionario %}
+                <tr data-id="{{ fun.id }}" data-nome="{{ fun.nome }}" data-cpf="{{ fun.cpf }}" data-email="{{ fun.email }}" data-cargo="{{ fun.cargo }}" data-salario="{{ fun.salario|stringformat:'.2f' }}" data-telefone="{{ fun.telefone }}" data-endereco="{{ fun.endereco }}" data-cidade="{{ fun.cidade }}" data-estado="{{ fun.estado }}" data-admissao="{{ fun.data_admissao|date:'d/m/Y' }}">
+                    <td data-label="Nome">{{ fun.nome }}</td>
+                    <td data-label="CPF">{{ fun.cpf }}</td>
+                    <td data-label="Email">{{ fun.email }}</td>
+                    <td data-label="Cargo">{{ fun.cargo }}</td>
+                    <td data-label="Salário">R$ {{ fun.salario|floatformat:2 }}</td>
+                    <td data-label="Admissão">{{ fun.data_admissao|date:"d/m/Y" }}</td>
+                    <td data-label="Ações" class="coluna-acoes">
+                        <button type="button" class="botao-tabela view" title="Visualizar"><i class='bx bx-show'></i></button>
+                        <button type="button" class="botao-tabela edit" title="Editar"><i class='bx bx-pencil'></i></button>
+                        <a href="{% url 'deletarFuncionario' fun.id %}" class="botao-tabela delete" title="Excluir"><i class='bx bx-trash'></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-    const modal = document.getElementById("modal_container");
-    const openModalBtn = document.getElementById("open_modal_button");
-    const closeModalBtn = document.getElementById("close_modal_button");
-    const filtroSelect = document.getElementById("filtro_tipo_pagamento");
-    const tabelaBody = document.querySelector(".corpo_tabela");
+document.addEventListener("DOMContentLoaded", function() {
+    const editModal = document.getElementById("edit_modal_container");
+    const viewModal = document.getElementById("view_modal_container");
+    const openAddBtn = document.getElementById("open_add_modal_button");
+    const closeEditBtn = document.getElementById("close_edit_modal_button");
+    const closeViewBtn = document.getElementById("close_view_modal_button");
+    const form = document.getElementById("funcionario-form");
 
-    if (openModalBtn && closeModalBtn) {
-        openModalBtn.addEventListener("click", () => {
-            document.getElementById("modal-title").textContent = "Adicionar Condição";
-            document.getElementById("funcionario_id").value = "";
-            modal.classList.add("show");
-        });
-
-        closeModalBtn.addEventListener("click", () => {
-            modal.classList.remove("show");
-        });
-    }
-
-    tabelaBody.addEventListener("click", function (e) {
-        const editBtn = e.target.closest(".edit-button");
-        if (editBtn) {
-            document.getElementById("modal-title").textContent = "Editar Funcionário";
-            document.getElementById("funcionario_id").value = editBtn.dataset.id;
-            document.getElementById("nome").value = editBtn.dataset.nome;
-            document.getElementById("cpf").value = editBtn.dataset.cpf;
-            document.getElementById("email").value = editBtn.dataset.email;
-            document.getElementById("cargo").value = editBtn.dataset.cargo;
-            document.getElementById("salario").value = editBtn.dataset.salario;
-            document.getElementById("telefone").value = editBtn.dataset.telefone;
-            document.getElementById("endereco").value = editBtn.dataset.endereco;
-            document.getElementById("cidade").value = editBtn.dataset.cidade;
-            document.getElementById("estado").value = editBtn.dataset.estado;
-            modal.classList.add("show");
-        }
+    openAddBtn.addEventListener("click", () => {
+        document.getElementById("modal-title").textContent = "Adicionar Funcionário";
+        form.reset();
+        document.getElementById("funcionario_id").value = "";
+        editModal.classList.add("show");
     });
 
-    if (filtroSelect) {
-        filtroSelect.addEventListener("change", function() {
-            const tipo = this.value;
-            
-            fetch(`/condicaoPagamento/filtroPagamento/?tipo_pagamento=${tipo}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("Erro na requisição");
-                    return response.json();
-                })
-                .then(data => {
-                    tabelaBody.innerHTML = data.pagamentos?.length ? 
-                        data.pagamentos.map(pag => `
-                            <tr>
-                                <td>${pag.tipo_pagamento_display}</td>
-                                <td>${pag.nome}</td>
-                                <td>${pag.parcelas}</td>
-                                <td>${parseFloat(pag.juros).toFixed(2)}%</td>
-                                <td>${pag.intervalo_parcelas} dias</td>
-                                <td>${parseFloat(pag.desconto).toFixed(2)}%</td>
-                                <td>${pag.data_criacao}</td>
-                                <td>${pag.data_atualizacao}</td>
-                                <td>
-                                    <button class="edit-button" 
-                                        data-id="${pag.id}"
-                                        data-tipo="${pag.tipo_pagamento}"
-                                        data-nome="${pag.nome}"
-                                        data-parcelas="${pag.parcelas}"
-                                        data-juros="${pag.juros}"
-                                        data-intervalo="${pag.intervalo_parcelas}"
-                                        data-desconto="${pag.desconto}">
-                                        <img src="/static/img/Editar.png" width="30" height="30">
-                                    </button>
-                                </td>
-                                <td>
-                                    <a href="#">
-                                        <img width="30" height="30" src="{% static 'img/Deletar.png' %}" alt="Deletar">
-                                    </a>
-                                </td>
-                            </tr>
-                        `).join('') : '<tr><td colspan="10">Nenhum resultado encontrado</td></tr>';
-                })
-                .catch(error => {
-                    console.error("Erro:", error);
-                    tabelaBody.innerHTML = '<tr><td colspan="10">Erro ao carregar dados</td></tr>';
-                });
-        });
-    }
+    closeEditBtn.addEventListener("click", () => editModal.classList.remove("show"));
+    closeViewBtn.addEventListener("click", () => viewModal.classList.remove("show"));
+    window.addEventListener('click', (e) => {
+        if (e.target === editModal) editModal.classList.remove("show");
+        if (e.target === viewModal) viewModal.classList.remove("show");
+    });
+
+    const tabelaBody = document.querySelector("#tabela-funcionarios tbody");
+    tabelaBody.addEventListener("click", function(e) {
+        const row = e.target.closest("tr");
+        if (!row) return;
+
+        if (e.target.closest(".edit")) {
+            document.getElementById("modal-title").textContent = "Editar Funcionário";
+            document.getElementById("funcionario_id").value = row.dataset.id;
+            document.getElementById("nome").value = row.dataset.nome;
+            document.getElementById("cpf").value = row.dataset.cpf;
+            document.getElementById("email").value = row.dataset.email;
+            document.getElementById("cargo").value = row.dataset.cargo;
+            document.getElementById("salario").value = row.dataset.salario.replace(',', '.');
+            document.getElementById("telefone").value = row.dataset.telefone;
+            document.getElementById("endereco").value = row.dataset.endereco;
+            document.getElementById("cidade").value = row.dataset.cidade;
+            document.getElementById("estado").value = row.dataset.estado;
+            editModal.classList.add("show");
+        }
+
+        if (e.target.closest(".view")) {
+            document.getElementById("view-nome").textContent = row.dataset.nome;
+            document.getElementById("view-cargo").textContent = row.dataset.cargo;
+            document.getElementById("view-cpf").textContent = row.dataset.cpf;
+            document.getElementById("view-telefone").textContent = row.dataset.telefone;
+            document.getElementById("view-email").textContent = row.dataset.email;
+            document.getElementById("view-endereco").textContent = row.dataset.endereco;
+            document.getElementById("view-local").textContent = `${row.dataset.cidade} / ${row.dataset.estado}`;
+            document.getElementById("view-salario").textContent = `R$ ${parseFloat(row.dataset.salario).toFixed(2).replace('.', ',')}`;
+            document.getElementById("view-admissao").textContent = row.dataset.admissao;
+            viewModal.classList.add("show");
+        }
+    });
 });
-// Notificação
+
+function filtrarTabela() {
+    const filter = document.getElementById("busca-funcionario").value.toUpperCase();
+    const trs = document.querySelectorAll("#tabela-funcionarios tbody tr");
+    trs.forEach(row => {
+        const text = (row.textContent || row.innerText).toUpperCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+    });
+}
+
 function closeNotification() {
     const notification = document.getElementById('notification');
-    if (!notification) return;
-
-    notification.classList.add('fade-out');
-    setTimeout(() => {
-        notification.classList.remove('visible', 'fade-out');
-        notification.classList.add('hidden');
-    }, 500);
+    if (notification) notification.classList.remove('visible');
 }
-
-function showNotification(message) {
-    const notification = document.getElementById('notification');
-    const messageSpan = document.getElementById('notification-message');
-
-    if (!notification || !messageSpan) return;
-
-    messageSpan.innerHTML = message;
-    notification.classList.add('visible');
-    notification.classList.remove('hidden');
-
-    setTimeout(closeNotification, 5000);
-}
-
-// Auto-fechar notificação se estiver visível
-document.addEventListener("DOMContentLoaded", function () {
-    const notification = document.querySelector('.notification');
-    if (notification && notification.classList.contains('visible')) {
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.querySelector('.notification.visible')) {
         setTimeout(closeNotification, 5000);
     }
 });
-
-    </script>
-</body>
+</script>
 {% endblock %}

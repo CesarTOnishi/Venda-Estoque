@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Conta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #fff;
+            color: #000;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .empresa-info p {
+            margin: 1px 0;
+        }
+        .empresa-info h2 {
+            margin-bottom: 10px;
+        }
+        .header .logo {
+            max-width: 100px; 
+        }
+        .header .logo img {
+            max-width: 150px;
+            height: 100px;
+        }
+        .header .empresa-info {
+            text-align: left;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table width="100%">
+            <tr>
+                <td class="logo" width="30%">
+                    <img src="https://newlifenet.com.br/wp-content/uploads/2023/01/LOGO.png" alt="Logo da Empresa">
+                </td>
+                <td class="empresa-info" width="70%">
+                    <h2>Mercado NewLife</h2>
+                    <p><strong>Endereço:</strong> Rua Reinaldo Nassi, 546</p>
+                    <p><strong>Cidade:</strong> Diamante do Norte</p>
+                    <p><strong>CEP:</strong> 87990-000</p>
+                    <p><strong>Email:</strong> exemplo@empresa.com.br</p>
+                    <p><strong>Telefone:</strong> (44) 99999-9999</p>
+                    <p><strong>CNPJ:</strong> 99.999.999/0001-99</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h1>Relatório da Conta</h1>
+
+    {% if conta %}
+        <h2>{{ conta.nome }} - {{ conta.banco }} ({{ conta.get_tipo_conta_display }})</h2>
+        <p><strong>Agência:</strong> {{ conta.agencia|default:"-" }} | 
+           <strong>Número:</strong> {{ conta.numero_conta }} |
+           <strong>Saldo Atual:</strong> R$ {{ conta.saldo_inicial|floatformat:2 }}</p>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mov in movimentacaoConta %}
+            <tr>
+                <td>{{ mov.data|date:"d/m/Y H:i" }}</td>
+                <td>{{ mov.descricao }}</td>
+                <td>{{ mov.get_tipo_display }}</td>
+                <td>R$ {{ mov.valor|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">Nenhuma movimentação encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

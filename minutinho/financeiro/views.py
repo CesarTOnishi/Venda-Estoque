@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from fornecedor.functions import removerFornecedor
 from django.contrib import messages
 import re
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils.timezone import now
 from django.utils import timezone
@@ -18,6 +18,9 @@ from django.views.decorators.http import require_GET
 from django.core.paginator import Paginator
 from decimal import Decimal
 from django.db import models                
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
 
 @login_required(login_url="/login/")
 def contasReceber(request):
@@ -777,3 +780,26 @@ def movimentacoes(request, conta_id):
         'total_saidas_mes': total_saidas_mes,
     }
     return render(request, 'movimentacao.html', context)
+
+def relatorioConta(request):
+    conta = get_object_or_404(ContaBancaria.objects.all())
+    movimentacaoConta = MovimentacaoBancaria.objects.all().order_by('-data')
+
+    context = {
+        'conta': conta,
+        'movimentacaoConta': movimentacaoConta
+    }
+
+    template_path = "relatorioConta.html" 
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="relatorio_vendas_pagamento.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    return response

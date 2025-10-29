@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Funcionarios
+from django.contrib.auth.decorators import login_required
+from django.db.models import ProtectedError
 
+@login_required(login_url="/login/")
 def tabelaFuncionarios (request):
     funcionario = Funcionarios.objects.all().order_by('-id')
     if request.method == "POST":
@@ -78,3 +81,18 @@ def tabelaFuncionarios (request):
         'funcionario': funcionario,
     })
 
+@login_required(login_url="/login/")
+def deletarFuncionario(request, funcionario_id):
+    funcionario = get_object_or_404(Funcionarios, id=funcionario_id)
+    try:
+        funcionario.delete()
+        messages.success(request, f'A condição "{funcionario.nome}" foi deletada com sucesso.')
+    except ProtectedError:
+        messages.error(
+            request,
+            f'Não foi possível deletar a condição "{funcionario.nome}" porque existem registros associados.'
+        )
+    except Exception as e:
+        messages.error(request, f'Ocorreu um erro ao deletar: {str(e)}')
+
+    return redirect('tabelaFuncionarios')

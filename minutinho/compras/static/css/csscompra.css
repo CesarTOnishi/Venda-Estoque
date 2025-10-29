@@ -1,154 +1,200 @@
-:root{
-     
+:root {
     --main-color: #d7c8aa;
     --dark-color: #3d405b;
     --light-color: #f8f9fa;
     --contrast-color: #f88863;
     --differential-color: #3b6790;
     --background-color: #fff8e3;
+    --shadow-color: rgba(0, 0, 0, 0.15);
 }
 
 body {
-    font-family: 'Roboto', sans-serif;
-    color: var(--text-color);
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-color);
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    background-color: var(--differential-color);
 }
 
-form {
-    width: 90%;
-    max-width: 1200px;
-    margin: 50px auto;
-    padding: 40px;
+.container-principal {
+    width: 95%;
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 2rem;
     background-color: var(--main-color);
-    border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    box-shadow: 0 8px 25px var(--shadow-color);
 }
 
-button {
-    background-color: var(--dark-color);
-    color: #fff;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
+.header-compras {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.search-container {
-    margin-bottom: 30px;
+.header-compras h1 {
+    margin: 0;
+    color: var(--dark-color);
+    font-size: 2rem;
 }
 
-#search {
-    padding: 14px;
-    border-radius: 8px;
-    border: 2px solid #3b6790;
+.caixa-busca {
+    margin-bottom: 2rem;
+}
+
+#busca {
     width: 100%;
-    font-size: 18px;
-    background-color: var(--dark-color);
-    color: var(--text-color);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--dark-color);
+    font-size: 1rem;
+    background-color: var(--background-color);
+    color: var(--dark-color);
+    box-sizing: border-box; 
 }
 
-.tabela_compra {
+#busca::placeholder {
+    color: var(--dark-color);
+    opacity: 0.7;
+}
+
+.container-tabela {
+    overflow-x: auto; 
+    
+}
+
+#tabela-compras {
     width: 100%;
     border-collapse: collapse;
-    margin: 20px 0;
-    background-color: var(--dark-color);
+    margin: 0;
+    background-color: var(--light-color);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 10px var(--shadow-color);
 }
 
-.tabela_compra th, .tabela_compra td {
-    padding: 18px;
+#tabela-compras th, #tabela-compras td {
+    padding: 1rem;
     text-align: left;
-    font-size: 16px;
 }
 
-.tabela_compra th {
+#tabela-compras thead {
     background-color: var(--dark-color);
-    color:var(--main-color);
+    color: var(--light-color);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
-.tabela_compra td {
+#tabela-compras tbody tr {
+    border-bottom: 1px solid var(--main-color);
+    transition: background-color 0.2s ease;
+}
+
+#tabela-compras tbody tr:last-of-type {
+    border-bottom: none;
+}
+
+#tabela-compras tbody tr:hover {
+    background-color: var(--background-color);
+}
+
+.coluna-acao {
+    text-align: center;
+}
+
+#tabela-compras td.sem-dados {
+    text-align: center;
+    padding: 2rem;
     color: var(--dark-color);
-    border-bottom: 1px solid #555;
-    background-color: var(--main-color);
+    opacity: 0.8;
 }
 
-.tabela_compra tr:nth-child(even) {
-    background-color: var(--dark-color);
-}
-
-.tabela_compra tr:nth-child(odd) {
-    background-color: var(--main-color);
-}
-
-.tabela_compra a {
-    color: #fff;
+.botao-principal, .botao-tabela {
     text-decoration: none;
     font-weight: bold;
-}
-
-.pdf-button {
-    background-color: var(--dark-color);
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 14px;
-    text-align: center;
-    display: inline-block;
-}
-.pdf-button:hover {
-    background-color: var(--differential-color);
-    color: #fff;
-    transition: background-color 0.3s ease;
-
-}
-
-.caixa {
-    margin-bottom: 30px;
-}
-
-input[type="text"], input[type="date"], input[type="number"] {
-    width: 100%;
-    padding: 14px;
     border-radius: 8px;
-    border: none;
-    background-color: #444;
-    color: var(--text-color);
-    font-size: 16px;
-}
-
-input::placeholder {
-    color: #bbb;
-}
-
-input[type="hidden"] {
-    display: none;
-}
-
-.botao {
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: var(--dark-color);
-    color: #fff;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
     text-align: center;
+    cursor: pointer;
 }
 
-.botao:hover {
+.botao-principal {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    font-size: 1rem;
+}
+
+.botao-principal:hover {
     background-color: var(--differential-color);
-    color: var(--main-color);
-    transition: background-color 0.3s ease;
+    transform: translateY(-2px);
+}
+
+.botao-tabela {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border: none;
+    color: var(--light-color);
+}
+
+.botao-tabela.pdf { background-color: var(--differential-color); }
+.botao-tabela.pdf:hover { background-color: #4a85b8; }
+
+.botao-tabela.editar, .botao-tabela.deletar {
+    background-color: transparent;
+}
+
+.botao-tabela img {
+    transition: transform 0.2s ease;
+}
+
+.botao-tabela:hover img {
+    transform: scale(1.15);
+}
+
+/* --- Media Query para Responsividade --- */
+@media screen and (max-width: 768px) {
+    .header-compras {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #tabela-compras thead {
+        display: none; /* Esconde o cabeçalho original */
+    }
+
+    #tabela-compras, #tabela-compras tbody, #tabela-compras tr, #tabela-compras td {
+        display: block;
+        width: 100%;
+    }
+
+    #tabela-compras tr {
+        margin-bottom: 1rem;
+        border: 2px solid var(--main-color);
+        border-radius: 8px;
+    }
+
+    #tabela-compras td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    #tabela-compras td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        width: 45%;
+        padding-right: 1rem;
+        text-align: left;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: var(--dark-color);
+    }
 }

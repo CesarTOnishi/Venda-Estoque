@@ -1,131 +1,143 @@
-:root{
+:root {
     --main-color: #d7c8aa;
     --dark-color: #3d405b;
     --light-color: #f8f9fa;
     --contrast-color: #f88863;
     --differential-color: #3b6790;
     --background-color: #fff8e3;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --green: #28a745;
+    --yellow: #ffc107;
+    --red: #dc3545;
 }
 
-body, html {
-    margin: 0;
-    padding: 0;
+body {
     font-family: 'Poppins', sans-serif;
-    color: var(--text-color);
-}
-
-.pesquisa {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
-    background-color: var(--main-color);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    margin: 20px;
-    color: white;
-}
-
-.pesquisa input[type="text"] {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 2px solid var(--differential-color);
-    width: 300px;
-    background-color: var(--dark-color);
-    color: var(--main-color);
-}
-
-.pesquisa input[type="text"]::placeholder {
-    color: #bbb;
-}
-
-.pesquisa button:hover {
-    background-color: #ff676d;
-}
-
-.pesquisa a {
-    display: inline-block;
-    text-decoration: none;
-    color: var(--text-color);
-    padding: 10px 15px;
-    background-color: var(--dark-color);
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
-}
-
-.pesquisa a:hover {
+    color: var(--dark-color);
+    margin: 0;
     background-color: var(--differential-color);
 }
 
-.principal {
-    margin: 20px;
-    padding: 20px;
+.container-principal {
+    width: 95%;
+    max-width: 1600px;
+    margin: 2rem auto;
+    padding: 2rem;
     background-color: var(--main-color);
-    border-radius: 12px;
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 8px 25px var(--shadow-color);
 }
 
-.tabela_produto {
+.header-pagina {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-pagina h1 { margin: 0; font-size: 2rem; }
+.botoes-header { display: flex; gap: 1rem; }
+
+.caixa-controles {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.caixa-busca { flex-grow: 1; }
+#busca-produto, .filtro-item select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--dark-color);
+    font-size: 1rem;
+    background-color: var(--background-color);
+    box-sizing: border-box;
+}
+.filtro-item { display: flex; align-items: center; gap: 0.5rem; min-width: 300px; }
+
+.container-tabela { overflow-x: auto; }
+#tabela-produtos {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 30px;
-    background-color: var(--main-color);
-    color: var(--dark-color);
+    background-color: var(--light-color);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px var(--shadow-color);
 }
-
-.tabela_produto th, .tabela_produto td {
-    padding: 12px 15px;
+#tabela-produtos th, #tabela-produtos td {
+    padding: 1rem 1.2rem;
     text-align: left;
-    border-bottom: 1px solid var(--dark-color);
+    vertical-align: middle;
 }
-
-.tabela_produto th {
+#tabela-produtos thead {
     background-color: var(--dark-color);
-    color: var(--main-color);
-    position: relative;
+    color: var(--light-color);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+#tabela-produtos tbody tr {
+    border-bottom: 1px solid var(--main-color);
+    transition: background-color 0.2s ease;
+}
+#tabela-produtos tbody tr:last-of-type { border-bottom: none; }
+#tabela-produtos tbody tr:hover { background-color: var(--background-color); }
+.sem-dados { text-align: center; padding: 2rem; }
+
+.coluna-produto { font-weight: 500; }
+.coluna-descricao {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #555;
+    font-size: 0.9rem;
+}
+.coluna-acoes {
+    text-align: center;
+    width: 120px;
+}
+.coluna-acoes a {
+    margin: 0 0.5rem;
 }
 
-.tabela_produto th:first-child {
-    border-top-left-radius: 10px;
-}
 
-.tabela_produto th:last-child {
-    border-top-right-radius: 10px;
+.badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: white;
+    white-space: nowrap;
 }
+.estoque-ok { background-color: var(--green); }
+.estoque-baixo { background-color: var(--yellow); color: var(--dark-color); }
+.estoque-critico { background-color: var(--red); }
 
-.tabela_produto tr:hover {
-    background-color: var(--dark-color);
-    color: var(--main-color);
+.botao-principal, .botao-secundario, .botao-tabela {
+    border: none; cursor: pointer; font-weight: bold; border-radius: 8px;
+    text-decoration: none; transition: all 0.3s ease; text-align: center;
+    padding: 0.8rem 1.5rem; font-size: 1rem;
 }
+.botao-principal { background-color: var(--dark-color); color: var(--light-color); }
+.botao-principal:hover { background-color: var(--differential-color); }
+.botao-secundario { background-color: var(--differential-color); color: var(--light-color); }
+.botao-secundario:hover { background-color: var(--dark-color); }
+.botao-tabela { background: transparent; padding: 0.2rem; }
+.botao-tabela img { transition: transform 0.2s ease; }
+.botao-tabela:hover img { transform: scale(1.2); }
 
-.tabela_produto td a img {
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.tabela_produto td a img:hover {
-    transform: scale(1.1);
-}
-
-.filtro_categoria {
-    display: flex;
-    align-items: center;
-}
-
-.filtro_categoria label {
-    color: var(--dark-color);
-    margin-right: 10px;
-}
-
-.filtro_categoria select {
-    padding: 10px;
-    border: 2px solid var(--differential-color);
-    border-radius: 4px;
-    background-color: var(--dark-color);
-    color: var(--text-color);
-    margin-left: 10px;
-}
-
-.filtro_categoria select:hover {
-    border-color: var(--differential-color);
+@media screen and (max-width: 992px) {
+    #tabela-produtos thead { display: none; }
+    #tabela-produtos tr { display: block; margin-bottom: 1.5rem; border: 2px solid var(--main-color); border-radius: 8px; }
+    #tabela-produtos td { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; text-align: right; border-bottom: 1px solid var(--main-color); }
+    #tabela-produtos tr td:last-of-type { border-bottom: none; }
+    #tabela-produtos td::before { content: attr(data-label); font-weight: bold; text-align: left; text-transform: uppercase; font-size: 0.8rem; }
+    .coluna-acoes { justify-content: flex-end; }
 }
