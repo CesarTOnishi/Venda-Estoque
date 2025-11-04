@@ -9,4 +9,5 @@ urlpatterns = [
     path('confirmardelete/<int:cli_id>', views.confirmardelete, name='confirmardelete'),
     path('editarcli/<int:cli_id>', views.editarcliente, name='editarcliente'),
     path('salvarcli/<int:cli_id>', views.editarcli, name='editarcli'),
+    path("relatoriocliente/", views.relatorioclientes, name="relatorioclientes"),
 ]

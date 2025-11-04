@@ -81,7 +81,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            
+
             <div class="pagamento">
                 <div class="metodo-pagamento">
                     <label for="metodo_pagamento">Método de Pagamento:</label>
@@ -138,23 +138,25 @@
         </form>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <script src="{% static 'js/sacolajs.js' %}"></script>
-    <script>
- $(document).ready(function() {
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="{% static 'js/sacolajs.js' %}"></script>
+<script>
+$(document).ready(function() {
     $('#cliente_id').select2({
         placeholder: "Selecione um cliente...",
         allowClear: true
     });
 
-        $('#funcionario_id').select2({
+    $('#funcionario_id').select2({
         placeholder: "Selecione um funcionario...",
         allowClear: true
     });
+
     $('#metodo_pagamento').change(function() {
         var metodoPagamento = $(this).val();
-        var valorTotal = parseFloat("{{ valor_geral|default:0 }}");
+        // Esta variável 'valorTotal' é o seu subtotal
+        var valorTotal = parseFloat("{{ valor_geral|default:0 }}"); 
 
         if (metodoPagamento && valorTotal > 0) {
             $.ajax({
@@ -178,7 +180,8 @@
                             'data-juros="' + condicao.juros + '" ' +
                             'data-desconto="' + condicao.desconto + '" ' +
                             'data-valor-parcela="' + valorParcela.toFixed(2) + '" ' +
-                            'data-valor-final="' + valorFinal.toFixed(2) + '">' +
+                            'data-valor-final="' + valorFinal.toFixed(2) + '" ' +
+                            'data-subtotal="' + valorTotal.toFixed(2) + '">' + // <-- MUDANÇA: Adicionamos o subtotal aqui
                             condicao.nome + ' (' + condicao.tipo_display + ' - ' + condicao.parcelas + 'x)' +
                             '</option>'
                         );
@@ -203,15 +206,16 @@
         var desconto = selectedOption.data('desconto');
         var valorParcela = selectedOption.data('valor-parcela');
         var valorFinal = selectedOption.data('valor-final');
+        var subtotal = selectedOption.data('subtotal'); // <-- MUDANÇA: Lemos o subtotal
         
         // Atualiza os detalhes na página
         $('.condicao-detalhes').html(`
             <h4>Detalhes da Condição</h4>
             <p><strong>Forma de Pagamento:</strong> ${selectedOption.text().match(/\((.*?)\s*-/)[1]}</p>
+            <p><strong>Subtotal:</strong> R$ ${subtotal}</p> ${desconto > 0 ? '<p><strong>Desconto:</strong> ' + desconto + '%</p>' : ''}
+            ${juros > 0 ? '<p><strong>Juros:</strong> ' + juros + '%</p>' : ''}
             <p><strong>Parcelas:</strong> ${parcelas}x de R$ ${valorParcela}</p>
             <p><strong>Valor Total:</strong> R$ ${valorFinal}</p>
-            ${desconto > 0 ? '<p><strong>Desconto:</strong> ' + desconto + '%</p>' : ''}
-            ${juros > 0 ? '<p><strong>Juros:</strong> ' + juros + '%</p>' : ''}
         `).show();
     });
 
@@ -222,6 +226,6 @@
         }, 5000);
     }
 });
-        </script>
+</script>
 </body>
 </html>

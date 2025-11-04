@@ -8,9 +8,9 @@ from .models import CondicaoPagamento
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import ProtectedError
-
-
-
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 @login_required(login_url="/login/")
 def condicaoPagamento(request):
@@ -157,3 +157,24 @@ def deletarCondicao(request, condicao_id):
         messages.error(request, f'Ocorreu um erro ao deletar: {str(e)}')
 
     return redirect('condicaoPagamento')
+
+def relatorioCondicao(request):
+    condicoes = CondicaoPagamento.objects.all()
+
+    context = {
+        "condicoes": condicoes,
+    }
+
+    template_path = "todascondicoes.html" 
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="relatorio_condicoes.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    return response

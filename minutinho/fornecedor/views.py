@@ -6,6 +6,9 @@ from django.contrib.auth.decorators import login_required
 from fornecedor.functions import removerFornecedor
 from django.contrib import messages
 import re
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 @login_required(login_url="/login/")
 def fornecedor(request):
@@ -202,3 +205,24 @@ def confirmardell(request, forn_id):
         'fornecedor': fornecedor
     }
     return render(request, 'confirmarfornecedor.html', context)
+
+def relatoriofornecedor(request):
+    fornecedores = Fornecedor.objects.all()
+
+    context = {
+        "fornecedores": fornecedores,
+    }
+
+    template_path = "todosfornecedores.html"
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="relatorio_fornecedor.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    return response

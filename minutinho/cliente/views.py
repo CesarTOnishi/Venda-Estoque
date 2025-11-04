@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ValidationError
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 from .models import Cliente
 from datetime import date
 from django.contrib.auth.decorators import login_required
@@ -196,3 +199,24 @@ def editarcli(request, cli_id):
         'data_nascimento': cliente.data_nascimento
     }
     return render(request, 'editarcli.html', context)
+
+def relatorioclientes(request):
+    clientes = Cliente.objects.all()
+
+    context = {
+        "clientes": clientes,
+    }
+
+    template_path = "todosclientes.html"
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="relatorio_clientes.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    return response

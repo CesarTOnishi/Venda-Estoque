@@ -1,0 +1,111 @@
+{% load condicao_filters %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Condições de Pagamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #fff;
+            color: #000;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th, td {
+            padding: 6px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .empresa-info p {
+            margin: 1px 0;
+        }
+        .empresa-info h2 {
+            margin-bottom: 10px;
+        }
+        .header .logo {
+            max-width: 100px; 
+        }
+        .header .logo img {
+            max-width: 150px;
+            height: 100px;
+        }
+        .header .empresa-info {
+            text-align: left;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table width="100%">
+            <tr>
+                <td class="logo" width="30%">
+                    <img src="https://newlifenet.com.br/wp-content/uploads/2023/01/LOGO.png" alt="Logo da Empresa">
+                </td>
+                <td class="empresa-info" width="70%">
+                    <h2>Mercado NewLife</h2>
+                    <p><strong>Endereço:</strong> Rua Reinaldo Nassi, 546</p>
+                    <p><strong>Cidade:</strong> Diamante do Norte</p>
+                    <p><strong>CEP:</strong> 87990-000</p>
+                    <p><strong>Email:</strong> exemplo@empresa.com.br</p>
+                    <p><strong>Telefone:</strong> (44) 99999-9999</p>
+                    <p><strong>CNPJ:</strong> 99.999.999/0001-99</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h1>Condições Pagamento</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Parcelas</th>
+                <th>Juros</th>
+                <th>Intervalo</th>
+                <th>Desconto</th>
+                <th>Data Criação</th>
+                <th>Data Atualização</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for condicao in condicoes %}
+            <tr>
+                <td>{{ condicao.nome }}</td>
+                <td>{{ condicao.tipo_pagamento| metodo_pagamento_label }}</td>
+                <td>{{ condicao.parcelas }}</td>
+                <td>R$ {{ condicao.juros }}%</td>
+                <td>{{ condicao.intervalo_parcelas }}</td>
+                <td>{{ condicao.desconto}}%</td>
+                <td>R$ {{ condicao.data_criacao|date:"d/m/Y H:i" }}</td>
+                <td>{{ condicao.data_atualizacao|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">Nenhuma movimentação encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

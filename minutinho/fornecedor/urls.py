@@ -9,4 +9,5 @@ urlpatterns = [
     path('confirmardell/<int:forn_id>', views.confirmardell, name='confirmardell'),
     path('editarforn/<int:forn_id>', views.editarfornecedor, name='editarfornecedor'),
     path('salvarfornecedor/<int:forn_id>', views.editarforn, name='editarforn'),
+    path("relatoriofornecedor/", views.relatoriofornecedor, name='relatoriofornecedor'),
 ]

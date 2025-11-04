@@ -3,6 +3,9 @@ from django.contrib import messages
 from .models import Funcionarios
 from django.contrib.auth.decorators import login_required
 from django.db.models import ProtectedError
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 @login_required(login_url="/login/")
 def tabelaFuncionarios (request):
@@ -96,3 +99,24 @@ def deletarFuncionario(request, funcionario_id):
         messages.error(request, f'Ocorreu um erro ao deletar: {str(e)}')
 
     return redirect('tabelaFuncionarios')
+
+def relatoriofuncionarios(request):
+    funcionarios = Funcionarios.objects.all()
+
+    context = {
+        "funcionarios": funcionarios,
+    }
+
+    template_path = "todosfuncionarios.html" 
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="relatorio_funcionarios.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar o PDF", status=500)
+
+    return response

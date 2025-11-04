@@ -351,114 +351,111 @@ def realizarPedido(request):
 @login_required(login_url="/login/")
 def meuspedidos(request):
     user_id = request.user.id
-    viewPedidos = getViewPedidos(user_id, request)
-    valor_geral = View_Pedido.objects.filter(user_id=user_id).aggregate(Sum('valor_total')).get('valor_total__sum', 0.00)
-    clientes = Cliente.objects.all()
-    funcionarios = Funcionarios.objects.all()
+    pedidos = Pedido.objects.filter(user_id=user_id)
 
-    cliente_filtro = request.GET.get('cliente')
-    data_inicio = request.GET.get('data_inicio')
-    funcionario_filtro = request.GET.get('funcionario') 
-    data_fim = request.GET.get('data_fim')
-    ordem = request.GET.get('ordem', 'antiga')
-    numero_pedido = request.GET.get('numero_pedido')
-    condicao_pagamento_filtro = request.GET.get('condicao_pagamento')
-
-    pedidos = View_Pedido.objects.filter(user_id=user_id)
+    cliente_filtro = request.GET.get("cliente")
+    data_inicio = request.GET.get("data_inicio")
+    data_fim = request.GET.get("data_fim")
+    ordem = request.GET.get("ordem", "antiga")
+    numero_pedido = request.GET.get("numero_pedido")
 
     if cliente_filtro:
-        pedidos = pedidos.filter(cliente_nome__iexact=cliente_filtro)
-
-    if funcionario_filtro:
-        pedidos = pedidos.filter(funcionario_nome__iexact=funcionario_filtro)
+        pedidos = pedidos.filter(cliente__nome__iexact=cliente_filtro)
 
     if data_inicio:
         if data_fim:
             pedidos = pedidos.filter(data_pedido__range=[data_inicio, data_fim])
         else:
-            pedidos = pedidos.filter(data_pedido__gte=data_inicio, data_pedido__lte=timezone.now())
-
-    if ordem == 'recente':
-        pedidos = pedidos.order_by('-nr_pedido')
-    elif ordem == 'antiga':
-        pedidos = pedidos.order_by('nr_pedido')
+            pedidos = pedidos.filter(data_pedido__gte=data_inicio)
 
     if numero_pedido:
-        pedidos = pedidos.filter(nr_pedido__iexact=numero_pedido)
+        pedidos = pedidos.filter(nr_pedido=numero_pedido)
 
-    if condicao_pagamento_filtro:
-        pedidos = pedidos.filter(condicao_pagamento_nome__iexact=condicao_pagamento_filtro)
+    pedidos = pedidos.order_by("-nr_pedido" if ordem == "recente" else "nr_pedido")
 
     pedidos_dict = {}
 
-    if pedidos.exists():
-        for pedido in pedidos:
-            nr_pedido = pedido.nr_pedido
+    for p in pedidos:
+        if p.nr_pedido not in pedidos_dict:
+            pedidos_dict[p.nr_pedido] = {
+                "id": p.id,
+                "data_pedido": p.data_pedido,
+                "cliente_nome": p.cliente.nome,
+                "funcionario_nome": p.funcionario.nome,
+                "metodo_pagamento": p.metodo_pagamento,
+                "parcelas": p.parcelas,
+                "subtotal": 0,
+                "valor_total": 0,
+                "valor_desconto": 0,
+                "valor_juros": 0,
+                "itens": [],
+                "condicao_pagamento": {
+                    "nome": p.condicao_nome,
+                    "desconto": p.condicao_desconto,
+                    "juros": p.condicao_juros,
+                    "parcelas": p.condicao_parcelas,
+                    "tipo_pagamento": p.condicao_tipo,
+                },
+                "parcelas_detalhadas": []
+            }
 
-            if nr_pedido not in pedidos_dict:
-                valor_total = View_Pedido.objects.filter(nr_pedido=nr_pedido).aggregate(Sum('valor_total')).get('valor_total__sum', 0.00)
-                parcelas = pedido.parcelas
-                valor_parcela = valor_total / parcelas if parcelas > 0 else valor_total
+        item_total = p.quantidade * p.valor_unitario
 
-                condicao_pagamento = {
-                    'nome': pedido.condicao_pagamento_nome,
-                    'tipo_pagamento': getattr(pedido, 'condicao_tipo_pagamento', 'Não informado'),
-                    'parcelas': pedido.parcelas,
-                    'juros': getattr(pedido, 'condicao_juros', 0),
-                    'desconto': getattr(pedido, 'condicao_desconto', 0),
-                }
+        pedidos_dict[p.nr_pedido]["itens"].append({
+            "nome": p.produto.nome,
+            "quantidade": p.quantidade,
+            "valor_unitario": p.valor_unitario,
+            "valor_total": item_total,
+        })
 
-                pedidos_dict[nr_pedido] = {
-                    'data_pedido': pedido.data_pedido,
-                    'itens': [],
-                    'cliente_nome': pedido.cliente_nome,
-                    'funcionario_nome': pedido.funcionario_nome,
-                    'metodo_pagamento': pedido.metodo_pagamento,
-                    'condicao_pagamento': condicao_pagamento,
-                    'parcelas': parcelas,
-                    'id': pedido.id,
-                    'valor_total': valor_total,
-                    'valor_parcela': valor_parcela,
-                    'parcelas_detalhadas': [],
-                }
+        pedidos_dict[p.nr_pedido]["subtotal"] += item_total
 
-            pedidos_dict[nr_pedido]['itens'].append({
-                'nome': pedido.nome,
-                'quantidade': pedido.quantidade,
-                'valor_unitario': pedido.valor_unitario,
-                'valor_total': pedido.valor_total
-            })
+    for nr_pedido, pedido in pedidos_dict.items():
+        subtotal = pedido["subtotal"]
+        condicao = pedido["condicao_pagamento"]
+        desconto_perc = condicao.get("desconto", 0) or 0
+        juros_perc = condicao.get("juros", 0) or 0
 
-            if len(pedidos_dict[nr_pedido]['parcelas_detalhadas']) == 0 and pedido.parcelas > 0:
-                vencimento_inicial = pedido.data_pedido
-                for i in range(pedido.parcelas):
-                    data_vencimento = vencimento_inicial + timedelta(days=30 * (i + 1))
-                    pedidos_dict[nr_pedido]['parcelas_detalhadas'].append({
-                        'numero_parcela': i + 1,
-                        'valor_parcela': valor_parcela,
-                        'data_vencimento': data_vencimento.strftime('%Y-%m-%d')
-                    })
+        valor_desconto = 0
+        valor_juros = 0
+        valor_final = subtotal
 
-    condicoes_pagamento = View_Pedido.objects.filter(user_id=user_id) \
-                            .values_list('condicao_pagamento_nome', flat=True) \
-                            .distinct()
+        if desconto_perc > 0:
+            valor_desconto = subtotal * (desconto_perc / 100)
+            valor_final -= valor_desconto
+        elif juros_perc > 0:
+            valor_juros = subtotal * (juros_perc / 100)
+            valor_final += valor_juros
 
-    context = {
-        'viewPedidos': viewPedidos,
-        'valor_geral': valor_geral,
-        'pedidos_dict': pedidos_dict,
-        'funcionario_filtro': funcionario_filtro,
-        'cliente_filtro': cliente_filtro,
-        'clientes': clientes,
-        'data_inicio': data_inicio,
-        'funcionarios': funcionarios, 
-        'data_fim': data_fim,
-        'ordem': ordem,
-        'condicoes_pagamento': condicoes_pagamento,
-        'condicao_pagamento_filtro': condicao_pagamento_filtro,
-    }
+        pedido["valor_total"] = valor_final
+        pedido["valor_desconto"] = valor_desconto
+        pedido["valor_juros"] = valor_juros
 
-    return render(request, "meuspedidos.html", context)
+        if pedido["parcelas"] > 1:
+            if pedido["parcelas"] > 0:
+                valor_parcela = pedido["valor_total"] / pedido["parcelas"]
+            else:
+                valor_parcela = 0
+                
+            vencimento_inicial = pedido["data_pedido"]
+            for i in range(pedido["parcelas"]):
+                data_venc = vencimento_inicial + timedelta(days=30 * (i + 1))
+                pedido["parcelas_detalhadas"].append({
+                    "numero_parcela": i + 1,
+                    "valor_parcela": valor_parcela,
+                    "data_vencimento": data_venc.strftime("%Y-%m-%d")
+                })
+
+    return render(request, "meuspedidos.html", {
+        "pedidos_dict": pedidos_dict,
+        "clientes": Cliente.objects.all(),
+        "cliente_filtro": cliente_filtro,
+        "data_inicio": data_inicio,
+        "data_fim": data_fim,
+        "ordem": ordem,
+        "numero_pedido": numero_pedido,
+    })
+
 
 def gerarpdf(request, ped_id):
     pedido = get_object_or_404(Pedido, id=ped_id)

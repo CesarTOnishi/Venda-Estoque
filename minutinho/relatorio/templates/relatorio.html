@@ -23,28 +23,11 @@
       </form>
     </div>
 
-    <!-- Relatório de Funcionários -->
-    <div class="card">
-      <h2>Funcionários</h2>
-      <p>Consulta de todos funcionários cadastrados.</p>
-      <form method="GET" action="{% url 'relatoriofuncionarios' %}">
-        <button type="submit" class="btn primary">Gerar Relatório</button>
-      </form>
-    </div>
-
     <!-- Relatório de Vendas por Forma de Pagamento -->
     <div class="card">
       <h2>Vendas por Pagamento</h2>
       <p>Consulta como os clientes estão pagando.</p>
       <form method="GET" action="{% url 'relatoriovendapagamento' %}">
-        <button type="submit" class="btn primary">Gerar Relatório</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h2>Clientes</h2>
-      <p>Consulta de todos clientes cadastrados.</p>
-      <form method="GET" action="{%url 'relatorioclientes'%}">
         <button type="submit" class="btn primary">Gerar Relatório</button>
       </form>
     </div>
