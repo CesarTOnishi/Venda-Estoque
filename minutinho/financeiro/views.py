@@ -767,7 +767,10 @@ def movimentacoes(request, conta_id):
             valor=valor
         )
 
-        conta.saldo_inicial = movimentacao.saldo_apos
+        if tipo == "entrada":
+            conta.saldo_inicial += valor
+        else:
+            conta.saldo_inicial -= valor
         conta.save()
 
         return redirect('movimentacoes', conta_id=conta.id)
