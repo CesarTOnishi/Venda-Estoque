@@ -71,7 +71,7 @@ Siga os passos abaixo para configurar e executar o projeto em seu ambiente local
 
 1.  **Clone o repositório:**
     ```bash
-    git clone [https://github.com/CesarTOnishi/Venda-Estoque.git](https://github.com/CesarTOnishi/Venda-Estoque.git)
+    git clone https://github.com/CesarTOnishi/Venda-Estoque.git
     ```
 
 2.  **Acesse a pasta do projeto:**
